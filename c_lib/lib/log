@@ -1,0 +1,74 @@
+gcc -o EWM main.o libHongyu.a libESF.a  -Wall -g  -m64 -L../c01_tools -L/opt/sac/lib -L./ -L../c02_empirical_wavelet -L. -I../c01_tools -I../c02_empirical_wavelet -I. -lsacio -lm 
+libESF.a(output_long_phase_window_distsum.o): In function `output_long_phase_window_distsum':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_long_phase_window_distsum.c:55: undefined reference to `normalize_array'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_long_phase_window_distsum.c:95: undefined reference to `output_array2'
+libESF.a(read_record_for_phase.o): In function `read_record_for_phase_for_one_sta':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/read_record_for_phase.c:42: undefined reference to `shell_pipe_double'
+libESF.a(empirical_source_function.o): In function `empirical_source_function':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/empirical_source_function.c:50: undefined reference to `normalize_array'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/empirical_source_function.c:61: undefined reference to `normalize_array'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/empirical_source_function.c:64: undefined reference to `output_array1'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/empirical_source_function.c:154: undefined reference to `normalize_array'
+libESF.a(output_current_ES_for_phase_first_iteration.o): In function `output_current_ES_for_phase_first_iteration':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_current_ES_for_phase_first_iteration.c:43: undefined reference to `output_array2'
+libESF.a(output_current_ES_for_phase_third.o): In function `output_current_ES_for_phase_third':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_current_ES_for_phase_third.c:43: undefined reference to `output_array2'
+libESF.a(stretch_gaussian_find_best_match_for_given_interval.o): In function `stretch_gaussian_find_best_match_for_given_interval':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/stretch_gaussian_find_best_match_for_given_interval.c:19: undefined reference to `output_array1'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/stretch_gaussian_find_best_match_for_given_interval.c:49: undefined reference to `gaussian_func'
+libESF.a(read_in_modified_S_ES.o): In function `read_in_modified_S_ES':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/read_in_modified_S_ES.c:44: undefined reference to `normalize_array'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/read_in_modified_S_ES.c:63: undefined reference to `amplitudeloc'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/read_in_modified_S_ES.c:124: undefined reference to `output_array2'
+libESF.a(initiate_input.o): In function `initiate_input':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/initiate_input.c:37: undefined reference to `shell_pipe_text'
+libESF.a(stretch_ES_and_CCC_tstar.o): In function `stretch_ES_and_CCC_tstar':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/stretch_ES_and_CCC_tstar.c:66: undefined reference to `output_array1'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/stretch_ES_and_CCC_tstar.c:99: undefined reference to `amplitudeloc'
+libESF.a(empirical_source_for_each_record.o): In function `empirical_source_for_each_record':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/empirical_source_for_each_record.c:66: undefined reference to `amplitudeloc'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/empirical_source_for_each_record.c:168: undefined reference to `amplitudeloc'
+libESF.a(define_stretch_EW_ONSET.o): In function `define_stretch_EW_ONSET':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/define_stretch_EW_ONSET.c:120: undefined reference to `normalize_array'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/define_stretch_EW_ONSET.c:121: undefined reference to `amplitudeloc'
+libESF.a(restack_ES_for_phase.o): In function `restack_ES_for_phase':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/restack_ES_for_phase.c:93: undefined reference to `output_array1'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/restack_ES_for_phase.c:95: undefined reference to `normalize_array'
+libESF.a(read_phase_window.o): In function `read_phase_window':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/read_phase_window.c:12: undefined reference to `shell_pipe'
+libESF.a(output_current_ES_for_phase_second.o): In function `output_current_ES_for_phase_second':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_current_ES_for_phase_second.c:43: undefined reference to `output_array2'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_current_ES_for_phase_second.c:50: undefined reference to `output_array2'
+libESF.a(construct_array_with_main_lobe.o): In function `construct_array_with_main_lobe':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/construct_array_with_main_lobe.c:38: undefined reference to `amplitudeloc'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/construct_array_with_main_lobe.c:56: undefined reference to `amplitudeloc'
+libESF.a(EW_travel_time_traffic_checking.o): In function `EW_travel_time_traffic_checking':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/EW_travel_time_traffic_checking.c:386: undefined reference to `shell_pipe_double'
+libESF.a(stretch_ES_and_CCC.o): In function `stretch_ES_and_CCC':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/stretch_ES_and_CCC.c:80: undefined reference to `amplitudeloc'
+libESF.a(stretch_record_restack_ES.o): In function `stretch_record_restack_ES':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/stretch_record_restack_ES.c:74: undefined reference to `output_array2'
+libESF.a(output_current_ES_for_phase.o): In function `output_current_ES_for_phase':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_current_ES_for_phase.c:44: undefined reference to `output_array2'
+libESF.a(output_long_phase_window.o): In function `output_long_phase_window_for_each':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_long_phase_window.c:53: undefined reference to `amplitudeloc'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_long_phase_window.c:56: undefined reference to `amplitudeloc'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_long_phase_window.c:76: undefined reference to `amplitudeloc'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_long_phase_window.c:87: undefined reference to `amplitudeloc'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_long_phase_window.c:140: undefined reference to `output_array2'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_long_phase_window.c:141: undefined reference to `output_array2'
+libESF.a(output_ES_for_each_record.o): In function `output_ES_for_each_record':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_ES_for_each_record.c:45: undefined reference to `amplitudeloc'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_ES_for_each_record.c:62: undefined reference to `output_array2'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/output_ES_for_each_record.c:78: undefined reference to `output_array2'
+libESF.a(get_first_ES.o): In function `get_first_ES':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/get_first_ES.c:34: undefined reference to `normalize_array'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/get_first_ES.c:40: undefined reference to `output_array1'
+libESF.a(tstar_ES_function.o): In function `tstar_ES_function':
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/tstar_ES_function.c:18: undefined reference to `t_star_find_uniq'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/tstar_ES_function.c:20: undefined reference to `normalize_array'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/tstar_ES_function.c:24: undefined reference to `convolution2'
+/mnt/data2/hongyu/Maligaro/c_lib/lib/../c02_empirical_wavelet/tstar_ES_function.c:28: undefined reference to `normalize_array'
+collect2: error: ld returned 1 exit status
+Makefile:42: recipe for target 'EWM' failed
+make: *** [EWM] Error 1

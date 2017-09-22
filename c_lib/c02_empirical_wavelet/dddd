@@ -1,0 +1,2 @@
+		for(i=0;i<npts_phase;i++)
+			my_record[ista].ES_win[i] = current_ES[i];

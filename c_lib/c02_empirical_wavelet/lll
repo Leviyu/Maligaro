@@ -1,0 +1,1 @@
+restack_ES_for_phase.c:		my_record[ista].weight = get_weight_from_SNR_CCC( my_record[ista].SNR, my_record[ista].ccc);

@@ -28,14 +28,14 @@ int initiate_phase(new_RECORD* my_record,double prem, char* sac_file, new_INPUT*
 	my_record->stretched_gaussian_win = (double*)malloc(sizeof(double)*(int)(my_record->phase_len/my_input->delta));
 	my_record->ES_win = (double*)malloc(sizeof(double)*(int)(my_record->phase_len/my_input->delta));
 	my_record->stretched_phase_win_flag = 0;
+	my_record->shift_time_recorder = 0;
+	my_input->iteration_flag = 0;
 
 	//my_record->traffic_time = (double*)malloc(sizeof(double)*iphase);
 //printf("--> read sac file is %s \n", sac_file);
 	read_long_window(sac_file,my_record,my_input);
 
 
-	my_record->shift_time_recorder = 0;
-	my_input->iteration_flag = 0;
 	read_phase_window(my_record, my_input);
 
 	read_noise_window(my_record, my_input);

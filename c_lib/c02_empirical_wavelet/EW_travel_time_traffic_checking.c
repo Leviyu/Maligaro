@@ -30,7 +30,7 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		iphase++;
 		strcpy(traffic_phase[iphase],"sSKS");
 		iphase++;
-		traffic_range_sec = 10;
+		traffic_range_sec = 15;
 	}
 	else if(strcmp(my_input->PHASE,"S") == 0)
 	{
@@ -43,7 +43,7 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		iphase++;
 		strcpy(traffic_phase[iphase],"sSKS");
 		iphase++;
-		traffic_range_sec = 10;
+		traffic_range_sec = 15;
 	}
 	else if(strcmp(my_input->PHASE,"P") == 0)
 	{
@@ -52,14 +52,14 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		iphase++;
 		strcpy(traffic_phase[iphase],"pP");
 		iphase++;
-		traffic_range_sec = 10;
+		traffic_range_sec = 15;
 	}
 	else if(strcmp(my_input->PHASE,"Pdiff") == 0)
 	{
 		iphase = 0;
 		strcpy(traffic_phase[iphase],"pPdiff");
 		iphase++;
-		traffic_range_sec = 10;
+		traffic_range_sec = 15;
 	}
 	else if(strcmp(my_input->PHASE,"Sdiff") == 0)
 	{
@@ -74,7 +74,7 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		iphase++;
 		strcpy(traffic_phase[iphase],"sSKKS");
 		iphase++;
-		traffic_range_sec = 10;
+		traffic_range_sec = 15;
 	}
 	else if(strcmp(my_input->PHASE,"SS") == 0)
 	{
@@ -87,7 +87,7 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		iphase++;
 		strcpy(traffic_phase[iphase],"sS");
 		iphase++;
-		traffic_range_sec = 10;
+		traffic_range_sec = 15;
 	}
 	else if(strcmp(my_input->PHASE,"SSS") == 0)
 	{
@@ -105,7 +105,7 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		strcpy(traffic_phase[iphase],"sSSS");
 		iphase++;
 
-		traffic_range_sec = 10;
+		traffic_range_sec = 15;
 	}
 	else if(strcmp(my_input->PHASE,"ScSScS") == 0 )
 	{
@@ -391,6 +391,30 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		my_record->traffic_time[count] = prem_tmp - my_record->prem;
 		my_record->traffic_range_sec = traffic_range_sec;
 
+
+
+		// for SKS/SKKS/sSKS/sSKKS, we dont deal with it
+		if( strcmp(traffic_phase[count],"SKS") ==0 ||
+				strcmp(traffic_phase[count],"SKKS") ==0 ||
+				strcmp(traffic_phase[count],"sSKS") ==0 ||
+				strcmp(traffic_phase[count],"sSKKS") ==0 )
+		{
+			fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp, 
+					prem_tmp - my_record->prem , "good");
+			continue;
+		}
+		// if S is affected by ScS, we ignore
+		// we have some expection here
+		// for S, we dont wanna to throw any traffic record since S is usually good
+		if(strcmp(my_record->PHASE, "S") == 0 && strcmp( traffic_phase[count], "ScS") == 0)
+		{
+			my_record->quality = 0;
+			fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp, 
+				prem_tmp - my_record->prem , "good");
+			continue;
+		}
+
+
 		// compare the traffic_phase time with record PREM time, if close enough, we clasify it as bad
 		if( fabs(my_record->prem - prem_tmp) <  traffic_range_sec) 
 		{
@@ -400,14 +424,8 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 				//my_record->quality = 0;
 			//else 
 			my_record->quality = -1;
-
-
-			// we have some expection here
-			// for S, we dont wanna to throw any traffic record since S is usually good
-			if(strcmp(my_record->PHASE, "S") == 0 || strcmp(my_record->PHASE, "Sdiff") == 0||
-					strcmp(my_record->PHASE, "P") == 0|| strcmp(my_record->PHASE, "Pdiff") == 0)
-				my_record->quality = 0;
-
+			my_record->traffic_phase_nearby = 1;
+			//printf("sta %s flag %d \n", my_record->name, my_record->traffic_phase_nearby);
 
 			// phase_name, absolute_PREM, relative_PREM, flag
 			// flag  too_close / good

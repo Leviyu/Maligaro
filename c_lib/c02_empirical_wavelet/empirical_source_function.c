@@ -44,6 +44,9 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 			current_ES[i]=ES[loop_num][i];
 		normalize_array(current_ES, npts_phase);
 
+		//int calculate_EW_period(new_INPUT* my_input, double* EW)
+		calculate_EW_period(my_input, current_ES);
+
 		//int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
 		empirical_source_for_each_record(my_record,my_input,current_ES, loop_num);
 
@@ -54,6 +57,10 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 
 		// normalize ES
 		normalize_array(ES[loop_num + 1], npts_phase);
+
+
+		// calculate Empirical Wavelet Period
+		
 
 		// if ccc new_ES & old_ES > 0.99 exit
 		for(i = 0; i< npts_phase; i++)

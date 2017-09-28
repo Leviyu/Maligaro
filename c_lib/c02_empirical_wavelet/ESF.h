@@ -89,6 +89,11 @@ struct new_INPUT
 
 	char tstar_lib[500];
 	char ed_checked_file[500];
+	
+	// Empirical Wavelet Period
+	// this parameter stores the T info, the one period length of Empirical
+	// Wavelet
+	double EW_period;
 
 
 };
@@ -127,6 +132,8 @@ struct new_RECORD
 								// if 1 == positive
 								// -1 == negative
 								// 0 == not set
+	int polar_correct_flag;
+								//
 	int npts_signal_beg;
 	int npts_signal_end;	// npts where signal beg and end
 
@@ -236,6 +243,8 @@ struct new_RECORD
 	double* traffic_time;
 	double traffic_range_sec;
 
+	// traffic phase nearby
+	int traffic_phase_nearby;
 
 
 
@@ -399,6 +408,7 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input);
 
 int output_STD_of_ES(new_RECORD* my_record,new_INPUT*  my_input,double* current_ES);
 
+int calculate_EW_period(new_INPUT* my_input, double* EW);
 
 void store_ES_into_record(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
 void find_best_match_gaussian_for_iterative_ES(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);

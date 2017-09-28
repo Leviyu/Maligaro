@@ -41,6 +41,7 @@ int read_record_for_phase_for_one_sta(new_RECORD* my_record, new_INPUT* my_input
 
 	my_record->quality = 0;
 	my_record->weight = 0;
+	my_record->traffic_phase_nearby = 0;
 
 	sprintf(taup_command,"csh %s/code_dir/c104.get_taup_time_for_phase.sh %s  %s %s |awk 'NR==1 {print $1}' ", my_input->PWD, my_record->EQ, my_record->name, my_record->PHASE);
 	shell_pipe_double(taup_command, &prem_tmp);

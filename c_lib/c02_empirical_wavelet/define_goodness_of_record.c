@@ -37,8 +37,19 @@ int define_goodness_of_record(new_RECORD* my_record, new_INPUT* my_input)
 		misfit_pre = my_record[ista].misfit_pre;
 		dt_anomaly = my_record[ista].dt_obs_prem;
 
+		// here we define the polarity_prediction flag
+		my_record[ista].polar_correct_flag = 0;
+		if( fabs( my_record[ista].polarity) < 0.15 ) 
+		{
+			if( my_record[ista].polarity * my_record[ista].polar_flag <  0)
+				my_record[ista].polar_correct_flag = 1;
+		}
 		
-		
+		if( my_record[ista].traffic_phase_nearby == 1)
+		{
+			my_record[ista].quality = -1;
+			continue;
+		}
 
 
 		if(my_record[ista].quality != -1 &&

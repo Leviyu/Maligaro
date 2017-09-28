@@ -1,5 +1,6 @@
 
 #include "ESF.h"
+#include "hongyulib.h"
 /******************************************************************
  * This is a c script for get the 10% ~ 100% AMP part of a array (old_ES) and 
  * fix the amp from 0~1 and then pad the rest of the trace with zeros (zeroes does not affect ccc)
@@ -20,7 +21,6 @@
 int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array_out)
 {
 	//puts("---> construct array with main lobe");
-	int amplitudeloc(double* array, int len, int* max_amp_loc, double* amplitude, int flag);
 	int npts_peak_min, npts_peak_max, npts_peak;
 	double peak_max, peak_min, value_peak;
 	int count, flag;

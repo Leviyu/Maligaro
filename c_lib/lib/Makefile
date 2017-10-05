@@ -14,8 +14,9 @@ SACHOME = /opt/sac
 SOURCE = ./main.c
 OBJ = $(SOURCE:.c=.o)
 
-CC = gcc
-DEBUG = -g 
+CC = gcc -Wno-unused-variable
+#DEBUG = -g 
+DEBUG = 
 LIBS = libHongyu.a 
 
 

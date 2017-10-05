@@ -42,6 +42,7 @@ int read_record_for_phase_for_one_sta(new_RECORD* my_record, new_INPUT* my_input
 	my_record->quality = 0;
 	my_record->weight = 0;
 	my_record->traffic_phase_nearby = 0;
+	my_record->SNR2 = 0;
 
 	sprintf(taup_command,"csh %s/code_dir/c104.get_taup_time_for_phase.sh %s  %s %s |awk 'NR==1 {print $1}' ", my_input->PWD, my_record->EQ, my_record->name, my_record->PHASE);
 	shell_pipe_double(taup_command, &prem_tmp);
@@ -56,6 +57,13 @@ int read_record_for_phase_for_one_sta(new_RECORD* my_record, new_INPUT* my_input
 	// do travel time traffic checking 
 
 	//int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
+	
+	// lets get depth phase for current station
+	//void get_depth_phase_for_current_station( new_RECORD* my_record)
+	get_depth_phase_for_current_station(my_record);
+
+
+
 	int traffic_flag = EW_travel_time_traffic_checking(my_record, my_input);
 	initiate_phase(my_record,prem_tmp,sac_file,  my_input);
 

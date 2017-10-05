@@ -246,6 +246,7 @@ struct new_RECORD
 	// traffic phase nearby
 	int traffic_phase_nearby;
 
+	char depth_phase[30];
 
 
 
@@ -409,6 +410,8 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input);
 int output_STD_of_ES(new_RECORD* my_record,new_INPUT*  my_input,double* current_ES);
 
 int calculate_EW_period(new_INPUT* my_input, double* EW);
+int read_phase_window_original_long_win(new_RECORD* my_record, new_INPUT* my_input, double* phase_win_from_long_orig);
+void get_depth_phase_for_current_station( new_RECORD* my_record);
 
 void store_ES_into_record(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
 void find_best_match_gaussian_for_iterative_ES(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);

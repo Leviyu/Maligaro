@@ -54,6 +54,15 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		iphase++;
 		traffic_range_sec = 15;
 	}
+	else if(strcmp(my_input->PHASE,"PcP") == 0)
+	{
+		iphase = 0;
+		strcpy(traffic_phase[iphase],"pPcP");
+		iphase++;
+		strcpy(traffic_phase[iphase],"P");
+		iphase++;
+		traffic_range_sec = 15;
+	}
 	else if(strcmp(my_input->PHASE,"Pdiff") == 0)
 	{
 		iphase = 0;
@@ -391,6 +400,13 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		my_record->traffic_time[count] = prem_tmp - my_record->prem;
 		my_record->traffic_range_sec = traffic_range_sec;
 
+		// if is current phase`s depth phase, we dont deal with it
+		if( strcmp(my_record->depth_phase,traffic_phase[count]) == 0)
+		{
+				fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp, 
+				prem_tmp - my_record->prem , "good");
+			continue;
+		}
 
 
 		// for SKS/SKKS/sSKS/sSKKS, we dont deal with it
@@ -407,6 +423,13 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		// we have some expection here
 		// for S, we dont wanna to throw any traffic record since S is usually good
 		if(strcmp(my_record->PHASE, "S") == 0 && strcmp( traffic_phase[count], "ScS") == 0)
+		{
+			my_record->quality = 0;
+			fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp, 
+				prem_tmp - my_record->prem , "good");
+			continue;
+		}
+		if(strcmp(my_record->PHASE, "P") == 0 && strcmp( traffic_phase[count], "PcP") == 0)
 		{
 			my_record->quality = 0;
 			fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp, 

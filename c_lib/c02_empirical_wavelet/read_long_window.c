@@ -16,7 +16,7 @@ int read_long_window(char* sac_file, new_RECORD* my_record, new_INPUT* my_input)
 	float yarray[200000];
 	double x_tmp[100000];
 	double y_tmp[100000];
-	//double new_x[100000];
+	double new_x[100000];
 	double* new_y;
 	new_y = (double*)malloc(sizeof(double)*100000);
 	// initiate new_y
@@ -126,7 +126,7 @@ int read_long_window(char* sac_file, new_RECORD* my_record, new_INPUT* my_input)
 	//for(i=0;i<new_npts;i++)
 	for(i=0;i<npts_long_len;i++)
 	{
-		//new_x[i]=0+i*my_input->delta;
+		new_x[i]=0+i*my_input->delta;
 		new_y[i] = y_tmp[i];
 	}
 
@@ -152,8 +152,22 @@ int read_long_window(char* sac_file, new_RECORD* my_record, new_INPUT* my_input)
 		my_record->long_orig[i]=new_y[i];
 	}
 
+	// output long_orig
+	char long_ggg[200];
+	sprintf(long_ggg,"%s.long_data.new_y",my_record->name );
+	output_array2(long_ggg, new_x, my_record->long_orig, npts_long_len, 1);
+	//output_array2(long_ggg, new_x, new_y, npts_long_len, 1);
+		//output_array2(long_win_name,x_long,my_record->long_orig, new_npts_long, 1);
+
+
 	// now construct long_win
 	traffic_zero_out(my_record,  my_input);
+
+	// output long_orig
+	sprintf(long_ggg,"%s.long_data.long_orig",my_record->name );
+	output_array2(long_ggg, new_x, my_record->long_orig, npts_long_len, 1);
+		//output_array2(long_win_name,x_long,my_record->long_orig, new_npts_long, 1);
+
 
 	free(new_y);
 	return 0;
@@ -174,7 +188,14 @@ int traffic_zero_out( new_RECORD* my_record, new_INPUT* my_input)
 
 	for(count = 0; count < my_record->num_traffic ; count++)
 	{
-		
+
+		// if is depth_phase and is close to main phase then 15 second
+		// we use 15sec cause we dont have any estimation of one Period here
+		// yet
+		if( strcmp( my_record->traffic_phase[count], my_record->depth_phase) == 0)
+			if( fabs( my_record->traffic_time[count]) < 15  )
+				continue;
+
 		// if phase contrains SKS or SKKS, we skip
 		if( strcmp( my_record->traffic_phase[count], "SKS") == 0 ||
 			strcmp( my_record->traffic_phase[count], "SKKS") == 0 ||
@@ -185,10 +206,14 @@ int traffic_zero_out( new_RECORD* my_record, new_INPUT* my_input)
 		// for Phase S, if dist > 80 then we dont use traffic anymore
 		if( strcmp(my_record->PHASE,"S") == 0 && my_record->DIST > 80)
 			continue;
+		if( strcmp(my_record->PHASE,"P") == 0 && my_record->DIST > 78)
+			continue;
 
 
 
 		double what_is_too_far_huawei = 80;
+		if( strstr(my_record->PHASE,"P") != NULL )
+			what_is_too_far_huawei = 30;
 		if(my_record->traffic_time[count] < -1*what_is_too_far_huawei  ||
 				my_record->traffic_time[count] > what_is_too_far_huawei )
 			continue;
@@ -203,6 +228,8 @@ int traffic_zero_out( new_RECORD* my_record, new_INPUT* my_input)
 		npts_end_pad  = (int)(( my_record->traffic_time[count] -my_record->long_beg ) /my_input->delta + npts_pad_each_side );
 
 
+		//printf("sta %s , traffic zoom out is %s \n", my_record->name, my_record->traffic_phase[count]);
+		//printf("npts beg end is %d %d  \n", npts_beg_pad, npts_end_pad );
 
 		int kkk;
 		for(kkk = npts_beg_pad ; kkk< npts_end_pad ; kkk++)

@@ -51,7 +51,7 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		AMP = 0;
 		for(i = 0; i<npts_phase;i++)
 		{
-			if( fabs( my_record[ista].stretched_ES_win[i] ) >= AMP )
+			if( my_record[ista].stretched_ES_win[i]  >= AMP )
 			{
 				AMP = fabs( my_record[ista].stretched_ES_win[i] );
 				npts_peak = i;
@@ -115,6 +115,16 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 // ===========================================================
 //	get misfit measurement misfit
 // ===========================================================
+
+		// ==================================
+		// when we calculate the misfit, we want to use the un-masked long
+		// window to do the calculation, thus, we need to reconstruct the
+		// phase_win from original long_win
+		double phase_win_from_long_orig[npts_phase];
+		read_phase_window_original_long_win(&my_record[ista],my_input, phase_win_from_long_orig);
+		//
+		//
+		// ==================================
 		double misfit_ES=0;
 		double misfit_record=0;
 		double misfit = 0;
@@ -123,7 +133,8 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		misfit_diff = 0;
 		for(count = npts_ONSET; count < npts_ENDSET; count++)
 		{
-			misfit_diff += fabs( my_record[ista].stretched_ES_win[count] -  my_record[ista].phase_win[count] );
+			//misfit_diff += fabs( my_record[ista].stretched_ES_win[count] -  my_record[ista].phase_win[count] );
+			misfit_diff += fabs( my_record[ista].stretched_ES_win[count] -  phase_win_from_long_orig[count] );
 			//misfit_ES +=  fabs( my_record[ista].stretched_ES_win[count] );
 			//misfit_record +=  fabs( my_record[ista].phase_win[count] );
 		}
@@ -155,7 +166,8 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		npts_end = npts_ONSET;
 		for(count = npts_beg; count < npts_end; count++)
 		{
-			misfit_diff += fabs( my_record[ista].stretched_ES_win[count] -  my_record[ista].phase_win[count] );
+			//misfit_diff += fabs( my_record[ista].stretched_ES_win[count] -  my_record[ista].phase_win[count] );
+			misfit_diff += fabs( my_record[ista].stretched_ES_win[count] -  phase_win_from_long_orig[count] );
 			//misfit_ES +=  fabs( my_record[ista].stretched_ES_win[count] );
 			//misfit_record +=  fabs( my_record[ista].phase_win[count] );
 		}
@@ -185,7 +197,8 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 			npts_end = npts_phase;
 		for(count = npts_beg; count < npts_end; count++)
 		{
-			misfit_diff += fabs( my_record[ista].stretched_ES_win[count] -  my_record[ista].phase_win[count] );
+			//misfit_diff += fabs( my_record[ista].stretched_ES_win[count] -  my_record[ista].phase_win[count] );
+			misfit_diff += fabs( my_record[ista].stretched_ES_win[count] -  phase_win_from_long_orig[count] );
 			//misfit_ES +=  fabs( my_record[ista].stretched_ES_win[count] );
 			//misfit_record +=  fabs( my_record[ista].phase_win[count] );
 		}
@@ -246,7 +259,8 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		misfit_ES = 0;
 		for(count = npts_ONSET; count < npts_ENDSET; count++)
 		{
-			misfit_diff += fabs(my_record[ista].stretched_ES_win[count] - my_record[ista].phase_win[count] );
+			//misfit_diff += fabs(my_record[ista].stretched_ES_win[count] - my_record[ista].phase_win[count] );
+			misfit_diff += fabs(my_record[ista].stretched_ES_win[count] - phase_win_from_long_orig[count] );
 			//misfit_ES +=  fabs( my_record[ista].stretched_ES_win[count] );
 			//misfit_record +=  fabs( my_record[ista].phase_win[count] );
 		}

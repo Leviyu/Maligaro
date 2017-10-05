@@ -43,6 +43,8 @@ int define_goodness_of_record(new_RECORD* my_record, new_INPUT* my_input)
 		{
 			if( my_record[ista].polarity * my_record[ista].polar_flag <  0)
 				my_record[ista].polar_correct_flag = 1;
+
+
 		}
 		
 		if( my_record[ista].traffic_phase_nearby == 1)

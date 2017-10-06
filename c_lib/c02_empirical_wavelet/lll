@@ -1,0 +1,4 @@
+int stretch_record_find_best_match_for_given_interval(double* record,
+		double* phase_win, int npts_phase, double coeff_min, double coeff_max, 
+		double coeff_delta, double* best_ccc, double* best_coeff,
+		int* best_time_shift, double* best_ES)

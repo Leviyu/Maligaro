@@ -1,12 +1,8 @@
-#ifndef ESF_H
-#define ESF_H
-
+#ifndef EQ_data_H
+#define EQ_data_H
 #include<stdlib.h>
 #include<stdio.h>
-#include<string.h>
-#include<math.h>
-#include<sacio.h>
-#include<time.h>
+#include "hongyulib.h"
 
 struct new_INPUT
 {
@@ -29,7 +25,6 @@ struct new_INPUT
 	double noise_beg, noise_len;
 	double distmin, distmax;
 
-	int iteration_flag;
 
 	double S_filter_delay;					// filter delay of 10sec filter for S Empirical Wavelet
 
@@ -59,7 +54,7 @@ struct new_INPUT
 
 
 	int STACK_FLAG;
-	int ED_CHECKED_FLAG;
+
 	// stacking info
 	double lat_beg;
 	double lat_end;
@@ -84,18 +79,6 @@ struct new_INPUT
 	int MAX_STA;
 
 
-	double emp_gaussian_factor;
-	double emp_gaussian_area;
-
-	char tstar_lib[500];
-	char ed_checked_file[500];
-	
-	// Empirical Wavelet Period
-	// this parameter stores the T info, the one period length of Empirical
-	// Wavelet
-	double EW_period;
-
-
 };
 typedef struct new_INPUT new_INPUT;
 
@@ -110,7 +93,6 @@ struct new_RECORD
 	char* NET;				// network of this sta
 	double DIST;			//distance of this sta
 	double DIST_DELTA;		// distance sum delta
- 
 	double AZ;				//AZ of this sta
 	double BAZ;				//BAZ of this sta
 	double sta_lat;
@@ -132,8 +114,6 @@ struct new_RECORD
 								// if 1 == positive
 								// -1 == negative
 								// 0 == not set
-	int polar_correct_flag;
-								//
 	int npts_signal_beg;
 	int npts_signal_end;	// npts where signal beg and end
 
@@ -147,11 +127,9 @@ struct new_RECORD
 
 	// long window
 	double* long_win;		// stored long window 
-	double* long_orig;		// stored long window 
 	int npts_long;
 	double long_beg;
 	double long_len;
-	double long_amplitude;
 
 
 	// phase window
@@ -193,16 +171,7 @@ struct new_RECORD
 	double ENDSET;
 	double misfit;
 	double misfit2;
-	double misfit_pre;
-	double misfit_bak;
 
-	double record_gaussian_factor;
-	double record_gaussian_area;
-	double emp_gaussian_factor;
-
-	double gaussian_misfit;
-
-	double CCC3;		// the ccc between E.W. and record for tight window +- 3sec
 
 	int npts_SS_peak_zero;	// the npts difference between SS /ScSScS peak and the zero point in front of peak
 	int npts_phase_peak;		// phase peak npts 
@@ -227,28 +196,6 @@ struct new_RECORD
 	// station correction
 	double dt_average;
 	double dt_STD;
-
-
-	// checking
-	int checked_to_be_good;
-	int stretched_phase_win_flag;
-
-
-	// shift time recorder
-	double shift_time_recorder;
-
-	// record traffic system
-	int num_traffic;
-	char** traffic_phase;
-	double* traffic_time;
-	double traffic_range_sec;
-
-	// traffic phase nearby
-	int traffic_phase_nearby;
-
-	char depth_phase[30];
-
-
 
 
 
@@ -332,16 +279,15 @@ struct new_GRID
 };
 typedef struct new_GRID new_GRID;
 
-
-void ESF_hello();
-
-
 int initiate_grid(new_GRID** my_grid, new_INPUT* my_input);
 int single_grid_stacking(new_GRID** my_grid, new_INPUT* my_input, new_RECORD* my_record);
 
 int initiate_input(new_INPUT* my_input);
 int read_input_info(new_INPUT* my_input);
 int read_eventstation_list(new_RECORD* my_record, new_INPUT* my_input);
+
+
+#endif
 
 int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input, double* current_ES, int loop_num);
 
@@ -361,11 +307,11 @@ int get_phase_amplitude(new_RECORD* my_record);
 int get_first_ES(new_RECORD* my_record, new_INPUT* my_input, double* ES);
 int get_first_EW_for_phase(new_RECORD* my_record, new_INPUT* my_input, double* ES);
 int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input);
-int get_ONSET_ENDSET_for_each_record_origional_phase(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
+int get_ONSET_ENDSET_for_each_record_origional_phase(new_RECORD* my_record, new_INPUT* my_input);
 int CCC( double* x, int npts_x, double* y, int npts_y, int*shift, double* ccc, int flag);
 int get_misfit_for_each_record_origional_record(new_RECORD* my_record, new_INPUT* my_input);
 double get_weight_from_SNR_CCC(double SNR, double ccc_orig);
-int tstar_ES_function(double* current_ES, int npts_phase, double coeff,double*  tmp_ES, char* tstar_lib);
+int tstar_ES_function(double* current_ES, int npts_phase, double coeff,double*  tmp_ES);
 int stretch_ES_and_CCC(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
 int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array_out);
 int stretch_ES_function(double* current_ES, int npts_phase, double coeff,double*  tmp_ES);
@@ -387,6 +333,7 @@ int get_misfit_for_each_record_stretched(new_RECORD* my_record, new_INPUT* my_in
 int get_SNR2_for_each_record(new_RECORD* my_record, new_INPUT* my_input);
 int stretch_ES_find_best_match_for_given_interval(new_RECORD* my_record, double* ES_win, double* phase_win, int npts_phase, double coeff_min, double coeff_max, double coeff_delta, double* best_ccc, double* best_coeff,  int* best_time_shift, double* best_ES, new_INPUT* my_input);
 int stretch_gaussian_find_best_match_for_given_interval(double* phase_win, int npts_phase, double coeff_min, double coeff_max, double coeff_delta, double* best_ccc, double* best_coeff,  int* best_time_shift, double* best_ES);
+int stretch_record_find_best_match_for_given_interval(double* record,double* phase_win, int npts_phase, double coeff_min, double coeff_max, double coeff_delta, double* best_ccc, double* best_coeff,  int* best_time_shift, double* best_ES);
 int define_stretch_EW_ONSET(new_RECORD* my_record, new_INPUT* my_input);
 int read_in_modified_S_ES(new_INPUT* my_input, double* array);
 int read_eventinfo_list(new_RECORD* my_record, new_INPUT* my_input);
@@ -406,20 +353,3 @@ int stretch_ES_and_CCC_tstar(new_RECORD* my_record, new_INPUT* my_input, double*
 int restack_ES_for_phase_after_tstar(new_RECORD* my_record, new_INPUT* my_input, double* ES);
 int EWM_logfile_write(new_INPUT* my_input, char* message);
 int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input);
-
-int output_STD_of_ES(new_RECORD* my_record,new_INPUT*  my_input,double* current_ES);
-
-int calculate_EW_period(new_INPUT* my_input, double* EW);
-int read_phase_window_original_long_win(new_RECORD* my_record, new_INPUT* my_input, double* phase_win_from_long_orig);
-void get_depth_phase_for_current_station( new_RECORD* my_record);
-int stretch_record_find_best_match_for_given_interval(double* record,
-		double* phase_win, int npts_phase, double coeff_min, double coeff_max, 
-		double coeff_delta, double* best_ccc, double* best_coeff,
-		int* best_time_shift, double* best_ES);
-
-void store_ES_into_record(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
-void find_best_match_gaussian_for_iterative_ES(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
-double width_dependent_gaussian_time_delay(double gaussian_factor);
-void reject_records_with_dt_too_close_to_traffic_phase(new_RECORD* my_record, new_INPUT* my_input);
-
-#endif

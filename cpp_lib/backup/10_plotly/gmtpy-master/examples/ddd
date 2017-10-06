@@ -1,3 +1,0 @@
-    gmtbin = pjoin('/','hongyu_ubuntu','bin','resource','gmt-4.5.9','GMT','bin')
-    gmthome = pjoin('/','hongyu_ubuntu','bin','resource','gmt-4.5.9','GMT')
-    print "gmtbin" , gmtbin

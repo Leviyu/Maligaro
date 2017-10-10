@@ -68,7 +68,10 @@ int define_goodness_of_record(new_RECORD* my_record, new_INPUT* my_input)
 
 		if(misfit == 0)
 			misfit = 1;
-		if( misfit_pre / misfit > 5.0)
+
+		//if( misfit_pre / misfit > 5.0)
+			//my_record[ista].quality = -1;
+		if( misfit_pre > 0.3 )
 			my_record[ista].quality = -1;
 
 		if( dt_anomaly < -15 || dt_anomaly > 20 )

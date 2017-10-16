@@ -1,4 +1,4 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 /******************************************************************
  * This is a c script to acquire the taup_time using c
  *

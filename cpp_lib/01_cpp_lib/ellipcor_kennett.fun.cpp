@@ -1,4 +1,5 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
+#include <string.h>
 
 /*******************************************************************
  * This C function returns the result of ellipticity correction from

@@ -2,7 +2,8 @@
 //{
 //#include<sacio.h>
 //}
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
+#include<string.h>
 /******************************************************************
  * This is a c script to read in sac file and return a xy array
  * we manually convert the sampling rate  
@@ -37,7 +38,6 @@ int sac2xy_with_delta(string sac_file2, double begin_time, double length, double
 	char* sac_file;
 	sac_file = strdup(sac_file2.c_str());
 	//printf("sac file is %s \n", sac_file);
-
 	rsac1(sac_file,yarray,&len,&beg,&del,&max,&nerr,strlen(sac_file));
 	//printf("--> reading sac file %s yarray 1 is %lf \n", sac_file, yarray[1]);
 	//printf(" beg time %lf len %lf \n", begin_time, length);

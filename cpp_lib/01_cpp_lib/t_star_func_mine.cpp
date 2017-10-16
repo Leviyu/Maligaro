@@ -1,8 +1,4 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<math.h>
-#include<complex.h>
-#include<hongyulib.h>
+#include "hongyulibcpp.h"
 
 /*************************************************************
 * This C function find the proper t star operator 

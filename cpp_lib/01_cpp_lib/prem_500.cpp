@@ -1,4 +1,4 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 
 /*************************************************************
 * This C function calculate reference model PREM_500

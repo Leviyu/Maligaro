@@ -5,6 +5,7 @@
 new_grid::new_grid()
 {
 
+	cout << " new grid is declared! " << endl;
 	// distribute space for record tag arrat
 	int MAX = 10000;
 	
@@ -17,6 +18,8 @@ new_grid::new_grid()
 	this->npts_record_sum = 0;
 	this->long_win = new double[MAX];
 
+
+
 }
 new_grid::~new_grid()
 {
@@ -28,6 +31,25 @@ new_grid::~new_grid()
 
 void new_grid::initiate_grid()
 {
+	cout << " --> Build Virtual Station grid network" << endl;
+
+	double ilat, ilon;
+	double current_lat;
+
+	// grid radius in km
+	this->grid_radius = this->VS_LATITUDE_INC * 110;
+
+
+	for(ilat = -89; ilat < 89; ilat+= this->VS_LATITUDE_INC)
+	{
+		current_lat = ilat;
+		
+
+
+
+
+
+	}
 
 
 

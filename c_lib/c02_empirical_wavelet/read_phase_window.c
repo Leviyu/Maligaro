@@ -34,10 +34,19 @@ int read_phase_window(new_RECORD* my_record, new_INPUT* my_input)
 		 //zero out value out side of [-15, 27] window
 		 double back_time_window = 0;
 		 if(my_input->EW_period == 0) 
-			 back_time_window = 20 + 7;
+			 back_time_window = my_input->mask_win_max + 7;
 		 else
-		 	back_time_window = 20 + my_input->EW_period;
-		if( current_time_relative_to_prem < -15 || current_time_relative_to_prem > back_time_window)
+		 	back_time_window = my_input->mask_win_max + my_input->EW_period;
+
+		 if(my_record->beyong_window_flag == 1)
+		 {
+			 back_time_window = my_input->mask_win_max ;
+			 //printf("back_time_window is %lf \n", back_time_window);
+		 }
+
+
+		if( current_time_relative_to_prem < my_input->mask_win_min || 
+				current_time_relative_to_prem > back_time_window)
 			my_record->phase_win[i] = 0;
 		else
 			my_record->phase_win[i]=my_record->long_win[npts_phase_beg+i];

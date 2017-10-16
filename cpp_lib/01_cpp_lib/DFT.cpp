@@ -1,4 +1,4 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 #include<complex.h>
 /******************************************************************
  * This is a c script  impliment fourier transfrom to a array

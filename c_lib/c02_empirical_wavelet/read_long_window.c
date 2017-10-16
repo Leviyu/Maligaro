@@ -153,19 +153,20 @@ int read_long_window(char* sac_file, new_RECORD* my_record, new_INPUT* my_input)
 	}
 
 	// output long_orig
-	char long_ggg[200];
-	sprintf(long_ggg,"%s.long_data.new_y",my_record->name );
-	output_array2(long_ggg, new_x, my_record->long_orig, npts_long_len, 1);
+	//char long_ggg[200];
+	//sprintf(long_ggg,"%s.long_data.new_y",my_record->name );
+	//output_array2(long_ggg, new_x, my_record->long_orig, npts_long_len, 1);
 	//output_array2(long_ggg, new_x, new_y, npts_long_len, 1);
 		//output_array2(long_win_name,x_long,my_record->long_orig, new_npts_long, 1);
 
 
 	// now construct long_win
+	//printf("zero out \n");
 	traffic_zero_out(my_record,  my_input);
 
 	// output long_orig
-	sprintf(long_ggg,"%s.long_data.long_orig",my_record->name );
-	output_array2(long_ggg, new_x, my_record->long_orig, npts_long_len, 1);
+	//sprintf(long_ggg,"%s.long_data.long_orig",my_record->name );
+	//output_array2(long_ggg, new_x, my_record->long_orig, npts_long_len, 1);
 		//output_array2(long_win_name,x_long,my_record->long_orig, new_npts_long, 1);
 
 
@@ -211,14 +212,14 @@ int traffic_zero_out( new_RECORD* my_record, new_INPUT* my_input)
 
 
 
-		double what_is_too_far_huawei = 80;
+		double what_is_too_far_huawei = 110;
 		if( strstr(my_record->PHASE,"P") != NULL )
-			what_is_too_far_huawei = 30;
+			what_is_too_far_huawei = 50;
 		if(my_record->traffic_time[count] < -1*what_is_too_far_huawei  ||
 				my_record->traffic_time[count] > what_is_too_far_huawei )
 			continue;
 
-
+//printf(" zero out %d / %d phase %s \n", count , my_record->num_traffic, my_record->traffic_phase[count]);
 		int pad_length = 8;
 		int npts_pad_each_side = (int)( pad_length / my_input->delta);
 
@@ -227,6 +228,12 @@ int traffic_zero_out( new_RECORD* my_record, new_INPUT* my_input)
 		npts_beg_pad  = (int)(( my_record->traffic_time[count] - my_record->long_beg )/my_input->delta - npts_pad_each_side );
 		npts_end_pad  = (int)(( my_record->traffic_time[count] -my_record->long_beg ) /my_input->delta + npts_pad_each_side );
 
+		if( npts_beg_pad <= 0 || npts_end_pad > (int)(my_input->phase_len / my_input->delta))
+		{
+			//printf(" npts problem \n");
+			npts_beg_pad = 0;
+			npts_end_pad = 0;
+		}
 
 		//printf("sta %s , traffic zoom out is %s \n", my_record->name, my_record->traffic_phase[count]);
 		//printf("npts beg end is %d %d  \n", npts_beg_pad, npts_end_pad );

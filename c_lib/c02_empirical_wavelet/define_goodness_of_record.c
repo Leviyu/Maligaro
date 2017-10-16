@@ -24,8 +24,8 @@ int define_goodness_of_record(new_RECORD* my_record, new_INPUT* my_input)
 	int ista;
 	for(ista = 0; ista < my_input->sta_num; ista++)
 	{
-		//if(my_record[ista].quality == -1)
-			//continue;
+		if(my_record[ista].beyong_window_flag == -1)
+			continue;
 
 		SNR = my_record[ista].SNR;
 		ccc = my_record[ista].ccc;
@@ -74,7 +74,7 @@ int define_goodness_of_record(new_RECORD* my_record, new_INPUT* my_input)
 		if( misfit_pre > 0.3 )
 			my_record[ista].quality = -1;
 
-		if( dt_anomaly < -15 || dt_anomaly > 20 )
+		if( dt_anomaly < my_input->mask_win_min || dt_anomaly > my_input->mask_win_max )
 			my_record[ista].quality = -1;
 
 		// here we also make sure that if dt is too close to other phase, then, we mark its quality to be -1

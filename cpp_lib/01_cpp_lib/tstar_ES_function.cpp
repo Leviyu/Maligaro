@@ -1,4 +1,4 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 
 int tstar_ES_function(double* current_ES, int npts_phase, double coeff,double*  tmp_ES)
 {

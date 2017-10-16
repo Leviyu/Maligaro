@@ -54,6 +54,7 @@ printf("---> Read polarity  info \n");
 		}
 		fgets(buff3,N,in2);
 		sscanf(buff3, "%s %lf ", sta_tmp, &my_record[i].polarity);
+		//printf("sta %s polarity is %lf \n", my_record[i].name, my_record[i].polarity);
 		for(ista =0; ista<my_input->sta_num;ista ++)
 		{
 			if(strcmp(sta_tmp,my_record[ista].name)==0)

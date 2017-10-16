@@ -8,11 +8,12 @@
 #include<vector>
 #include<sstream>
 #include<iomanip>
-#include "hongyulib.h"
+#include "../01_cpp_lib/hongyulibcpp.h"
 #include<cmath>
-extern "C"{
-#include "ESF.h"
-}
+#include<complex>
+//extern "C"{
+//#include "ESF.h"
+//}
 using namespace std;
 
 
@@ -20,6 +21,8 @@ class big_new_record;
 class new_record;
 class new_tomo;
 class CRUST_MODEL;
+class new_grid;
+class virtual_station;
 
 
 // strucutre of cell
@@ -314,11 +317,16 @@ class new_record
 
 };
 
-
+// declare big_new_record
 class big_new_record
 {
-
 	public:
+		big_new_record();
+		~big_new_record();
+
+		double VS_LATITUDE_INC;
+
+
 		int sta_num;
 		string record_file;
 		string eventStation;
@@ -332,18 +340,12 @@ class big_new_record
 		double phase_len;
 
 
-
 		string timeinfo_outfile;
-
-		
 		
 		void read_record_file();
 		void initiate_big_record();
+		void read_INFILE();
 
-
-
-		big_new_record();
-		~big_new_record();
 
 		void big_record_read_cross_point_file(new_tomo* my_tomo);
 		void get_ellip_corr();
@@ -355,10 +357,22 @@ class big_new_record
 		void read_sac_file();
 		void calculate_SNR();
 		void read_in_polarity_file();
+		new_grid* my_grid;
+
+
+		// grid related parameter
+		int grid_lat_num;
+		int* grid_lon_num;
+
 
 };
 
 
+// declare virtual_station
+class virtual_station
+{
+
+};
 
 
 
@@ -374,16 +388,11 @@ class new_grid
 		double grid_height;
 		double grid_time;					// centra grid travel time for one EQ, as a reference time
 
-
-
-
+		double VS_LATITUDE_INC;
 
 		// for records within grid range, store record tag info
 		int npts_record_sum;
 		int* record_tag;				// store the record line number in eventinfo to make sure that we can find each record
-
-
-
 
 		// for given EQ, when we do stacking, we need az baz slowness info
 		double grid_dist;					// distance from EQ to grid center

@@ -1,4 +1,4 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 /******************************************************************
  * This is a c script for getting the max AMP and location of array
  *

@@ -368,11 +368,11 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 
 
 	// now output the traffic_phase list
-	char traffic_file[500];
-	FILE* out;
+	//char traffic_file[500];
+	//FILE* out;
 	int count;
-	sprintf(traffic_file, "traffic_file.%s.%s.%s", my_record->EQ, my_record->name, my_record->PHASE);
-	out = fopen(traffic_file,"w");
+	//sprintf(traffic_file, "traffic_file.%s.%s.%s", my_record->EQ, my_record->name, my_record->PHASE);
+	//out = fopen(traffic_file,"w");
 
 
 
@@ -403,8 +403,9 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		// if is current phase`s depth phase, we dont deal with it
 		if( strcmp(my_record->depth_phase,traffic_phase[count]) == 0)
 		{
-				fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp, 
-				prem_tmp - my_record->prem , "good");
+				fprintf(my_input->traffic_phase_file,"%10s %15s %10.2lf %10.2lf %10s\n",
+						my_record->name, traffic_phase[count], prem_tmp, 
+						prem_tmp - my_record->prem , "good");
 			continue;
 		}
 
@@ -415,8 +416,9 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 				strcmp(traffic_phase[count],"sSKS") ==0 ||
 				strcmp(traffic_phase[count],"sSKKS") ==0 )
 		{
-			fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp, 
-					prem_tmp - my_record->prem , "good");
+				fprintf(my_input->traffic_phase_file,"%10s %15s %10.2lf %10.2lf %10s\n",
+						my_record->name, traffic_phase[count], prem_tmp, 
+						prem_tmp - my_record->prem , "good");
 			continue;
 		}
 		// if S is affected by ScS, we ignore
@@ -425,15 +427,17 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 		if(strcmp(my_record->PHASE, "S") == 0 && strcmp( traffic_phase[count], "ScS") == 0)
 		{
 			my_record->quality = 0;
-			fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp, 
-				prem_tmp - my_record->prem , "good");
+			fprintf(my_input->traffic_phase_file,"%10s %15s %10.2lf %10.2lf %10s\n",
+					my_record->name, traffic_phase[count], prem_tmp, 
+					prem_tmp - my_record->prem , "good");
 			continue;
 		}
 		if(strcmp(my_record->PHASE, "P") == 0 && strcmp( traffic_phase[count], "PcP") == 0)
 		{
 			my_record->quality = 0;
-			fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp, 
-				prem_tmp - my_record->prem , "good");
+			fprintf(my_input->traffic_phase_file,"%10s %15s %10.2lf %10.2lf %10s\n",
+					my_record->name, traffic_phase[count], prem_tmp, 
+					prem_tmp - my_record->prem , "good");
 			continue;
 		}
 
@@ -452,12 +456,14 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 
 			// phase_name, absolute_PREM, relative_PREM, flag
 			// flag  too_close / good
-			fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp,
+			fprintf(my_input->traffic_phase_file,"%10s %15s %10.2lf %10.2lf %10s\n",
+					my_record->name, traffic_phase[count], prem_tmp, 
 					prem_tmp - my_record->prem , "too_close");
 		}
 		else
 		{
-			fprintf(out,"%15s %10.2lf %10.2lf %10s\n",traffic_phase[count], prem_tmp, 
+			fprintf(my_input->traffic_phase_file,"%10s %15s %10.2lf %10.2lf %10s\n",
+					my_record->name, traffic_phase[count], prem_tmp, 
 					prem_tmp - my_record->prem , "good");
 		}
 
@@ -465,7 +471,6 @@ int EW_travel_time_traffic_checking(new_RECORD* my_record, new_INPUT* my_input)
 
 	
 
-	fclose(out);
 
 	return 0;
 }

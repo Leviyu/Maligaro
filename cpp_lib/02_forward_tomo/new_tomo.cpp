@@ -1,6 +1,5 @@
 
 #include "forward_tomography.h"
-#include<string>
 /******************************************************************
  * This is a c script to initiate tomography 
  *

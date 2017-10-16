@@ -37,6 +37,63 @@ void big_new_record::get_incident()
 
 }
 
+
+// Read INFILE
+void big_new_record::read_INFILE()
+{
+	string infile = "./INFILE";
+	ifstream myfile;
+	myfile.open(infile.c_str());
+	string tmp;
+
+	while(getline(myfile,tmp))
+	{
+		istringstream ss(tmp);
+		string sub1;
+		string sub2;
+		string sub3;
+		string sub4;
+		string flag;
+		ss >> sub1 >> sub2 >> sub3 >> sub4;
+		//cout << sub1 << sub2 << endl;
+		flag = "<PHASE_LONG_WIN_LEN>";
+		if(sub1.compare(flag) == 0)
+			this->long_len = atof(sub2.c_str());
+
+		flag = "<PHASE_LONG_WIN_BEG>";
+		if(sub1.compare(flag) == 0)
+			this->long_beg = atof(sub2.c_str());
+
+		flag = "<PHASE_WIN_BEG>";
+		if(sub1.compare(flag) == 0)
+			this->phase_beg = atof(sub2.c_str());
+
+		flag = "<PHASE_WIN_LEN>";
+		if(sub1.compare(flag) == 0)
+			this->phase_len = atof(sub2.c_str());
+
+		flag = "<PHASE_NOISE_BEG>";
+		if(sub1.compare(flag) == 0)
+			this->noise_beg = atof(sub2.c_str());
+
+		flag = "<PHASE_NOISE_LEN>";
+		if(sub1.compare(flag) == 0)
+			this->noise_len = atof(sub2.c_str());
+
+		flag = "<DELTA>";
+		if(sub1.compare(flag) == 0)
+		{
+			this->delta = atof(sub2.c_str());
+			//cout << "delta "<< this->delta << endl;
+		}
+
+		flag = "<VS_LATITUDE_INC>";
+		if(sub1.compare(flag) == 0)
+			this->VS_LATITUDE_INC = atof(sub2.c_str());
+
+	}
+}
+
 void big_new_record::get_crustal_correction()
 {
 	int count;
@@ -91,7 +148,48 @@ void big_new_record::get_ellip_corr()
 void big_new_record::initiate_big_record()
 {
 	cout << " big_new_record is initiated ! " << endl;
-	  this->my_record = new new_record[this->sta_num]; 
+	this->my_record = new new_record[this->sta_num]; 
+
+
+	new_grid** my_grid;
+	// initiate virtual station grid
+	this->grid_lat_num = (int)(180 / this->VS_LATITUDE_INC);
+	this->grid_lon_num = (int*)malloc(sizeof(int)*this->grid_lat_num);
+	my_grid = (new_grid**)malloc(sizeof(new_grid*)*this->grid_lat_num);
+
+	// calculate longitude grid num for each latitude
+	int ilat,ilon;
+	double current_lat = 0;
+	double lat_inc_in_km = this->VS_LATITUDE_INC * 110;
+	for( ilat = 0; ilat < this->grid_lat_num ; ilat++)
+	{
+		current_lat = -89 + ilat * this->VS_LATITUDE_INC;
+		this->grid_lon_num[ilat] = floor( 2*3.1415926*6371*cos( current_lat * 3.1415926/180) / lat_inc_in_km );
+
+		//cout << " current lat " << ilat << " lon num" << this->grid_lon_num[ilat] << endl;
+		my_grid[ilat] = (new_grid*)malloc(sizeof(new_grid)*this->grid_lon_num[ilat]);
+		
+		for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
+		{
+
+
+		}
+
+	}
+
+
+
+	//my_grid.initiate_grid();
+
+	//this->my_grid = &my_grid;
+
+}
+
+
+
+void big_new_record::virtual_station_grid_initiate()
+{
+
 
 }
 

@@ -115,6 +115,30 @@ int read_input_info(new_INPUT* my_input)
 	//fprintf(out,"noise_beg_len is %lf %lf \n",my_input->noise_beg, my_input->noise_len);
 	//fprintf(out,"dist_min_max is %lf %lf \n",my_input->distmin, my_input->distmax);
 	//fclose(out);	
+	//
+	
+
+
+
+
+	// initiate mask_win_min & mask_win_max
+	if(strcmp(my_input->PHASE, "Sdiff") == 0)
+	{
+		my_input->mask_win_min = -15;
+		my_input->mask_win_max = 25;
+	}
+	else
+	{
+		my_input->mask_win_min = -15;
+		my_input->mask_win_max = 20;
+	}
+
+
+	// initiate traffic_phase_file
+	char traffic_file_name[200];
+	sprintf(traffic_file_name,"traffic_file.%s.%s",my_input->EQ, my_input->PHASE);
+	my_input->traffic_phase_file = fopen(traffic_file_name,"w");
+
 
 	return 0;
 }

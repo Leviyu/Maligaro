@@ -29,6 +29,11 @@ int output_ES_for_each_record(new_RECORD* my_record, new_INPUT* my_input)
 
 	for(ista = 0; ista < my_input->sta_num;ista++)
 	{
+		
+		if(my_record[ista].beyong_window_flag == -1)
+			continue;
+
+
 		//printf(" %d /%d \n", ista, my_input->sta_num);
 		amplitudeloc(my_record[ista].stretched_ES_win,npts_phase, &EW_amp_loc, &EW_amp, flag);
 		if(EW_amp == 0)
@@ -38,6 +43,10 @@ int output_ES_for_each_record(new_RECORD* my_record, new_INPUT* my_input)
 		sprintf(ES_out,"%s.%s.%s.%s.emp",my_record[ista].EQ, my_record[ista].name, my_record[ista].PHASE,my_record[ista].COMP);
 		//for(i=0;i<npts_phase;i++)
 		int increment = 5;
+		// if is PHASE P, then make it 2
+		if(strstr(my_input->PHASE,"P") != NULL )
+			increment = 2;
+
 		int new_npts_phase = (int)(npts_phase/increment);
 		for(i=0;i<new_npts_phase;i++)
 		{

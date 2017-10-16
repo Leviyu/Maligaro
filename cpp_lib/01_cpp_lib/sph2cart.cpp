@@ -1,4 +1,4 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 /******************************************************************
  * This is a c script to convert the spherical coordinate to 
  * cartesian coordinate

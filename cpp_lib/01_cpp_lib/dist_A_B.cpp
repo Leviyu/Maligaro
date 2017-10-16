@@ -1,4 +1,4 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 /* Calculate the distance between two poitns
  * InPUT: lat_A, lon_A, lat_B, lon_B
  *

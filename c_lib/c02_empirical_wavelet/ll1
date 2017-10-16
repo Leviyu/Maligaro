@@ -1,0 +1,2 @@
+void redefine_beyon_wind_flag(new_RECORD* my_record, new_INPUT* my_input, 
+		double* current_ES,double* EW_new)

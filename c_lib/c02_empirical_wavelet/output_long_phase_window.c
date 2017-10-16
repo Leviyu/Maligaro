@@ -10,6 +10,8 @@ int output_long_phase_window(new_RECORD* my_record, new_INPUT* my_input)
 	int count;
 	for(count = 0; count < my_input->sta_num; count ++)
 	{
+		if(my_record[count].beyong_window_flag == -1)
+			continue;
 		//##printf("output long and phase for %d record\n", count);
 		output_long_phase_window_for_each(&my_record[count], my_input);
 	}
@@ -79,6 +81,12 @@ int output_long_phase_window_for_each(new_RECORD* my_record, new_INPUT* my_input
 	// ======================================================
 	// if long_win / phase_win ratio <= 2, we normalize long window to 1
 	int increment = 5;
+
+	// if is PHASE P, then make it 2
+	if(strstr(my_input->PHASE,"P") != NULL )
+		increment = 2;
+
+
 	int new_npts_phase = (int) (my_record->npts_phase / increment);
 	int new_npts_long = (int)(my_record->npts_long / increment);
 	if(my_record->long_amplitude <=2 )
@@ -125,7 +133,7 @@ int output_long_phase_window_for_each(new_RECORD* my_record, new_INPUT* my_input
 
 
 	output_array2(long_win_name,x_long,my_record->long_orig, new_npts_long, 1);
-	output_array2(phase_win_name,x_phase,my_record->phase_win, new_npts_phase, 1);
+	//output_array2(phase_win_name,x_phase,my_record->phase_win, new_npts_phase, 1);
 	//output_array2(long_win_name,x_long,my_record->long_orig, my_record->npts_long, 1);
 	//output_array2(phase_win_name,x_phase,my_record->phase_win, my_record->npts_phase, 1);
 

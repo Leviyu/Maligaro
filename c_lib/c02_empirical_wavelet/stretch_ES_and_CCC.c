@@ -20,9 +20,8 @@ int stretch_ES_and_CCC(new_RECORD* my_record, new_INPUT* my_input, double* curre
 	
 	for(ista=0;ista<my_input->sta_num;ista++)
 	{
-		//printf("ista %d \n", ista);
-		//if( my_record[ista].quality == -1)
-			//continue;
+		if(my_record[ista].beyong_window_flag == -1)
+			continue;
 
 			coeff_min = 0.1;
 			coeff_max = 8.0;

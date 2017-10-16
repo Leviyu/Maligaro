@@ -3,7 +3,7 @@
 #include "ESF.h"
 int read_record_for_phase(new_RECORD* my_record, new_INPUT* my_input)
 {
-	fprintf(my_input->out_logfile,"---> Read record for phase Begin Here ");
+	printf("---> Read record for phase Begin Here \n");
 	int i,j,k;
 	int read_record_for_phase_for_one_sta(new_RECORD* my_record, new_INPUT* my_input);
 
@@ -11,7 +11,7 @@ int read_record_for_phase(new_RECORD* my_record, new_INPUT* my_input)
 	for(i=0; i<my_input->sta_num;i++)
 	{
 		//read for each station
-		//printf("read record %d /%d \n", i,my_input->sta_num);
+		//printf("read record %d /%d %s \n", i,my_input->sta_num, my_record[i].name);
 		read_record_for_phase_for_one_sta(&my_record[i], my_input);
 	}
 	return 0;
@@ -52,7 +52,6 @@ int read_record_for_phase_for_one_sta(new_RECORD* my_record, new_INPUT* my_input
 		my_record->quality = -1;
 
 	//printf(" === Working on %s  taup time %lf \n", sac_file, prem_tmp);
-	//fprintf(my_input->out_logfile, "SAC %s PREM TIME %lf \n", sac_file, prem_tmp);
 
 	// do travel time traffic checking 
 
@@ -64,6 +63,7 @@ int read_record_for_phase_for_one_sta(new_RECORD* my_record, new_INPUT* my_input
 
 
 
+	//printf("now initiate phase \n");
 	int traffic_flag = EW_travel_time_traffic_checking(my_record, my_input);
 	initiate_phase(my_record,prem_tmp,sac_file,  my_input);
 

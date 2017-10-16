@@ -1,4 +1,4 @@
-#include<hongyulib.h>
+#include "hongyulibcpp.h"
 
 /***********************************************************
  * This C function uses wiggins algorithm to interpolate for

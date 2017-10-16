@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 
 /*************************************************************
 * This C function calculate reference model PREM_500

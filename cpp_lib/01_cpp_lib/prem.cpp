@@ -1,4 +1,4 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 
 /*************************************************************
 * This C function read in the depth and output the prem parameter

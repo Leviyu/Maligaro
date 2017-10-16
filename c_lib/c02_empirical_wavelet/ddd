@@ -1,0 +1,3 @@
+	// if is PHASE P, then make it 2
+	if(strstr(my_input->PHASE,"P") != NULL )
+		increment = 2;

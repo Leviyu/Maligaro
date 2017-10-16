@@ -1,0 +1,9 @@
+Makefile:42: warning: overriding recipe for target 'test'
+Makefile:39: warning: ignoring old recipe for target 'test'
+make: Circular test <- test dependency dropped.
+g++ -std=c++11 -Wno-unused-variable -Wunused-but-set-variable -o test main.o libHongyucpp.a  -Wall  -m64 -L../01_cpp_lib -L/opt/sac/lib -L./  -L. -I../01_cpp_lib  -I. -lsacio -lm -Wunused-but-set-variable -L../02_forward_tomo -L../../c_lib/c02_empirical_wavelet
+main.o: In function `main':
+main.cpp:(.text+0x8a): undefined reference to `dist_A_B(double, double, double, double)'
+collect2: error: ld returned 1 exit status
+Makefile:42: recipe for target 'test' failed
+make: *** [test] Error 1

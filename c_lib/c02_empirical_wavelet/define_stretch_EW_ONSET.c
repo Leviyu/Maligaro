@@ -38,9 +38,8 @@ int define_stretch_EW_ONSET(new_RECORD* my_record, new_INPUT* my_input)
 
 	for(ista = 0; ista < my_input->sta_num;ista++)
 	{
-		// skip those bad record
-		//if( my_record[ista].quality == -1 )
-			//continue;
+		if(my_record[ista].beyong_window_flag == -1)
+			continue;
 
 		// we try to find the best gaussian fit to stretched_ES_win
 		coeff_min = 1;

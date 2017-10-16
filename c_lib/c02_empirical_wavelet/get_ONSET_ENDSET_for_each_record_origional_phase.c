@@ -33,9 +33,8 @@ int get_ONSET_ENDSET_for_each_record_origional_phase(new_RECORD* my_record,
 
 	for(ista = 0; ista < my_input->sta_num;ista++)
 	{
-		// skip those bad record
-		//if( my_record[ista].quality == -1 )
-			//continue;
+		if(my_record[ista].beyong_window_flag == -1)
+			continue;
 
 
 		// use max value as the phase peak
@@ -87,28 +86,6 @@ int get_ONSET_ENDSET_for_each_record_origional_phase(new_RECORD* my_record,
 		if(npts_ONSET < 0 )
 			npts_ONSET = 0;
 	
-		// ===========================================================
-		//	get misfit measurement 
-		// ===========================================================
-		//for empirical wavelet and for records
-		//double misfit_ES=0;
-		//double misfit_record=0;
-		//double misfit = 0;
-		//int count;
-		//for(count = npts_ONSET; count < npts_ENDSET; count++)
-		//{
-			//misfit_ES +=  fabs( my_record[ista].ES_win[count] );
-			//misfit_record +=  fabs( my_record[ista].phase_win[count] );
-		//}
-//
-		//average it with the number of points
-		//misfit_ES = misfit_ES / (npts_ENDSET - npts_ONSET);
-		//misfit_record = misfit_record / (npts_ENDSET - npts_ONSET);
-		//misfit = misfit / (npts_ENDSET - npts_ONSET);
-		//misfit = (misfit_record - misfit_ES) / misfit_ES;
-
-		//my_record[ista].misfit = misfit;
-		//printf("---> sta %s  misfit %lf \n", my_record[ista].name, my_record[ista].misfit);
 
 		// ===========================================================
 		//	get SNR measurement 

@@ -1,4 +1,4 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 /******************************************************************
  * This is a c script for using shell command in C using PIPE
  *

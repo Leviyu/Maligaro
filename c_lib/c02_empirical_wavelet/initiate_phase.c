@@ -36,13 +36,16 @@ int initiate_phase(new_RECORD* my_record,double prem, char* sac_file, new_INPUT*
 	read_long_window(sac_file,my_record,my_input);
 
 
+//printf("phase win \n");
 	read_phase_window(my_record, my_input);
 
+//printf("noise win \n");
 	read_noise_window(my_record, my_input);
 
+//printf("phase amp \n");
 	get_phase_amplitude(my_record);
 
-//printf("sta %s last digit long %lf \n ",  my_record->name,  my_record->long_win[my_record->npts_long-1]);
+//#printf("sta %s last digit long %lf \n ",  my_record->name,  my_record->long_win[my_record->npts_long-1]);
 
 
 

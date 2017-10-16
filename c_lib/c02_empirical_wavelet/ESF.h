@@ -77,6 +77,8 @@ struct new_INPUT
 	//
 	//
 	
+	double mask_win_min;	//default -15
+	double mask_win_max;	//default 20
 
 	// store the path of uniq station list
 	char uniq_sta_list[1000];
@@ -94,6 +96,8 @@ struct new_INPUT
 	// this parameter stores the T info, the one period length of Empirical
 	// Wavelet
 	double EW_period;
+
+	FILE* traffic_phase_file;
 
 
 };
@@ -248,6 +252,17 @@ struct new_RECORD
 
 	char depth_phase[30];
 
+
+	// this is a tricky flag
+	// this flag is used to mark the record if it`s dt is beyond
+	// out allowable window, if it is, then in the second part
+	// it is reprocessed, if not, nothing happens, this flag is implemented 
+	// in all major processing, thus need to be treated carefully
+	//
+	// it is initialized as 0
+	// after the whole processing, if it is beyong window, = 1, else -1
+	// -1 gets skipped for processing while 1 gets passed
+	double beyong_window_flag;
 
 
 
@@ -417,6 +432,8 @@ int stretch_record_find_best_match_for_given_interval(double* record,
 		double coeff_delta, double* best_ccc, double* best_coeff,
 		int* best_time_shift, double* best_ES);
 
+void redefine_beyon_wind_flag(new_RECORD* my_record, new_INPUT* my_input, 
+		double* current_ES,double* EW_new);
 void store_ES_into_record(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
 void find_best_match_gaussian_for_iterative_ES(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
 double width_dependent_gaussian_time_delay(double gaussian_factor);

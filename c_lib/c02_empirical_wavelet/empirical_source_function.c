@@ -44,7 +44,7 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 			current_ES[i]=ES[loop_num][i];
 		normalize_array(current_ES, npts_phase);
 
-		//int calculate_EW_period(new_INPUT* my_input, double* EW)
+		// calculate Empirical Wavelet Period
 		calculate_EW_period(my_input, current_ES);
 
 		//int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
@@ -59,7 +59,6 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 		normalize_array(ES[loop_num + 1], npts_phase);
 
 
-		// calculate Empirical Wavelet Period
 		
 
 		// if ccc new_ES & old_ES > 0.99 exit
@@ -160,46 +159,17 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 	//puts("         ---> define stretch ONSET with gaussian ");
 	define_stretch_EW_ONSET( my_record, my_input);
 
-
-
-
 	// output ES for each record 
 	//puts("         ---> output_ES_for_each_record ");
 	output_long_phase_window(my_record, my_input);
 	output_ES_for_each_record(my_record, my_input);
 
+	// for records that have dt outside of allowable window, we redo 
+	// the whole process with the new masked window
+	// 1. redefine the beyond_window_flag
+	redefine_beyon_wind_flag(my_record,my_input,current_ES,EW_new);
+
+
 	return 0;
 }
 
-			// ===========================================================
-			//	for SS, we use max amplitude within phase_win to define polarity
-			//	normalize if flipped the record
-			// ===========================================================
-			//if(loop_num == 1 && my_input->POLAR_SOLUTION == 2 && strcmp(my_input->PHASE,"SS") ==0 )
-			//{
-				//double AMP_posi = 0;
-				//double AMP_nega = 0;
-				//int max_amp_loc;
-				//int idd;
-				//// find negative amp and normalize with it
-				//amplitudeloc(my_record[ista].phase_win, (int)(my_record[ista].phase_len/my_input->delta),&max_amp_loc, &AMP_nega, -1);
-				//amplitudeloc(my_record[ista].phase_win, (int)(my_record[ista].phase_len/my_input->delta),&max_amp_loc, &AMP_posi, 1);
-				//if(fabs(AMP_posi) < fabs(AMP_nega) )
-				//{
-					//my_record[ista].polar_flag *= -1;
-					//// flip the record
-					//if(AMP_posi == 0) AMP_posi = 1;
-					//if(AMP_nega == 0) AMP_nega = 1;
-					//for(idd = 0; idd< (int)(my_record[ista].phase_len/my_input->delta); idd++)
-						//my_record[ista].phase_win[idd] *= 1/AMP_nega;
-					//for(idd = 0; idd< (int)(my_record[ista].long_len/my_input->delta); idd++)
-						//my_record[ista].long_win[idd] *= 1/AMP_nega;
-					//for(idd = 0; idd< (int)(my_record[ista].noise_len/my_input->delta); idd++)
-						//my_record[ista].noise_win[idd] *= 1/AMP_nega;
-				//}
-				//else 
-				//{
-					//my_record[ista].polar_flag *= 1;
-			//
-				//}
-			//}

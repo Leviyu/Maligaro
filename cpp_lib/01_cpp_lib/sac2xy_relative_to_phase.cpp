@@ -1,4 +1,4 @@
-#include "hongyulib.h"
+#include "hongyulibcpp.h"
 /******************************************************************
  * This is a c script to read in sac file and return a xy array
  * we manually convert the sampling rate to 0.025 here

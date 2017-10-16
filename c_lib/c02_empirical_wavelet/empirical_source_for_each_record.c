@@ -42,14 +42,13 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 	// loop ccc ES with each record
 	for(ista=0;ista<my_input->sta_num;ista++)
 	{
-		// skip those with nan SNR
-		//if( my_record[ista].quality == -1)
-			//continue;
+		if( my_record[ista].beyong_window_flag == -1.0)
+			continue;
+
 		if(my_record[ista].polar_flag == 0)
 			ccc_flag = 1;
 		else 
 			ccc_flag = 1;
-
 
 			// ===========================================================
 			//	for low polarity prediction record, we use long phase window to ccc
@@ -81,31 +80,6 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 				}
 			}
 
-/*
-			if( loop_num == 1 && my_input->POLAR_SOLUTION == 2 && my_record[ista].polar_flag == 0 )
-			{
-				CCC(current_ES,npts_phase,my_record[ista].phase_win, npts_phase, &npts_shift, &ccc_tmp, ccc_flag);
-				if(ccc_tmp > 0)
-					my_record[ista].polar_flag = 1;
-				else 
-				{
-					my_record[ista].polar_flag = -1;
-					// find negative amp and normalize with it
-					amplitudeloc(my_record[ista].phase_win, (int)(my_record[ista].phase_len/my_input->delta),&max_amp_loc, &AMP_phase, -1);
-					if(AMP_phase == 0)
-						AMP_phase =1;
-					// normalize 
-					for(idd = 0; idd< (int)(my_record[ista].phase_len/my_input->delta); idd++)
-						my_record[ista].phase_win[idd] *= 1/AMP_phase ;
-					for(idd = 0; idd< (int)(my_record[ista].long_len/my_input->delta); idd++)
-						my_record[ista].long_win[idd] *= 1/AMP_phase;
-					for(idd = 0; idd< (int)(my_record[ista].noise_len/my_input->delta); idd++)
-						my_record[ista].noise_win[idd] *= 1/AMP_phase;
-				}
-			}
-*/
-
-
 		// ===========================================================
 		//	cut both record and E.W. to small window around the peak to ccc
 		// convert the ES and phase_win to 0.1 ~ 1 part and normalized to 0 ~ 1 
@@ -124,31 +98,9 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 
 		my_record[ista].phase_beg -= shift_time;
 
-		/*
-		if(my_record[ista].phase_beg < my_record[ista].long_beg) 
-			my_record[ista].phase_beg += shift_time;
-
-
-		int max_loc;
-		double max_amp;
-		amplitudeloc(current_ES, npts_phase, &max_loc, &max_amp,1);
-		double EW_onset_relative_to_PREM = max_loc * my_input->delta + my_input->phase_beg - 5;
-		
-
-
-		my_record[ista].shift_time_recorder += shift_time;
-		printf(" sta %s shift %lf total shift %lf EW_onset_relative_to_PREM %lf  \n", my_record[ista].name,
-				shift_time, my_record[ista].shift_time_recorder, EW_onset_relative_to_PREM);
-		double max_time = 20;
-		double dt_shift = -1*my_record[ista].shift_time_recorder + EW_onset_relative_to_PREM;
-		if( dt_shift > max_time || dt_shift < -1*max_time)
-		{
-			printf("%s sta shift to much \n", my_record[ista].name);
-			my_record[ista].shift_time_recorder -= shift_time;
-			my_record[ista].phase_beg += shift_time;
-			my_record[ista].quality = -1;
-		}
-*/
+		//if(my_record[ista].beyong_window_flag == 1)
+		//printf("%s new shift time is %lf beyong_window_flag %lf \n",my_record[ista].name, shift_time, my_record[ista].beyong_window_flag);
+//
 
 		// ===========================================================
 		//	update phase window
@@ -158,15 +110,7 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 
 		my_record[ista].ccc = ccc;
 
-
-
 	}
 
 	return 0;
 }
-		//// update ccc store es
-		//if(my_record[ista].polar_flag == 1)
-			//my_record[ista].ccc = ccc;
-		//else if(my_record[ista].polar_flag == -1)
-			//my_record[ista].ccc = -1*ccc;
-		//else if(my_record[ista].polar_flag == 0)

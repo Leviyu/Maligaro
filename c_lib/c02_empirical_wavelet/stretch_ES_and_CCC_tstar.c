@@ -21,8 +21,11 @@ int stretch_ES_and_CCC_tstar(new_RECORD* my_record, new_INPUT* my_input, double*
 
 	for(ista=0;ista<my_input->sta_num;ista++)
 	{
-		//if( my_record[ista].quality == -1)
-			//continue;
+
+		if(my_record[ista].beyong_window_flag == -1)
+			continue;
+
+
 		if(strcmp(my_input->stretch_flag,"tstar")==0 && my_record[ista].best_stretch_coefficient != 0 && my_record[ista].best_stretch_coefficient <1 )
 		{
 			coeff_min = 0.3;
@@ -76,34 +79,6 @@ int stretch_ES_and_CCC_tstar(new_RECORD* my_record, new_INPUT* my_input, double*
 		double shift_time = best_time_shift*my_input->delta;
 		double shift_time_max = 1000;
 		my_record[ista].phase_beg -= shift_time;
-/*
-			if( fabs(shift_time) > shift_time_max)
-				shift_time = 0;
-			if(my_record[ista].phase_beg < my_record[ista].long_beg) 
-				my_record[ista].phase_beg += shift_time;
-
-		int max_loc;
-		double max_amp;
-		amplitudeloc(current_ES, npts_phase, &max_loc, &max_amp,1);
-		double EW_onset_relative_to_PREM = max_loc * my_input->delta + my_input->phase_beg - 5;
-		
-
-
-		my_record[ista].shift_time_recorder += shift_time;
-		printf(" sta %s shift %lf total shift %lf EW_onset_relative_to_PREM %lf  \n", my_record[ista].name,
-				shift_time, my_record[ista].shift_time_recorder, EW_onset_relative_to_PREM);
-		double max_time = 30;
-		double dt_shift = -1*my_record[ista].shift_time_recorder + EW_onset_relative_to_PREM;
-		if( dt_shift > max_time || dt_shift < -1*max_time)
-		{
-			printf("%s sta shift to much \n", my_record[ista].name);
-			my_record[ista].shift_time_recorder -= shift_time;
-			my_record[ista].phase_beg += shift_time;
-			my_record[ista].quality = -1;
-		}
-
-
-		*/
 
 		// update phase win
 		read_phase_window(&my_record[ista],my_input);

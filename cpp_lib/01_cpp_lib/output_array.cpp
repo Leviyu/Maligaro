@@ -1,7 +1,4 @@
-#include<cmath>
-#include<iostream>
-#include<fstream>
-#include<hongyulib.h>
+#include "hongyulibcpp.h"
 
 
 /*************************************************************

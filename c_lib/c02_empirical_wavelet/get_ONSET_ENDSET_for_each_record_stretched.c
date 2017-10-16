@@ -42,9 +42,8 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 
 	for(ista = 0; ista < my_input->sta_num;ista++)
 	{
-		// skip those bad record
-		//if( my_record[ista].quality == -1 )
-			//continue;
+		if(my_record[ista].beyong_window_flag == -1 ) 
+			continue;
 		// use max value as the phase peak
 			// assumption is that the phase peak will always be the first peak
 

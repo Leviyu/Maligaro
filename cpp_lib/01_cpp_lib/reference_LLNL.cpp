@@ -1,4 +1,4 @@
-#include<hongyulib.h>
+#include "hongyulibcpp.h"
 
 /*************************************************************
 * This C function is a 1D reference earth model for TX2011 tomography

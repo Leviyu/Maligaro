@@ -91,6 +91,12 @@ void big_new_record::read_INFILE()
 		if(sub1.compare(flag) == 0)
 			this->VS_LATITUDE_INC = atof(sub2.c_str());
 
+		flag = "<VS_RADIUS>";
+		if(sub1.compare(flag) == 0)
+			this->VS_RADIUS_DEGREE = atof(sub2.c_str());
+		flag = "<EXISTING_EVENTINFO>";
+		if(sub1.compare(flag) == 0)
+			this->EXISTING_EVENTINFO = sub2;
 	}
 }
 
@@ -148,14 +154,67 @@ void big_new_record::get_ellip_corr()
 void big_new_record::initiate_big_record()
 {
 	cout << " big_new_record is initiated ! " << endl;
-	this->my_record = new new_record[this->sta_num]; 
+
+}
+
+void big_new_record::virtual_station_main()
+{
+	cout << "--> Running virtual Station stacking main " << endl;
+
+	this->sta_num = count_file_num(this->EXISTING_EVENTINFO);
+	cout << " --> Read in existing record num: " << this->sta_num << endl;
+	this->existing_record = new new_record[this->sta_num];
+	this->record_file = this->EXISTING_EVENTINFO;
+
+	// read in eventinfo
+	this->read_record_file(this->existing_record);
+
+	// initiate virtual station
+	this->virtual_station_grid_initiate();
+
+	// catagorize existing eventinfo into virtual station
+
+}
 
 
+void big_new_record::catagorize_existing_eventinfo_to_VS()
+{
+
+	int ilat, ilon;
+	for(ilat = 0; ilat < this->grid_lat_num ; ilat++)
+		for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
+		{
+			double current_lat = this->my_grid[ilat][ilon].grid_lat;
+			double current_lon = this->my_grid[ilat][ilon].grid_lon;
+
+			// loop through stations
+
+
+
+
+
+		}
+
+
+
+
+
+
+
+}
+
+
+void big_new_record::virtual_station_grid_initiate()
+{
 	new_grid** my_grid;
+	this->my_grid = my_grid;
 	// initiate virtual station grid
 	this->grid_lat_num = (int)(180 / this->VS_LATITUDE_INC);
 	this->grid_lon_num = (int*)malloc(sizeof(int)*this->grid_lat_num);
-	my_grid = (new_grid**)malloc(sizeof(new_grid*)*this->grid_lat_num);
+	this->my_grid = (new_grid**)malloc(sizeof(new_grid*)*this->grid_lat_num);
+
+
+	cout << "grid lat num is " << this->grid_lat_num << endl;
 
 	// calculate longitude grid num for each latitude
 	int ilat,ilon;
@@ -171,24 +230,16 @@ void big_new_record::initiate_big_record()
 		
 		for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
 		{
-
+			double lon_inc_in_degree = 360/this->grid_lon_num[ilat];
+			double current_lon = ilon * lon_inc_in_degree - 180;
+			//cout << " lat lon "<< current_lat << " "<< current_lon<< endl;
+			this->my_grid[ilat][ilon].grid_lat = current_lat;
+			this->my_grid[ilat][ilon].grid_lon = current_lon;
+			this->my_grid[ilat][ilon].grid_radius = this->VS_RADIUS_DEGREE;
 
 		}
 
 	}
-
-
-
-	//my_grid.initiate_grid();
-
-	//this->my_grid = &my_grid;
-
-}
-
-
-
-void big_new_record::virtual_station_grid_initiate()
-{
 
 
 }
@@ -203,7 +254,7 @@ void big_new_record::virtual_station_grid_initiate()
 *	Hongyu DATE: Aug 2016
 *	Key words: read in station file
 *************************************************************/
-void big_new_record::read_record_file()
+void big_new_record::read_record_file(new_record* my_record)
 {
 
 	int count;
@@ -216,6 +267,7 @@ void big_new_record::read_record_file()
 	int line;
 	line = 0;
 
+	cout << "record file is "<< this->record_file << endl;
 	cout <<"--> big_record  Read in "<< this->sta_num << " records" << endl;
 
 	for(line = 0; line < this->sta_num ; line++)
@@ -224,6 +276,7 @@ void big_new_record::read_record_file()
 		//cout << "read record "<< line+1 << endl;
 		//cout << tmp << endl;
 		istringstream ss(tmp);
+		//cout << this->delta << " " << this->long_beg<< " "<< this->long_len << endl;
 
 		// get delta value here 
 		if(this->delta == this->delta && this->delta != 0)
@@ -235,12 +288,11 @@ void big_new_record::read_record_file()
 
 
 
-
-
-		this->my_record[line].record_file = this->record_file;
+		my_record[line].record_file = this->record_file;
 // get ista line
-		for(count = 1 ; count < 36 ; count ++)
+		for(count = 1 ; count <=45 ; count ++)
 		{
+			//cout << "ist " << count << endl;
 			ss >> sub1;
 			if(sub1.empty())
 				continue;
@@ -248,78 +300,105 @@ void big_new_record::read_record_file()
 
 			if( count == 1 )
 			{
-				this->my_record[line].STA = sub1;
+				my_record[line].STA = sub1;
 			}
 			else if( count == 2 )
-				this->my_record[line].NET = sub1;
+				my_record[line].NET = sub1;
 			else if( count == 3 )
-				this->my_record[line].DIST = atof(sub1.c_str());
+				my_record[line].DIST = atof(sub1.c_str());
 			else if( count == 4 )
-				this->my_record[line].AZ = atof(sub1.c_str());
+				my_record[line].AZ = atof(sub1.c_str());
 			else if( count == 5 )
-				this->my_record[line].BAZ = atof(sub1.c_str());
+				my_record[line].BAZ = atof(sub1.c_str());
 			else if( count == 6 )
-				this->my_record[line].sta_lat = atof(sub1.c_str());
+				my_record[line].sta_lat = atof(sub1.c_str());
 			else if( count == 7 )
-				this->my_record[line].sta_lon = atof(sub1.c_str());
+				my_record[line].sta_lon = atof(sub1.c_str());
 			else if( count == 8 )
-				this->my_record[line].eq_lat = atof(sub1.c_str());
+				my_record[line].eq_lat = atof(sub1.c_str());
 			else if( count == 9 )
-				this->my_record[line].eq_lon = atof(sub1.c_str());
+				my_record[line].eq_lon = atof(sub1.c_str());
 			else if( count == 10 )
-				this->my_record[line].eq_dep = atof(sub1.c_str());
+				my_record[line].eq_dep = atof(sub1.c_str());
 			else if( count == 11)
-				this->my_record[line].eq_mag = atof(sub1.c_str());
+				my_record[line].eq_mag = atof(sub1.c_str());
 			else if( count == 12 )
-				this->my_record[line].EQ = sub1;
+				my_record[line].EQ = sub1;
 			else if( count == 13 )
-				this->my_record[line].polarity_flag = atoi(sub1.c_str());
+				my_record[line].polarity_flag = atoi(sub1.c_str());
 			else if( count == 14 )
-				this->my_record[line].quality_flag  = atoi(sub1.c_str());
+				my_record[line].quality_flag  = atoi(sub1.c_str());
 			else if( count == 15 )
-				this->my_record[line].PREM = atof(sub1.c_str());
+				my_record[line].PREM = atof(sub1.c_str());
 			else if( count == 16 )
-				this->my_record[line].phase_amplitude = atof(sub1.c_str());
+				my_record[line].phase_amplitude = atof(sub1.c_str());
 			else if( count == 17 )
-				this->my_record[line].CCC = atof(sub1.c_str());
+				my_record[line].CCC = atof(sub1.c_str());
 			else if( count == 18 )
-				this->my_record[line].SNR = atof(sub1.c_str());
+				my_record[line].SNR = atof(sub1.c_str());
 			else if( count == 19 )
-				this->my_record[line].dt_obs_prem  = atof(sub1.c_str());
+				my_record[line].dt_obs_prem  = atof(sub1.c_str());
 			else if( count == 20 )
-				this->my_record[line].PHASE = sub1;
+				my_record[line].PHASE = sub1;
 			else if( count == 21 )
-				this->my_record[line].stretch_ccc = atof(sub1.c_str());
+				my_record[line].stretch_ccc = atof(sub1.c_str());
 			else if( count == 22 )
-				this->my_record[line].stretch_coeff = atof(sub1.c_str());
+				my_record[line].stretch_coeff = atof(sub1.c_str());
 			else if( count == 23 )
-				this->my_record[line].misfit = atof(sub1.c_str());
+				my_record[line].misfit = atof(sub1.c_str());
 			else if( count == 24 )
-				this->my_record[line].COMP = sub1;
+			{
+				my_record[line].COMP = sub1;
+				//cout << my_record[line].COMP<< endl;
+			}
 			else if( count == 25 )
-				this->my_record[line].phase_peak_time_rel_PREM = atof(sub1.c_str());
+				my_record[line].phase_peak_time_rel_PREM = atof(sub1.c_str());
 			else if( count == 26 )
-				this->my_record[line].npts_phase_peak_rel_start = atoi(sub1.c_str());
+				my_record[line].npts_phase_peak_rel_start = atoi(sub1.c_str());
 			else if( count == 27 )
-				this->my_record[line].noise_beg = atof(sub1.c_str());
+				my_record[line].noise_beg = atof(sub1.c_str());
 			else if( count == 28 )
-				this->my_record[line].noise_len = atof(sub1.c_str());
+				my_record[line].noise_len = atof(sub1.c_str());
 			else if( count == 29 )
-				this->my_record[line].phase_beg_rel_PREM = atof(sub1.c_str());
+				my_record[line].phase_beg_rel_PREM = atof(sub1.c_str());
 			else if( count == 30 )
-				this->my_record[line].record_weight = atof(sub1.c_str());
+				my_record[line].record_weight = atof(sub1.c_str());
 			else if( count == 31 )
-				this->my_record[line].SNR2 = atof(sub1.c_str());
+				my_record[line].SNR2 = atof(sub1.c_str());
 			else if( count == 32 )
-				this->my_record[line].misfit2 = atof(sub1.c_str());
+				my_record[line].misfit2 = atof(sub1.c_str());
 			else if( count == 33 )
-				this->my_record[line].ONSET = atof(sub1.c_str());
+				my_record[line].ONSET = atof(sub1.c_str());
 			else if( count == 34 )
-				this->my_record[line].ENDSET = atof(sub1.c_str());
-			//else if( count == 35 )
-				//this->my_record[line].STA = sub1;
-			//else if( count == 36 )
-				//this->my_record[line].STA = sub1;
+				my_record[line].ENDSET = atof(sub1.c_str());
+			else if( count == 35 )
+				my_record[line].tstar_factor = atof(sub1.c_str());
+			else if( count == 36 )
+				my_record[line].tstar_ccc = atof(sub1.c_str());
+			else if( count == 37 )
+				my_record[line].ccc3 = atof(sub1.c_str());
+			else if( count == 38 )
+				my_record[line].misfit_pre = atof(sub1.c_str());
+			else if( count == 39 )
+				my_record[line].misfit_bak = atof(sub1.c_str());
+			else if( count == 40 )
+				my_record[line].record_gau_factor= atof(sub1.c_str());
+			else if( count == 41 )
+				my_record[line].EW_gau_factor = atof(sub1.c_str());
+			else if( count == 42 )
+				my_record[line].gau_misfit = atof(sub1.c_str());
+			else if( count == 43 )
+				my_record[line].polarity = atof(sub1.c_str());
+			else if( count == 44 )
+			{
+				my_record[line].polarity_prediction= atof(sub1.c_str());
+				//cout << my_record[line].polarity_prediction<< endl;
+			}
+			else if( count == 45 )
+			{
+				my_record[line].traffic_phase_nearby= atof(sub1.c_str());
+				//cout << my_record[line].traffic_phase_nearby<< endl;
+			}
 		}
 
 

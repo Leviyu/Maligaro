@@ -15,10 +15,7 @@ int main()
 	my_big_record.initiate_big_record();
 /*
 	cin >> eventinfo_file >> PHASE>> S_ES_file;
-	int count;
 
-	cout << "eventinfo is "<< eventinfo_file << endl;
-	// initiate necesary component
 	my_big_record.sta_num = count_file_num(eventinfo_file);
 
 

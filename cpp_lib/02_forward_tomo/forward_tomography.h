@@ -262,6 +262,21 @@ class new_record
 		double misfit2;
 		double ONSET;
 		double ENDSET;
+		double tstar_factor;
+		double tstar_ccc;
+		double ccc3;
+		double misfit_pre;
+		double misfit_bak;
+		double record_gau_factor;
+		double EW_gau_factor;
+		double gau_misfit;
+		double polarity;
+		double polarity_prediction;
+		double traffic_phase_nearby;
+
+
+
+
 		double ellip_corr;			// ellipticity correction for current record
 		double incident;			//incident angle
 
@@ -325,12 +340,15 @@ class big_new_record
 		~big_new_record();
 
 		double VS_LATITUDE_INC;
+		double VS_RADIUS_DEGREE;
+		string EXISTING_EVENTINFO;
 
 
 		int sta_num;
 		string record_file;
 		string eventStation;
 		new_record* my_record;
+		new_record* existing_record;
 		double delta;
 		double long_len;
 		double long_beg;
@@ -342,7 +360,7 @@ class big_new_record
 
 		string timeinfo_outfile;
 		
-		void read_record_file();
+		void read_record_file(new_record* my_record);
 		void initiate_big_record();
 		void read_INFILE();
 
@@ -357,12 +375,18 @@ class big_new_record
 		void read_sac_file();
 		void calculate_SNR();
 		void read_in_polarity_file();
-		new_grid* my_grid;
+		new_grid** my_grid;
 
 
 		// grid related parameter
 		int grid_lat_num;
 		int* grid_lon_num;
+
+
+		void virtual_station_grid_initiate();
+		void virtual_station_main();
+		void catagorize_existing_eventinfo_to_VS();
+
 
 
 };

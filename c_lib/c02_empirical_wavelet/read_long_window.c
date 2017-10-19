@@ -212,7 +212,7 @@ int traffic_zero_out( new_RECORD* my_record, new_INPUT* my_input)
 
 
 
-		double what_is_too_far_huawei = 110;
+		double what_is_too_far_huawei = 200;
 		if( strstr(my_record->PHASE,"P") != NULL )
 			what_is_too_far_huawei = 50;
 		if(my_record->traffic_time[count] < -1*what_is_too_far_huawei  ||

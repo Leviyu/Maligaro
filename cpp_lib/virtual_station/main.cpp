@@ -13,6 +13,7 @@ int main()
 	big_new_record my_big_record;
 	my_big_record.read_INFILE();
 	my_big_record.initiate_big_record();
+	my_big_record.virtual_station_main();
 /*
 	cin >> eventinfo_file >> PHASE>> S_ES_file;
 

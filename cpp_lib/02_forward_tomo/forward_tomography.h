@@ -341,7 +341,10 @@ class big_new_record
 
 		double VS_LATITUDE_INC;
 		double VS_RADIUS_DEGREE;
+		double VS_RECORD_NUM_THRESHOLD;
+		double VS_EXISTING_RECORD_NUM_THRESHOLD;
 		string EXISTING_EVENTINFO;
+		string PHASE;
 
 
 		int sta_num;
@@ -386,6 +389,9 @@ class big_new_record
 		void virtual_station_grid_initiate();
 		void virtual_station_main();
 		void catagorize_existing_eventinfo_to_VS();
+		void catagorize_eventstation_to_VS();
+		void count_record_existance_for_grid_pair();
+		int loop_EX_EQ_STA_count_record(new_grid* eq_grid, new_grid* sta_grid);
 
 
 
@@ -493,6 +499,31 @@ class new_grid
 		double* record_win_rel_PREM_shifted;
 		double* record_win_raw;
 		double* record_win_raw_shifted;
+
+
+
+		// existing  EQ and STA storage
+		int EX_EQ_NUM;
+		string* EX_EQ_NAME;
+		double* EX_EQ_LAT;
+		double* EX_EQ_LON;
+
+		int EX_STA_NUM;
+		string* EX_STA_NAME;
+		double* EX_STA_LAT;
+		double* EX_STA_LON;
+		// current  EQ and STA storage
+		int CU_EQ_NUM;
+		string* CU_EQ_NAME;
+		double* CU_EQ_LAT;
+		double* CU_EQ_LON;
+
+		int CU_STA_NUM;
+		string* CU_STA_NAME;
+		double* CU_STA_LAT;
+		double* CU_STA_LON;
+
+
 
 };
 

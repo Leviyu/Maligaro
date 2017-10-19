@@ -4,13 +4,13 @@
 using namespace std;
 int main()
 {
-
+	string PHASE;
+	cin >> PHASE ;
 	cout << "============= BEGIN" << endl;
 	string infile="INFILE";
 
-
-
 	big_new_record my_big_record;
+	my_big_record.PHASE = PHASE;
 	my_big_record.read_INFILE();
 	my_big_record.initiate_big_record();
 	my_big_record.virtual_station_main();

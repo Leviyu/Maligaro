@@ -10,7 +10,8 @@
 #include<cmath>
 //#include "sacio.h"
 extern "C" {
-#include "/opt/sac/include/sacio.h"
+//#include "/opt/sac/include/sacio.h"
+#include "/Users/Leviyu/bin/sac/include/sacio.h"
 }
 
 using namespace std;

@@ -13,12 +13,12 @@ TOMO_OBJ = $(TOMO_CPP:.cpp=.o)
 #ESF_CPP = $(wildcard ../../c_lib/c02_empirical_wavelet/*.c)
 #ESF_OBJ = $(ESF_CPP:.c=.o)
 
-SACHOME = /opt/sac
+SACHOME = /Users/Leviyu/bin/sac
 #SOURCE = ./empirical_wavelet.c
 SOURCE = ./main.cpp
 OBJ = $(SOURCE:.cpp=.o)
 
-CC = g++ -std=c++11 -Wno-unused-variable -Wunused-but-set-variable
+CC = g++ -std=c++11 -Wno-unused-variable -Wunused-const-variable -Wunused-command-line-argument
 #DEBUG = -g 
 DEBUG = 
 LIBS = libHongyucpp.a 
@@ -26,7 +26,7 @@ LIBS = libHongyucpp.a
 
 CFLAGS = -Wall -c ${DEBUG} -I$(TOOL_DIR)  -Wparentheses -Wno-unused-variable  \
 		 -I$(SACHOME)/include -I./  -Wunused-but-set-variable   \
-		 -lm -I$(TOMO_DIR)  -L$(TOOL_DIR)
+		  -I$(TOMO_DIR)  -L$(TOOL_DIR)
 		 #-I$(SACHOME)/include -I./  -Wunused-but-set-variable  -L$(TOOL_DIR)  -I$(ESF_DIR)
 LFLAGS = -Wall ${DEBUG} -m64 -L$(TOOL_DIR) -L$(SACHOME)/lib -L./  -L. \
 		 -I$(TOOL_DIR)  -I. -lsacio -lm -Wunused-but-set-variable -L$(TOMO_DIR)

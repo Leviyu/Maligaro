@@ -1,18 +1,20 @@
 #include "hongyulibcpp.h"
 
+#define CRUST_CRUST_LINE_MAX 9
+
 // initiate
 CRUST_MODEL::CRUST_MODEL()
 {
 
-	int LINE_MAX = 9;
+	int CRUST_LINE_MAX = 9;
 	int global_npts = 70000;
 
-	this->boundary = new double*[LINE_MAX];
-	this->vs = new double*[LINE_MAX];
-	this->vp = new double*[LINE_MAX];
-	this->rho = new double*[LINE_MAX];
+	this->boundary = new double*[CRUST_LINE_MAX];
+	this->vs = new double*[CRUST_LINE_MAX];
+	this->vp = new double*[CRUST_LINE_MAX];
+	this->rho = new double*[CRUST_LINE_MAX];
 	int count;
-	for(count = 0; count < LINE_MAX;count++)
+	for(count = 0; count < CRUST_LINE_MAX;count++)
 	{
 
 		this->boundary[count] = new double[global_npts];
@@ -27,8 +29,8 @@ CRUST_MODEL::~CRUST_MODEL()
 {
 
 	int count ;
-	int LINE_MAX = 9;
-	for(count =0; count < LINE_MAX ; count++)
+	int CRUST_LINE_MAX = 9;
+	for(count =0; count < CRUST_LINE_MAX ; count++)
 	{
 		delete [] this->boundary[count];
 		delete [] this->vs[count];
@@ -48,14 +50,14 @@ void CRUST_MODEL::read_crust_model()
 {
 cout << "---> Read in CRUST 1.0 model" << endl;
 
-	int LINE_MAX = 9;
+	int CRUST_LINE_MAX = 9;
 
 	int layer_num = 1;
 	string current_file_name;
 	ifstream myfile;
 	double tmp1, tmp2, tmp3;
 	int i;
-	for( layer_num= 1; layer_num <= LINE_MAX;  layer_num++)
+	for( layer_num= 1; layer_num <= CRUST_LINE_MAX;  layer_num++)
 	{
 		current_file_name = "xyz-bd"+to_string(layer_num);
 		myfile.open(current_file_name.c_str());
@@ -133,14 +135,14 @@ void CRUST_MODEL::get_single_station_correction(double lat, double lon, double* 
 cout << "lat lon "<< lat <<  " "<< lon << endl;
 cout << "index lat lon is current index"<< index_lat << " " << index_lon << " "<< current_index << endl;
 
-	int LINE_MAX = 9;
-	double vs[LINE_MAX];
-	double vp[LINE_MAX];
-	double rho[LINE_MAX];
-	double bd[LINE_MAX];
-	double thickness_tmp[LINE_MAX];
+	int CRUST_LINE_MAX = 9;
+	double vs[CRUST_LINE_MAX];
+	double vp[CRUST_LINE_MAX];
+	double rho[CRUST_LINE_MAX];
+	double bd[CRUST_LINE_MAX];
+	double thickness_tmp[CRUST_LINE_MAX];
 
-	for(count = 0; count < LINE_MAX ;count ++)
+	for(count = 0; count < CRUST_LINE_MAX ;count ++)
 	{
 		//cout << "--> work in line "<< count<<endl;
 		vs[count] = this->vs[count][current_index];
@@ -160,7 +162,7 @@ cout << "index lat lon is current index"<< index_lat << " " << index_lon << " "<
 	// 2. decide the maximum depthrange 
 	double max_dep = 0 ;
 	double dep_PREM = 24.4;
-	double dep_CRUST = bd[LINE_MAX - 2]*-1;
+	double dep_CRUST = bd[CRUST_LINE_MAX - 2]*-1;
 
 	if( dep_PREM > dep_CRUST )
 		max_dep = dep_PREM;
@@ -187,7 +189,7 @@ cout << "index lat lon is current index"<< index_lat << " " << index_lon << " "<
 	*CRUST_TIME = 0;
 	if (dep_PREM <= dep_CRUST )
 	{
-		for(count = 0; count < LINE_MAX -1 ; count++)
+		for(count = 0; count < CRUST_LINE_MAX -1 ; count++)
 		{
 			double current_vs = vs[count];
 			double current_thickness = thickness_tmp[count];
@@ -201,7 +203,7 @@ cout << "index lat lon is current index"<< index_lat << " " << index_lon << " "<
 	}
 	else
 	{
-		for(count = 0; count < LINE_MAX -1 ; count++)
+		for(count = 0; count < CRUST_LINE_MAX -1 ; count++)
 		{
 			double current_vs = vs[count];
 			double current_thickness = thickness_tmp[count];
@@ -213,14 +215,14 @@ cout << "index lat lon is current index"<< index_lat << " " << index_lon << " "<
 			*CRUST_TIME += current_dt;
 		}
 		// for layer in the mantle
-		double mantle_time = ( fabs (dep_PREM - dep_CRUST)  ) / vs[LINE_MAX-1];
+		double mantle_time = ( fabs (dep_PREM - dep_CRUST)  ) / vs[CRUST_LINE_MAX-1];
 		*CRUST_TIME += mantle_time;
 	}
 
 
 //cout << " CRUST TIME IS "<< *CRUST_TIME << endl;
 
-	*thickness = fabs(bd[LINE_MAX -2] - bd[0]);
+	*thickness = fabs(bd[CRUST_LINE_MAX -2] - bd[0]);
 
 
 
@@ -272,14 +274,14 @@ void CRUST_MODEL::get_single_station_correction_vp(double lat, double lon, doubl
 cout << "lat lon "<< lat <<  " "<< lon << endl;
 cout << "index lat lon is current index"<< index_lat << " " << index_lon << " "<< current_index << endl;
 
-	int LINE_MAX = 9;
-	double vs[LINE_MAX];
-	double vp[LINE_MAX];
-	double rho[LINE_MAX];
-	double bd[LINE_MAX];
-	double thickness_tmp[LINE_MAX];
+	int CRUST_LINE_MAX = 9;
+	double vs[CRUST_LINE_MAX];
+	double vp[CRUST_LINE_MAX];
+	double rho[CRUST_LINE_MAX];
+	double bd[CRUST_LINE_MAX];
+	double thickness_tmp[CRUST_LINE_MAX];
 
-	for(count = 0; count < LINE_MAX ;count ++)
+	for(count = 0; count < CRUST_LINE_MAX ;count ++)
 	{
 		//cout << "--> work in line "<< count<<endl;
 		vs[count] = this->vs[count][current_index];
@@ -297,7 +299,7 @@ cout << "index lat lon is current index"<< index_lat << " " << index_lon << " "<
 	// 2. decide the maximum depthrange 
 	double max_dep = 0 ;
 	double dep_PREM = 24.4;
-	double dep_CRUST = bd[LINE_MAX - 2]*-1;
+	double dep_CRUST = bd[CRUST_LINE_MAX - 2]*-1;
 
 	if( dep_PREM > dep_CRUST )
 		max_dep = dep_PREM;
@@ -324,7 +326,7 @@ cout << "index lat lon is current index"<< index_lat << " " << index_lon << " "<
 	*CRUST_TIME = 0;
 	if (dep_PREM <= dep_CRUST )
 	{
-		for(count = 0; count < LINE_MAX -1 ; count++)
+		for(count = 0; count < CRUST_LINE_MAX -1 ; count++)
 		{
 			double current_vs = vp[count];
 			double current_thickness = thickness_tmp[count];
@@ -338,7 +340,7 @@ cout << "index lat lon is current index"<< index_lat << " " << index_lon << " "<
 	}
 	else
 	{
-		for(count = 0; count < LINE_MAX -1 ; count++)
+		for(count = 0; count < CRUST_LINE_MAX -1 ; count++)
 		{
 			double current_vs = vp[count];
 			double current_thickness = thickness_tmp[count];
@@ -350,14 +352,14 @@ cout << "index lat lon is current index"<< index_lat << " " << index_lon << " "<
 			*CRUST_TIME += current_dt;
 		}
 		// for layer in the mantle
-		double mantle_time = ( fabs (dep_PREM - dep_CRUST)  ) / vp[LINE_MAX-1];
+		double mantle_time = ( fabs (dep_PREM - dep_CRUST)  ) / vp[CRUST_LINE_MAX-1];
 		*CRUST_TIME += mantle_time;
 	}
 
 
 //cout << " CRUST TIME IS "<< *CRUST_TIME << endl;
 
-	*thickness =  fabs( bd[LINE_MAX -2] - bd[0]);
+	*thickness =  fabs( bd[CRUST_LINE_MAX -2] - bd[0]);
 
 
 }

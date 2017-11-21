@@ -23,8 +23,16 @@ int get_first_EW_for_phase(new_RECORD* my_record, new_INPUT* my_input, double* E
 		// for ScS/ SS/ SSS/ ScSScS/ Sdiff, construct E.W. using S E.W.
 		if(strcmp(my_input->PHASE,"S")==0 || strcmp(my_input->PHASE,"P")==0)
 		{
-			// for S phase, construct the E.W. by stacking records.
-			get_first_ES(my_record,my_input,ES);
+			// if main_ES.out exist, then we use it for S too
+			if( file_exist("main_ES.out") == 1)
+			{
+				read_in_modified_S_ES(my_input,ES);
+			}
+			else
+			{
+				// for S phase, construct the E.W. by stacking records.
+				get_first_ES(my_record,my_input,ES);
+			}
 		}
 		else 
 		{

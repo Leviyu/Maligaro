@@ -84,6 +84,14 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 				current_ES[i]=old_ES[i];
 			break;
 		}
+		// if we do missint stations, we dont iterate
+		if(my_input->Fix_missing_sta_flag == 1)
+		{
+			for(i=0;i<npts_phase;i++)
+				current_ES[i]=old_ES[i];
+			break;
+		}
+
 
 		if(fabs(ccc) > 0.95 )
 			break;
@@ -125,6 +133,11 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 			EW_new[count] = stretch_record_stack[count];
 	}
 	else 
+	{
+		for(count = 0; count < npts_phase; count++)
+			EW_new[count] = first_EW[count];
+	}
+	if(my_input->Fix_missing_sta_flag == 1)
 	{
 		for(count = 0; count < npts_phase; count++)
 			EW_new[count] = first_EW[count];

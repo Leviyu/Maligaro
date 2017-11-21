@@ -98,6 +98,8 @@ int read_input_info(new_INPUT* my_input)
 			sscanf(read_tmp,"%s %s" ,buff, my_input->ed_checked_file);
 		else if (strcmp(buff,"<ED_CHECK_FLAG>") == 0)
 			sscanf(read_tmp,"%s %d " ,buff, &my_input->ED_CHECKED_FLAG);
+		else if (strcmp(buff,"<Fix_missing_sta_flag>") == 0)
+			sscanf(read_tmp,"%s %d " ,buff, &my_input->Fix_missing_sta_flag);
 	}
 
 	fclose(in2);

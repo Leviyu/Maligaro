@@ -99,6 +99,7 @@ struct new_INPUT
 
 	FILE* traffic_phase_file;
 
+	int Fix_missing_sta_flag;
 
 };
 typedef struct new_INPUT new_INPUT;

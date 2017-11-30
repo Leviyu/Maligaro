@@ -59,7 +59,7 @@ int sac2xy_with_delta(string sac_file2, double begin_time, double length, double
 	int npts_long_beg = (int)((begin_time - beg)/del); 
 	int npts_long_len = (int) ( length / del);
 	int npts_long_end = npts_long_beg + npts_long_len;
-cout << "  npts_long_end " << npts_long_end << " len "<< len << endl;
+//##cout << "  npts_long_end " << npts_long_end << " len "<< len << endl;
 	if( npts_long_end >= len || npts_long_beg <= 0)
 	{
 		for(i = 0; i< max ; i++)

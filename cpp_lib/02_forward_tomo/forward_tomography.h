@@ -21,7 +21,6 @@ class big_new_record;
 class new_record;
 class new_tomo;
 class CRUST_MODEL;
-class new_grid;
 class virtual_station;
 
 
@@ -321,9 +320,18 @@ class new_record
 		void get_crustal_correction();
 		void get_incident();
 		string sac_file;
+		void download_sac_file();
 
 		CRUST_MODEL* my_crust;
 
+		// record related EQ bin and STA bin
+		int EQ_BIN_NUM;
+		int* EQ_BIN_LAT;
+		int* EQ_BIN_LON;
+
+		int STA_BIN_NUM;
+		int* STA_BIN_LAT;
+		int* STA_BIN_LON;
 
 
 
@@ -340,12 +348,31 @@ class big_new_record
 		~big_new_record();
 
 		double VS_LATITUDE_INC;
-		double VS_RADIUS_DEGREE;
+		double VS_EQ_RADIUS_DEGREE;
+		double VS_STA_RADIUS_DEGREE;
 		double VS_RECORD_NUM_THRESHOLD;
 		double VS_EXISTING_RECORD_NUM_THRESHOLD;
-		string EXISTING_EVENTINFO;
-		string PHASE;
 
+		int eventinfo_max_threshold;
+		int eventStation_min_threshold;
+		string EXISTING_EVENTINFO;
+		int existing_sta_num;
+		string PHASE;
+		double phase_dist_min;
+		double phase_dist_max;
+		string SRCDIR;
+
+
+
+		// unique EQ and STA storage
+		int unique_EQ_num;
+		string* EQ_LIST;
+		double* EQ_LAT;
+		double* EQ_LON;
+		int unique_STA_num;
+		string* STA_LIST;
+		double* STA_LAT;
+		double* STA_LON;
 
 		int sta_num;
 		string record_file;
@@ -378,7 +405,9 @@ class big_new_record
 		void read_sac_file();
 		void calculate_SNR();
 		void read_in_polarity_file();
-		new_grid** my_grid;
+		virtual_station** my_grid;
+		virtual_station* my_vs; 
+		int my_vs_index;
 
 
 		// grid related parameter
@@ -391,24 +420,62 @@ class big_new_record
 		void catagorize_existing_eventinfo_to_VS();
 		void catagorize_eventstation_to_VS();
 		void count_record_existance_for_grid_pair();
-		int loop_EX_EQ_STA_count_record(new_grid* eq_grid, new_grid* sta_grid);
-
+		int loop_EX_EQ_STA_count_record(virtual_station* eq_grid, virtual_station* sta_grid);
+		void output_VS_info();
+		void catagorize_records_into_VS_based_on_each_record( new_record* my_record, int sta_num);
+		void for_each_EQ_check_num_records_for_stacking();
+		int find_EQ_STA_bin_record_existance_num(new_record* my_record, int sta_num, int ilat_eq, 
+			int ilon_eq, int ilat_sta, int ilon_sta)  ;
+		void get_PHASE_min_max_dist();
+		void for_each_EQ_check_num_records_for_stacking(new_record* my_record, int sta_num, int ilat_eq, 
+			int ilon_eq, int ilat_sta, int ilon_sta  );
+		// void count_record_existance_for_sing_grid_pair(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, 
+		// 	int* exist_eventinfo, int* exist_eventStation);
+		void count_eventStation_existance_for_sing_grid_pair(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, int* exist_eventinfo);
+		void count_eventinfo_existance_for_sing_grid_pair(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, int* exist_eventStation);
+		void get_unique_EQ_latlon(string EQ_NAME, double* lat, double* lon);
+		void get_unique_STA_latlon(string STA_NAME, double* lat, double* lon);
+		int find_EQ_STA_PHASE_number_in_eventinfo(string EQ_NAME, string STA, string PHASE);
+		int find_EQ_STA_PHASE_number_in_eventStation(string EQ_NAME, string STA);
+		void make_virtual_station(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta);
+		void make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, int ieq_index);
+		void individual_VS_processing();
 
 
 };
 
 
 // declare virtual_station
-class virtual_station
-{
+// class virtual_station : public new_record
+// {
+// 	public:
+		
+// };
 
-};
 
 
-
-class new_grid
+class virtual_station : public new_record
 {
 	public:
+
+		int ilat_eq;
+		int ilon_eq;
+		int ilat_sta;
+		int ilon_sta;
+
+		string exist;
+
+		// string* EQ_NAME_array;
+		int EQ_index;
+		int* eventinfo_index_array;
+		int eventinfo_index;
+		int* eventStation_index_array;
+		int eventStation_index;
+		void initiate();
+		void destruct();
+
+
+
 		// grid basic information
 		double grid_lat;
 		double grid_lon;
@@ -487,8 +554,8 @@ class new_grid
 		void get_grid_dist();
 
 
-		new_grid();
-		~new_grid();
+		// virtual_station();
+		// ~virtual_station();
 
 		void initiate_grid();
 
@@ -523,7 +590,18 @@ class new_grid
 		double* CU_STA_LAT;
 		double* CU_STA_LON;
 
+		// skip flag
+		// if eventStation does not give enough 
+		// 		EQ < 1
+		// 		STA < threshold
+		// 	then skip it, skip flag = 1
+		double eq_skip_flag;
+		double sta_skip_flag;
 
+
+		// grid eventinfo/eventStation number
+		// int exist_eventStation;
+		// int exist_eventinfo;
 
 };
 

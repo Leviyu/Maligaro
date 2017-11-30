@@ -1,5 +1,5 @@
 #include "forward_tomography.h"
-
+#include <map>
 big_new_record::big_new_record()
 {
 
@@ -12,6 +12,119 @@ big_new_record::~big_new_record()
 	//delete[] this->my_record;
 }
 
+void big_new_record::virtual_station_main()
+{
+	cout << "=============> Running virtual Station stacking main " << endl;
+
+	//this->sta_num = count_file_num(this->EXISTING_EVENTINFO);
+	
+
+	// lets define a virtual station array
+	int vs_max = 10000;
+	this->my_vs = new virtual_station[vs_max]; 
+	this->my_vs_index = 0;
+	
+
+
+	// =======================================================
+	// existing eventinfo block
+	this->existing_sta_num = count_file_num(this->EXISTING_EVENTINFO);
+	cout << " --> Read in existing record num: " << this->existing_sta_num << endl;
+	this->existing_record = new new_record[this->existing_sta_num];
+	this->record_file = this->EXISTING_EVENTINFO;
+	// read in eventinfo
+	this->sta_num = this->existing_sta_num;
+	this->read_record_file(this->existing_record);
+	// initiate virtual station
+	this->virtual_station_grid_initiate();
+	// catagorize existing eventinfo into virtual station
+	//this->catagorize_records_into_VS_based_on_each_record( this->existing_record, this->existing_sta_num);
+	this->catagorize_existing_eventinfo_to_VS();
+
+
+	// =================================
+	// possible eventStation block
+	this->eventStation = "eventStation";
+	this->sta_num = count_file_num(this->eventStation);
+	this->my_record = new new_record[this->sta_num];
+	this->read_eventStation();
+	//this->catagorize_records_into_VS_based_on_each_record(this->my_record, this->sta_num);
+	this->catagorize_eventstation_to_VS();
+	
+
+	// for each EQ_grid/STA_grid/PHASE, count
+	// 1. good_record K1
+	// 2. possible record K2
+	this->count_record_existance_for_grid_pair();
+
+	this->output_VS_info();
+
+
+	//this->read_sac_file();
+	// go ahead 
+}
+
+void big_new_record::output_VS_info()
+{
+	cout << "output_VS_info \n"<<endl;
+	int ivs = 0;
+	int ista = 0;
+	int count;
+	ofstream myfile;
+	string outname = "out.station_stack.info."+this->PHASE;
+	myfile.open(outname.c_str());
+
+	for(ivs = 0; ivs < this->my_vs_index; ivs++)
+	{	
+		virtual_station my_vs = this->my_vs[ivs];
+		int vs_index = ivs;
+		int ilat_eq = my_vs.ilat_eq;
+		int ilon_eq = my_vs.ilon_eq;
+		double eq_lat = this->my_grid[ilat_eq][ilon_eq].grid_lat;
+		double eq_lon = this->my_grid[ilat_eq][ilon_eq].grid_lon;
+		double eq_radius = this->VS_EQ_RADIUS_DEGREE;
+		
+		int ilat_sta = my_vs.ilat_sta;
+		int ilon_sta = my_vs.ilon_sta;
+		double sta_lat = this->my_grid[ilat_sta][ilon_sta].grid_lat;
+		double sta_lon = this->my_grid[ilat_sta][ilon_sta].grid_lon;
+		double sta_radius = this->VS_STA_RADIUS_DEGREE;
+		
+		int record_num = my_vs.eventStation_index;
+		string EQ_NAME = my_vs.EQ;
+
+		// output eventStation list for current VS
+		ofstream out;
+		string eventout = "out.VS_eventStation_list."+this->PHASE+"."+to_string(ivs);
+		out.open(eventout.c_str());
+		for(count = 0; count < my_vs.eventStation_index;count++)
+		{
+			int sta_index = my_vs.eventStation_index_array[count];
+			string long_file = "long_win."+my_record[sta_index].EQ+
+			"."+my_record[sta_index].STA+"."+this->PHASE;
+			double record_dist = my_record[sta_index].DIST;
+			out<< long_file<<" "<< record_dist<<endl;
+		}
+		out.close();
+
+		// cout << " sta "<< sta_lat << " "<< sta_lon<<endl; 
+		myfile<< fixed
+		<< setw(10) << setprecision(2) << ivs
+		<< setw(15) << EQ_NAME
+		<< setw(10) << setprecision(2) << eq_lat
+		<< setw(10) << setprecision(2) << eq_lon
+		<< setw(10) << setprecision(2) << eq_radius
+		<< setw(10) << setprecision(2) << sta_lat
+		<< setw(10) << setprecision(2) << sta_lon
+		<< setw(10) << setprecision(2) << sta_radius
+		<< setw(10) << setprecision(2) << record_num
+		<< setw(10) << setprecision(2) << my_vs.grid_dist
+		<<endl;
+	}
+	
+
+
+}
 
 
 void big_new_record::big_record_read_cross_point_file(new_tomo* my_tomo)
@@ -79,6 +192,9 @@ void big_new_record::read_INFILE()
 		flag = "<PHASE_NOISE_LEN>";
 		if(sub1.compare(flag) == 0)
 			this->noise_len = atof(sub2.c_str());
+		flag = "<SRCDIR>";
+		if(sub1.compare(flag) == 0)
+			this->SRCDIR = sub2;
 
 		flag = "<DELTA>";
 		if(sub1.compare(flag) == 0)
@@ -91,9 +207,12 @@ void big_new_record::read_INFILE()
 		if(sub1.compare(flag) == 0)
 			this->VS_LATITUDE_INC = atof(sub2.c_str());
 
-		flag = "<VS_RADIUS>";
+		flag = "<VS_EQ_RADIUS>";
 		if(sub1.compare(flag) == 0)
-			this->VS_RADIUS_DEGREE = atof(sub2.c_str());
+			this->VS_EQ_RADIUS_DEGREE = atof(sub2.c_str());
+		flag = "<VS_STA_RADIUS>";
+		if(sub1.compare(flag) == 0)
+			this->VS_STA_RADIUS_DEGREE = atof(sub2.c_str());
 		flag = "<EXISTING_EVENTINFO>";
 		if(sub1.compare(flag) == 0)
 			this->EXISTING_EVENTINFO = sub2;
@@ -103,8 +222,115 @@ void big_new_record::read_INFILE()
 		flag = "<VS_RECORD_NUM_THRESHOLD>";
 		if(sub1.compare(flag) == 0)
 			this->VS_RECORD_NUM_THRESHOLD = atof(sub2.c_str());
+		flag = "<eventinfo_max_threshold>";
+		if(sub1.compare(flag) == 0)
+			this->eventinfo_max_threshold = atoi(sub2.c_str());
+		flag = "<eventStation_min_threshold>";
+		if(sub1.compare(flag) == 0)
+			this->eventStation_min_threshold = atoi(sub2.c_str());
+		
+
+
 	}
 }
+
+
+void big_new_record::get_PHASE_min_max_dist()
+{
+
+	// set default value
+	this->phase_dist_min = 0;
+	this->phase_dist_max = 180;
+
+	map<string,double> dist_min;
+	map<string,double> dist_max;
+
+
+// ========= S ===================
+	string myphase = "S";
+	dist_min[myphase] = 30;
+	dist_max[myphase] = 103;
+
+	myphase = "Sdiff";
+	dist_min[myphase] = 98;
+	dist_max[myphase] = 180;
+
+	myphase = "SS";
+	dist_min[myphase] = 60;
+	dist_max[myphase] = 180;
+
+	myphase = "SSm";
+	dist_min[myphase] = 154;
+	dist_max[myphase] = 180;
+
+	myphase = "S3";
+	dist_min[myphase] = 90;
+	dist_max[myphase] = 180;
+	
+	myphase = "S3m";
+	dist_min[myphase] = 65;
+	dist_max[myphase] = 180;
+
+	myphase = "S4";
+	dist_min[myphase] = 120;
+	dist_max[myphase] = 180;
+
+	myphase = "S4m";
+	dist_min[myphase] = 0;
+	dist_max[myphase] = 180;
+
+	myphase = "S5";
+	dist_min[myphase] = 130;
+	dist_max[myphase] = 180;
+
+
+	myphase = "S5m";
+	dist_min[myphase] = 0;
+	dist_max[myphase] = 180;
+
+
+	myphase = "S6";
+	dist_min[myphase] = 150;
+	dist_max[myphase] = 180;
+
+
+	myphase = "S6m";
+	dist_min[myphase] = 0;
+	dist_max[myphase] = 180;
+
+// ============== ScS ================
+	myphase = "ScS";
+	dist_min[myphase] = 0;
+	dist_max[myphase] = 83;
+
+	myphase = "ScSScS";
+	dist_min[myphase] = 0;
+	dist_max[myphase] = 164;
+
+	myphase = "ScS3";
+	dist_min[myphase] = 0;
+	dist_max[myphase] = 180;
+
+	myphase = "ScS3m";
+	dist_min[myphase] = 124;
+	dist_max[myphase] = 180;
+
+	myphase = "ScS4";
+	dist_min[myphase] = 0;
+	dist_max[myphase] = 180;
+
+	myphase = "ScS4m";
+	dist_min[myphase] = 32;
+	dist_max[myphase] = 180;
+
+
+	this->phase_dist_min = dist_min[this->PHASE];
+	this->phase_dist_max = dist_max[this->PHASE];
+	cout << " PHASE: " << this->PHASE << " dist_min_max " << this->phase_dist_min 
+	<< " " << this->phase_dist_max << endl;
+
+}
+
 
 void big_new_record::get_crustal_correction()
 {
@@ -159,111 +385,472 @@ void big_new_record::get_ellip_corr()
 
 void big_new_record::initiate_big_record()
 {
-	cout << " big_new_record is initiated ! " << endl;
+	//cout << " big_new_record is initiated ! " << endl;
 
 }
 
-void big_new_record::virtual_station_main()
-{
-	cout << "--> Running virtual Station stacking main " << endl;
 
-	this->sta_num = count_file_num(this->EXISTING_EVENTINFO);
-	cout << " --> Read in existing record num: " << this->sta_num << endl;
-	this->existing_record = new new_record[this->sta_num];
-	this->record_file = this->EXISTING_EVENTINFO;
-
-	// read in eventinfo
-	this->read_record_file(this->existing_record);
-
-	// initiate virtual station
-	this->virtual_station_grid_initiate();
-
-	// catagorize existing eventinfo into virtual station
-	this->catagorize_existing_eventinfo_to_VS();
-
-
-	// read eventStation file
-	this->eventStation = "eventStation";
-	int sta_num = count_file_num(this->eventStation);
-	this->my_record = new new_record[sta_num];
-	this->read_eventStation();
-	this->catagorize_eventstation_to_VS();
-	this->count_record_existance_for_grid_pair();
-
-
-
-
-}
 
 // ============================================
 // loop through EQ_grid STA_grid PHASE pair and check
 // 1. how many records exist for existing eventinfo
 // 2. how many records exist for eventStation
+// to make it fast, we use SQL to implement the command
 void big_new_record::count_record_existance_for_grid_pair()
 {
 	cout << "---> count_record_existance_for_grid_pair " << endl;
 
+
+	// output record related 
+	ofstream myfile;
+	myfile.open("out.record_existance_for_EQ_STA_pair");
+	
+	/*=================================
+	Part1 find existing record in eventinfo
+	*/
 	int ilat_eq = 0;
 	int ilon_eq = 0;
 	int ilat_sta = 0;
 	int ilon_sta = 0;
 
+	int vs_index = 0;
 
 
-	int flag = 0;
-	//EQ grid loop
+	int count;	
 	for(ilat_eq = 0; ilat_eq<this->grid_lat_num; ilat_eq++)
 		for(ilon_eq = 0; ilon_eq< this->grid_lon_num[ilat_eq]; ilon_eq++)
 		{
-			
-			// if EQ num is 0
-			if (this->my_grid[ilat_eq][ilon_eq].CU_EQ_NUM < 1)
-				continue;
-			cout << " grid CU EQ STA NUM " << this->my_grid[ilat_eq][ilon_eq].CU_EQ_NUM << endl;
 
-
-
-			// sta grid loop
 			for(ilat_sta = 0; ilat_sta<this->grid_lat_num; ilat_sta++)
 				for(ilon_sta = 0; ilon_sta< this->grid_lon_num[ilat_sta]; ilon_sta++)
 				{
+					//cout << "EQ_GRID_LAT_LON/STA_GRID_LAT_LON: "<< ilat_eq << " "<< ilon_eq<<" "<< ilat_sta << " "<<ilon_sta<<  endl;
+					
 
-					// if STA num < threshold
-					// this is a restriction applied to single EQ processing
-					if (this->my_grid[ilat_sta][ilon_sta].CU_STA_NUM < this->VS_RECORD_NUM_THRESHOLD )
+					
+
+
+					//int cu_eq_num = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NUM;
+					//int cu_sta_num = this->my_grid[ilat_sta][ilon_sta].CU_STA_NUM;
+					int ex_eq_num = this->my_grid[ilat_eq][ilon_eq].EX_EQ_NUM;
+					int ex_sta_num = this->my_grid[ilat_sta][ilon_sta].EX_STA_NUM;
+					if(ex_eq_num == 0 || ex_sta_num == 0)
 						continue;
 
+					// cout << "EX eq sta num" << ex_eq_num << " " << ex_sta_num << endl;
+					//myfile << "EQ_GRID_LAT_LON/STA_GRID_LAT_LON: "<< ilat_eq << " "<< ilon_eq<<" "<< ilat_sta << " "<<ilon_sta<<  endl;
+					
+				
+					
 
-					// check eventinfo first
-					// loop through current EQLIST STALIST
-					//
-					//int flag = this->loop_EX_EQ_STA_count_record(&this->my_grid[ilat_eq][ilon_eq], &this->my_grid[ilat_sta][ilon_sta]);
-					flag +=1;
-					cout << " current EX EQ STA count" << flag << endl;
+					// IF eventinfo num > eventinfo_max_threshold, skip
+					int exist_eventinfo = 0;
+					count_eventinfo_existance_for_sing_grid_pair(ilat_eq,ilon_eq,ilat_sta,ilon_sta,&exist_eventinfo);
+					// this->my_grid[i]
+					// cout << "existed eventinfo "<< exist_eventinfo << endl;
+					// cout << " eventinfo threshold "<< this->eventinfo_max_threshold<< endl;
+					if(exist_eventinfo > this->eventinfo_max_threshold)
+						continue;
+					
+					// IF eventStation < eventStation_min_threshold, skip
+
+					int exist_eventStation = 0;
+					count_eventStation_existance_for_sing_grid_pair(ilat_eq,ilon_eq,ilat_sta,ilon_sta,&exist_eventStation);
+					
+					if(exist_eventStation < this->eventStation_min_threshold)
+						continue;
+					// cout << "existed eventinfo "<< exist_eventinfo << endl;
+					// cout << "existed eventStation "<< exist_eventStation << endl;
+					// make virtual station for current EQ_grid/STA_grid
+					// this->my_vs[this->my_vs_index].exist = "YES";
+
+					make_virtual_station(ilat_eq,ilon_eq,ilat_sta,ilon_sta);
 
 
 
-
-
-
-
+					// this->my_vs_index ++;
 
 				}
-
-
 		}
+
+}
+
+
+void big_new_record::make_virtual_station(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta)
+{
+	cout << " --> Making virtualStation for " << ilat_eq << " "<< ilon_eq << " " << ilat_sta << " "<< ilon_sta
+	<<  endl;  
+
+	// scan each events in EQ_grid and for each event, find all possible EQ-STA-PHASE
+
+	int ieq = 0;
+	int ista = 0;
+	string EQ_NAME;
+	string STA_NAME;
+	int eq_num = this->my_grid[ilat_eq][ilon_eq].EX_EQ_NUM;
+	int sta_num = this->my_grid[ilat_sta][ilon_sta].EX_STA_NUM;
+	for(ieq = 0; ieq < eq_num ; ieq++)
+	{
+		make_virtual_station_for_EQ(ilat_eq,ilon_eq,ilat_sta,ilon_sta,ieq);
+	}
 
 
 
 }
 
-
-
-int big_new_record::loop_EX_EQ_STA_count_record( new_grid* eq_grid, new_grid* sta_grid)
+void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, int ieq_index)
 {
 
-	if(eq_grid->EX_EQ_NUM < 1 || sta_grid->EX_STA_NUM < 1)
+	int ieq = 0;
+	int ista = 0;
+	string EQ_NAME;
+	EQ_NAME = this->my_grid[ilat_eq][ilon_eq].EX_EQ_NAME[ieq_index];
+	string STA_NAME;
+	int eq_num = this->my_grid[ilat_eq][ilon_eq].EX_EQ_NUM;
+	int sta_num = this->my_grid[ilat_sta][ilon_sta].EX_STA_NUM;
+
+	int total_exist_eventStation_num = 0;
+
+	// initiate virtual staion
+	// if current vs does not have enough stations, then it is overwrite by the next 
+	int vs_index = this->my_vs_index;
+	this->my_vs[vs_index].initiate();
+	this->my_vs[vs_index].my_big_record = this;
+	this->my_vs[vs_index].ilat_eq = ilat_eq;
+	this->my_vs[vs_index].ilon_eq = ilon_eq;
+	this->my_vs[vs_index].ilat_sta = ilat_sta;
+	this->my_vs[vs_index].ilon_sta = ilat_sta;
+	this->my_vs[vs_index].EQ = EQ_NAME;
+	this->my_vs[vs_index].eventStation_index = 0;
+	this->my_vs[vs_index].long_npts = (int)(this->long_len / this->delta);
+	this->my_vs[vs_index].LONG_BEG = this->long_beg;
+	this->my_vs[vs_index].delta = this->delta;
+
+
+
+	int max = 1000;
+	int stack_record_array[max];
+	int istack = 0;
+
+	for(ista = 0; ista < sta_num; ista++)
+	{
+		STA_NAME = this->my_grid[ilat_sta][ilon_sta].EX_STA_NAME[ista];
+		int ista_eventStation = this->find_EQ_STA_PHASE_number_in_eventStation(EQ_NAME,STA_NAME);
+		if(ista_eventStation == 0) 
+			continue;
+		stack_record_array[istack] = ista_eventStation;
+		istack++;
+		total_exist_eventStation_num ++;
+
+		int iindex = this->my_vs[vs_index].eventStation_index;
+		this->my_vs[vs_index].eventStation_index_array[iindex] = ista_eventStation;
+		this->my_vs[vs_index].eventStation_index ++;
+	}
+	
+	// if there is not enough records to stack for current event, then skip
+	if(total_exist_eventStation_num < this->eventStation_min_threshold)
+		return;
+
+
+	// store EQ/STA grid info into virtual station
+
+
+
+	// 1.0 download sac file for EQ-STA-PHASE
+	this->individual_VS_processing();
+
+	
+
+	
+
+	// 5. input S_ES file and find virtual station ONSET
+
+	// 6. make code choice for virtual stations
+
+	// 7. 
+	cout << "Current VS index " << this->my_vs_index << endl;
+	this->my_vs_index++;
+
+
+}
+
+void big_new_record::individual_VS_processing()
+{
+	int vs_index = this->my_vs_index;
+	int count;
+	this->my_vs[vs_index].npts_record_sum = this->my_vs[vs_index].eventStation_index;
+
+	int tag_index = 0;
+	for(count = 0; count < this->my_vs[vs_index].eventStation_index; count ++)
+	{
+		int station_index = this->my_vs[vs_index].eventStation_index_array[count];
+		// cout << " eventStation array num "<< stack_record_array[count] << endl;
+		
+		cout << "my vs index is "<< vs_index << " eventStation index is  "<< station_index << " eventstation name is "<< this->my_record[station_index].STA << endl;
+		// cout << "record lat lon is "<< this->my_record[station_index].sta_lat<< endl;
+		this->my_record[station_index].download_sac_file();
+		this->my_record[station_index].PHASE = this->PHASE;
+		this->my_record[station_index].delta = 0.1;
+		this->my_record[station_index].noise_beg = this->noise_beg;
+		this->my_record[station_index].noise_len = this->noise_len;
+		
+		this->my_record[station_index].phase_len = this->phase_len;
+		this->my_record[station_index].phase_beg = this->phase_beg;
+		this->my_record[station_index].long_len = this->long_len;
+		this->my_record[station_index].long_beg = this->long_beg;
+		// cout << "long beg is "<< this->long_beg<<endl;
+
+		// this->my_record[count].
+		// this->my_record[count].
+		// 1.1 make and read in polarity file
+
+		// 1.2 read in sac file
+		this->my_record[station_index].read_sac_file();
+		
+
+		// 1.3 calculate SNR before stack
+		this->my_record[station_index].calculate_SNR();
+
+		this->my_vs[vs_index].record_tag[tag_index] = station_index;
+		tag_index ++;
+
+	}
+
+
+	this->my_vs[vs_index].stack_records_from_one_EQ();
+	this->my_vs[vs_index].output_stacked_record();
+
+	// 4. get SNR  after stack
+
+
+}
+
+void big_new_record::get_unique_EQ_latlon(string EQ_NAME, double* lat, double* lon)
+{
+	int count = 0;
+	for(count = 0; count < this->unique_EQ_num; count++)
+	{
+		if(EQ_NAME.compare(this->EQ_LIST[count]) == 0)
+		{
+			*lat = this->EQ_LAT[count];
+			*lon = this->EQ_LON[count];
+			break;
+		}
+
+	}
+}
+void big_new_record::get_unique_STA_latlon(string STA_NAME, double* lat, double* lon)
+{
+	int count = 0;
+	for(count = 0; count < this->unique_STA_num; count++)
+	{
+		if(STA_NAME.compare(this->STA_LIST[count]) == 0)
+		{
+			*lat = this->STA_LAT[count];
+			*lon = this->STA_LON[count];
+			break;
+		}
+	}
+}
+
+
+void big_new_record::count_eventStation_existance_for_sing_grid_pair(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, int* exist_eventStation)
+{
+	//cout << "count_record_existance_for_sing_grid_pair !\n"<<endl;
+
+	int ieq = 0;
+	int ista = 0;
+
+	// 1. for all EQs in EQ_grid and STAs in STA_grid, check possible eventStation records
+	int ex_eq_num = this->my_grid[ilat_eq][ilon_eq].EX_EQ_NUM;
+	int ex_sta_num = this->my_grid[ilat_sta][ilon_sta].EX_STA_NUM;
+	// if eq_num is zero or sta num is 0, then skip
+	if( ex_eq_num == 0 || ex_sta_num == 0)
+	{
+		*exist_eventStation = 0;
+	}
+	else
+	{
+		for(ieq = 0; ieq<ex_eq_num; ieq ++)
+			for(ista = 0; ista < ex_sta_num;ista++)
+			{
+				// calculate distance between EQ and STA
+				string EQ_NAME = this->my_grid[ilat_eq][ilon_eq].EX_EQ_NAME[ieq];
+				string STA_NAME = this->my_grid[ilat_sta][ilon_sta].EX_STA_NAME[ista];
+				int num = find_EQ_STA_PHASE_number_in_eventStation(EQ_NAME,STA_NAME);
+				// int array_index = this->my_vs[this->my_vs_index].EQ_index;
+				// this->my_vs[this->my_vs_index].EQ_NAME_array[array_index] = EQ_NAME;
+				// array_index = this->my_vs[this->my_vs_index].eventStation_index;
+				// this->my_vs[this->my_vs_index].eventStation_index_array[array_index] = num;
+				if (num != 0)
+					*exist_eventStation += 1;
+			}
+	}
+}
+void big_new_record::count_eventinfo_existance_for_sing_grid_pair(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, int* exist_eventinfo)
+{
+	int ieq = 0;
+	int ista = 0;
+	// 2. for all EQs in EQ_grid and STAs in STA_grid, check existing eventinfo records
+	int cu_eq_num = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NUM;
+	int cu_sta_num = this->my_grid[ilat_sta][ilon_sta].CU_STA_NUM;
+	//cout << " existing eq num sta num "<< ex_eq_num << " " << ex_sta_num << endl;
+	if(cu_eq_num == 0 || cu_sta_num == 0)
+	{
+		*exist_eventinfo = 0;
+	}
+	else 
+	{
+		*exist_eventinfo = 0;
+		for(ieq = 0; ieq<cu_eq_num; ieq ++)
+			for(ista = 0; ista < cu_sta_num;ista++)
+			{
+				string EQ_NAME = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NAME[ieq];
+				string STA_NAME = this->my_grid[ilat_sta][ilon_sta].CU_STA_NAME[ista];
+				// find how many if EQ-STA-PHASE exist in eventinfo
+				int num = this->find_EQ_STA_PHASE_number_in_eventinfo(EQ_NAME,STA_NAME,this->PHASE);
+				if(num != 0)
+					*exist_eventinfo += 1 ;
+			}
+
+		
+
+	}
+	//cout << "eventinfo num is "<< *exist_eventinfo<< endl;
+}
+
+int big_new_record::find_EQ_STA_PHASE_number_in_eventinfo(string EQ_NAME, string STA, string PHASE)
+{
+	int return_num = 0;
+	int count;
+	for(count = 0; count < this->existing_sta_num; count ++)
+	{
+
+		if(EQ_NAME.compare(this->existing_record[count].EQ) != 0)
+			continue;
+		if(STA.compare(this->existing_record[count].STA) != 0)
+			continue;
+		if(PHASE.compare(this->existing_record[count].PHASE) != 0)
+			continue;
+		return_num = count;
+		break;
+
+	}
+	return return_num;
+
+}
+int big_new_record::find_EQ_STA_PHASE_number_in_eventStation(string EQ_NAME, string STA)
+{
+	int return_num = 0;
+	int count;
+	for(count = 0; count < this->sta_num; count ++)
+	{
+	
+
+		if(EQ_NAME.compare(this->my_record[count].EQ) != 0)
+			continue;
+
+		if(STA.compare(this->my_record[count].STA) != 0)
+			continue;
+		 // cout << this->my_record[count].EQ << " sta "<< this->my_record[count].STA << endl;
+		double dist = this->my_record[count].DIST;
+		//cout << " dist is " << dist << endl;
+		// cout << "distminmax " << this->phase_dist_min << " " << this->phase_dist_max << endl;
+		if ( dist < this->phase_dist_min || dist > this->phase_dist_max)
+			continue;
+
+		return_num = count;
+		break;
+
+	}
+	return return_num;
+
+}
+
+
+int big_new_record::find_EQ_STA_bin_record_existance_num(new_record* my_record, int sta_num, int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta)
+{
+
+	int exist_record_num =0;
+	int irecord = 0;
+	for(irecord =0; irecord < sta_num; irecord++)
+	{
+		//cout << "--> Work on irecord :"<< irecord<< endl;
+		int ieq = 0;
+		int ista = 0;
+		for(ieq = 0; ieq < my_record[irecord].EQ_BIN_NUM;ieq++)
+			for(ista = 0; ista < my_record[irecord].STA_BIN_NUM;ista++)
+			{
+				//cout << " on "
+				if(ilat_eq == my_record[irecord].EQ_BIN_LAT[ieq] 
+						&& ilon_eq == my_record[irecord].EQ_BIN_LON[ieq]
+						&& ilon_sta == my_record[irecord].STA_BIN_LON[ista]
+						&& ilat_sta == my_record[irecord].STA_BIN_LAT[ista]
+						)
+					exist_record_num ++;
+				break;
+
+			}
+	}
+
+	return existing_sta_num;
+
+}
+
+
+
+void big_new_record::for_each_EQ_check_num_records_for_stacking(new_record* my_record, int sta_num, int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta  )
+{
+
+	int ieq = 0;
+	for(ieq = 0; ieq < this->my_grid[ilat_eq][ilon_eq].CU_EQ_NUM;ieq++)
+	{
+		int current_EQ_record_num = 0;
+		string current_eq = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NAME[ieq];
+		int irecord;
+		for(irecord = 0; irecord < sta_num ; irecord ++)
+		{
+			string record_EQ = my_record[irecord].EQ;
+			if( record_EQ != current_eq )
+				continue;
+			int ista;
+			for(ista = 0; ista < my_record[irecord].STA_BIN_NUM;ista++)
+			{
+				if( ilon_sta == my_record[irecord].STA_BIN_LON[ista]
+						&& ilat_sta == my_record[irecord].STA_BIN_LAT[ista]
+						)
+					current_EQ_record_num ++;
+
+			}
+
+		}
+		if(current_EQ_record_num > this->VS_RECORD_NUM_THRESHOLD)
+		{
+			// stack for current EQ and STA_BIN
+
+
+		}
+
+	}
+
+}
+
+
+
+
+
+
+// for all possible EQ -STA pair, count the existance number in eventinfo
+
+int big_new_record::loop_EX_EQ_STA_count_record( virtual_station* eq_grid, virtual_station* sta_grid)
+{
+
+	if( eq_grid->eq_skip_flag ==1  || sta_grid->sta_skip_flag == 1)
 		return 0;
+cout << "check for " << endl;
+
+
+
 
 	int ieq = 0;
 	int ista = 0;
@@ -272,33 +859,50 @@ int big_new_record::loop_EX_EQ_STA_count_record( new_grid* eq_grid, new_grid* st
 	string phase_name = "";
 
 	int return_value = 0;
+	ifstream myfile;
 
-	for(ieq = 0; ieq<eq_grid->EX_EQ_NUM ; ieq++)
-		for(ista = 0; ista < sta_grid->EX_STA_NUM;ista++)
-		{
-			eq_name = eq_grid->EX_EQ_NAME[ieq];
-			sta_name = sta_grid->EX_STA_NAME[ista];
+
+/*
+			string command = " cat eventinfo.EQ.STA.PHASE |grep -w " + eq_name + " |grep -w  " + sta_name + " |wc -l > tmp.exist_num";
+			exec(command);
+			myfile.open("tmp.exist_num");
+			string input;
+			myfile >> input;
+
+			double exist_num = atof(input.c_str());
+			if( exist_num != 0)
+				return_value ++;
+			//cout << "exist num is " << exist_num << endl;
+*/
+
 
 			int irecord = 0;
-			for(irecord = 0; irecord < this->sta_num; irecord++)
+			for(irecord = 0; irecord < this->existing_sta_num; irecord++)
 			{
-				if( this->existing_record->EQ != eq_name  )
-					continue;
-				if( this->existing_record->STA != sta_name  )
-					continue;
-				if( this->PHASE != this->existing_record->PHASE )
-					continue;
 
-					return_value ++;
+				for(ieq = 0; ieq<eq_grid->EX_EQ_NUM ; ieq++)
+					for(ista = 0; ista < sta_grid->EX_STA_NUM;ista++)
+					{
+						eq_name = eq_grid->EX_EQ_NAME[ieq];
+						sta_name = sta_grid->EX_STA_NAME[ista];
 
 
-
+							//if( this->existing_record[irecord].EQ != eq_name  )
+								//continue;
+							//if( this->existing_record[irecord].STA != sta_name  )
+								//continue;
+							//if( this->PHASE != this->existing_record[irecord].PHASE )
+								//continue;
+			//
+								//return_value ++;
+								//break;
+					}
 			}
 
 
 
 
-		}
+
 
 	
 	return return_value;
@@ -306,6 +910,86 @@ int big_new_record::loop_EX_EQ_STA_count_record( new_grid* eq_grid, new_grid* st
 }
 
 
+void big_new_record::catagorize_records_into_VS_based_on_each_record( new_record* my_record, int sta_num)
+{
+
+	int ilat = 0;
+	int ilon = 0;
+	int ista = 0;
+	double eq_lat = 0;
+	double eq_lon = 0;
+	double sta_lat = 0;
+	double sta_lon = 0;
+
+	// initiate record EQ_STA bin
+	int MAX = 10;
+
+	for(ista = 0 ; ista < sta_num ; ista++)
+	{
+		my_record[ista].EQ_BIN_LAT = (int*)malloc(sizeof(int)*MAX);
+		my_record[ista].EQ_BIN_LON = (int*)malloc(sizeof(int)*MAX);
+		my_record[ista].STA_BIN_LAT = (int*)malloc(sizeof(int)*MAX);
+		my_record[ista].STA_BIN_LON = (int*)malloc(sizeof(int)*MAX);
+		my_record[ista].EQ_BIN_NUM = 0;
+		my_record[ista].STA_BIN_NUM = 0;
+
+		eq_lat = my_record[ista].eq_lat;
+		eq_lon = my_record[ista].eq_lon;
+		sta_lat = my_record[ista].sta_lat;
+		sta_lon = my_record[ista].sta_lon;
+
+		// find and store EQ info
+		for(ilat = 0; ilat < this->grid_lat_num ; ilat++)
+			for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
+			{
+				double grid_lat = this->my_grid[ilat][ilon].grid_lat;
+				if( fabs(grid_lat - eq_lat) > this->VS_EQ_RADIUS_DEGREE)
+					continue;
+
+				double grid_lon = this->my_grid[ilat][ilon].grid_lon;
+				// distance between EQ and grid
+				double distance_km = dist_A_B( grid_lat, grid_lon, eq_lat, eq_lon);
+				//cout << distance_km << endl;
+				if( distance_km > 110*this->VS_EQ_RADIUS_DEGREE )
+					continue;
+					my_record[ista].EQ_BIN_LAT[my_record[ista].EQ_BIN_NUM] = ilat;
+					my_record[ista].EQ_BIN_LON[my_record[ista].EQ_BIN_NUM] = ilon;
+					my_record[ista].EQ_BIN_NUM ++;
+			}
+		// find and store STA info
+		for(ilat = 0; ilat < this->grid_lat_num ; ilat++)
+			for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
+			{
+				double grid_lat = this->my_grid[ilat][ilon].grid_lat;
+				if( fabs(grid_lat - sta_lat) > this->VS_EQ_RADIUS_DEGREE)
+					continue;
+
+				double grid_lon = this->my_grid[ilat][ilon].grid_lon;
+				// distance between EQ and grid
+				double distance_km = dist_A_B( grid_lat, grid_lon, sta_lat, sta_lon);
+				//cout << distance_km << endl;
+				if( distance_km > 110*this->VS_STA_RADIUS_DEGREE )
+					continue;
+					my_record[ista].STA_BIN_LAT[my_record[ista].STA_BIN_NUM] = ilat;
+					my_record[ista].STA_BIN_LON[my_record[ista].STA_BIN_NUM] = ilon;
+					my_record[ista].STA_BIN_NUM ++;
+			}
+	}
+
+	// output record related 
+	ofstream myfile;
+	myfile.open("output.record_EQ_STA_info");
+	for(ista = 0; ista < sta_num;ista++)
+	{
+		myfile<<"Record_index: " << ista << "/" << sta_num << " EQ_NUM " << my_record[ista].EQ_BIN_NUM 
+			<< " STA_NUM " << my_record[ista].STA_BIN_NUM << endl;
+	}
+
+	myfile.close();
+
+
+
+}
 
 
 
@@ -316,23 +1000,16 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 
 	// step1, get unique EQ list
 	string command;
-	command = " cat eventinfo |awk '{print $12,$8,$9}'|sort|uniq > list.unique_EQ";
+	command = " cat eventinfo |awk '{print $12,$8,$9}'|sort|uniq |sort -u -k1,1>> list.unique_EQ";
 	exec(command);
 	// step2 get unique sta list
 	command = " cat eventinfo |grep -v PPP |awk '{print $1,$6,$7}'|sort|uniq > list.unique_STA";
 	exec(command);
 
 
-	int EQ_MAX = 1000;
-	string EQ_LIST[EQ_MAX];
-	double EQ_LAT[EQ_MAX];
-	double EQ_LON[EQ_MAX];
-	int EQ_NUM = 0;
 
-	int STA_MAX = 10000;
-	string STA_LIST[STA_MAX];
-	double STA_LAT[STA_MAX];
-	double STA_LON[STA_MAX];
+
+	int EQ_NUM = 0;
 	int STA_NUM = 0;
 
 	ifstream myfile;
@@ -343,7 +1020,8 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 	int count;
 	for(count = 0; count < file_count ; count++)
 	{
-		myfile >> EQ_LIST[count] >> EQ_LAT[count] >> EQ_LON[count];
+		myfile >> this->EQ_LIST[count] >> this->EQ_LAT[count] >> this->EQ_LON[count];
+		this->unique_EQ_num++;
 		EQ_NUM ++;
 		//cout << EQ_LIST[count] << " " << EQ_LAT[count] << " " << EQ_LON[count] << endl;
 	}
@@ -355,7 +1033,7 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 	file_count = count_file_num(file_name);
 	for(count = 0; count < file_count ; count++)
 	{
-		myfile >> STA_LIST[count] >> STA_LAT[count] >> STA_LON[count];
+		myfile >> this->STA_LIST[count] >> this->STA_LAT[count] >> this->STA_LON[count];
 		//cout << STA_LIST[count] << endl;
 		//if( STA_LIST[count].find( "PPP") != std::string::npos )
 		//{
@@ -363,6 +1041,7 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 			//continue;
 		//}
 		STA_NUM ++;
+		this->unique_STA_num++;
 		//cout << EQ_LIST[count] << " " << EQ_LAT[count] << " " << EQ_LON[count] << endl;
 	}
 
@@ -378,14 +1057,14 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 			for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
 			{
 				double grid_lat = this->my_grid[ilat][ilon].grid_lat;
-				if( fabs(grid_lat - EQ_LAT[count]) > this->VS_RADIUS_DEGREE)
+				if( fabs(grid_lat - EQ_LAT[count]) > this->VS_EQ_RADIUS_DEGREE)
 					continue;
 
 				double grid_lon = this->my_grid[ilat][ilon].grid_lon;
 				// distance between EQ and grid
 				double distance_km = dist_A_B( grid_lat, grid_lon, EQ_LAT[count], EQ_LON[count]);
 				//cout << distance_km << endl;
-				if( distance_km > 110*this->VS_RADIUS_DEGREE )
+				if( distance_km > 110*this->VS_EQ_RADIUS_DEGREE )
 					continue;
 
 
@@ -395,7 +1074,9 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 				this->my_grid[ilat][ilon].EX_EQ_LON[current_index] = EQ_LON[count];
 				this->my_grid[ilat][ilon].EX_EQ_NAME[current_index] = EQ_LIST[count];
 				this->my_grid[ilat][ilon].EX_EQ_NUM ++;
-				//cout << " ilat lon EX EQ NUM" << ilat << " " << ilon << " " << this->my_grid[ilat][ilon].EX_EQ_NUM << endl;
+				// cout << " ilat lon EX EQ NUM" << ilat << " " << ilon << " " << this->my_grid[ilat][ilon].EX_EQ_NUM << endl;
+				// cout << " ilat lon " << this->my_grid[ilat][ilon].grid_lat << " " << this->my_grid[ilat][ilon].grid_lon <<  endl;
+				// cout << " eventinf EQ lat lon " << EQ_LAT[count]<< " " << EQ_LON[count]<<  endl;
 			}
 
 	}
@@ -413,14 +1094,14 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 			for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
 			{
 				double grid_lat = this->my_grid[ilat][ilon].grid_lat;
-				if( fabs(grid_lat - STA_LAT[count]) > this->VS_RADIUS_DEGREE)
+				if( fabs(grid_lat - STA_LAT[count]) > this->VS_STA_RADIUS_DEGREE)
 					continue;
 
 				double grid_lon = this->my_grid[ilat][ilon].grid_lon;
 				// distance between EQ and grid
 				double distance_km = dist_A_B( grid_lat, grid_lon, STA_LAT[count], STA_LON[count]);
 				//cout << distance_km << endl;
-				if( distance_km > 110*this->VS_RADIUS_DEGREE )
+				if( distance_km > 110*this->VS_STA_RADIUS_DEGREE )
 					continue;
 
 				// add EQ info into current grid
@@ -434,6 +1115,29 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 
 	}
 
+	// output grid info for existing eventinfo
+	ofstream myfile2;
+	string filename = "out.existing_eventinfo.EQ_grid.STA_grid";
+	myfile2.open(filename.c_str());
+	int ilat = 0;
+	int ilon = 0;
+	for(ilat = 0; ilat < this->grid_lat_num ; ilat++)
+		for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
+		{
+			int ex_EQ_num = this->my_grid[ilat][ilon].EX_EQ_NUM;
+			int ex_sta_num = this->my_grid[ilat][ilon].EX_STA_NUM;
+			if(ex_EQ_num > 0 || ex_sta_num > 0)
+			{
+				myfile2<< "GRID_LAT_LON: "<< ilat << " " << ilon << " lat_lon" << 
+				this->my_grid[ilat][ilon].grid_lat<< " " << this->my_grid[ilat][ilon].grid_lon <<endl;
+				myfile2<< "GRID_EQ_NUM: " << this->my_grid[ilat][ilon].EX_EQ_NUM<< endl;
+				myfile2<< "GRID_STA_NUM: " << this->my_grid[ilat][ilon].EX_STA_NUM<< endl;
+			}
+		
+
+		}
+	myfile2.close();
+
 }
 
 
@@ -443,20 +1147,20 @@ void big_new_record::catagorize_eventstation_to_VS()
 
 	// step1, get unique EQ list
 	string command;
-	command = " cat eventStation |awk '{print $19,$11,$12}'|sort|uniq > list.unique_EQ";
+	command = " cat eventStation |awk '{print $19,$11,$12}'|sort|uniq |sort -u -k1,1> list.unique_EQ";
 	exec(command);
 	// step2 get unique sta list
 	command = " cat eventStation |grep -v PPP |awk '{print $1,$9,$10}'|sort|uniq > list.unique_STA";
 	exec(command);
 
 
-	int EQ_MAX = 1000;
+	int EQ_MAX = 2000;
 	string EQ_LIST[EQ_MAX];
 	double EQ_LAT[EQ_MAX];
 	double EQ_LON[EQ_MAX];
 	int EQ_NUM = 0;
 
-	int STA_MAX = 10000;
+	int STA_MAX = 20000;
 	string STA_LIST[STA_MAX];
 	double STA_LAT[STA_MAX];
 	double STA_LON[STA_MAX];
@@ -504,14 +1208,14 @@ void big_new_record::catagorize_eventstation_to_VS()
 			for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
 			{
 				double grid_lat = this->my_grid[ilat][ilon].grid_lat;
-				if( fabs(grid_lat - EQ_LAT[count]) > this->VS_RADIUS_DEGREE)
+				if( fabs(grid_lat - EQ_LAT[count]) > this->VS_EQ_RADIUS_DEGREE)
 					continue;
 
 				double grid_lon = this->my_grid[ilat][ilon].grid_lon;
 				// distance between EQ and grid
 				double distance_km = dist_A_B( grid_lat, grid_lon, EQ_LAT[count], EQ_LON[count]);
 				//cout << distance_km << endl;
-				if( distance_km > 110*this->VS_RADIUS_DEGREE )
+				if( distance_km > 110*this->VS_EQ_RADIUS_DEGREE )
 					continue;
 
 				// add EQ info into current grid
@@ -536,14 +1240,14 @@ void big_new_record::catagorize_eventstation_to_VS()
 			for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
 			{
 				double grid_lat = this->my_grid[ilat][ilon].grid_lat;
-				if( fabs(grid_lat - STA_LAT[count]) > this->VS_RADIUS_DEGREE)
+				if( fabs(grid_lat - STA_LAT[count]) > this->VS_STA_RADIUS_DEGREE)
 					continue;
 
 				double grid_lon = this->my_grid[ilat][ilon].grid_lon;
 				// distance between EQ and grid
 				double distance_km = dist_A_B( grid_lat, grid_lon, STA_LAT[count], STA_LON[count]);
 				//cout << distance_km << endl;
-				if( distance_km > 110*this->VS_RADIUS_DEGREE )
+				if( distance_km > 110*this->VS_STA_RADIUS_DEGREE )
 					continue;
 
 				// add EQ info into current grid
@@ -556,15 +1260,40 @@ void big_new_record::catagorize_eventstation_to_VS()
 
 	}
 
+	// output grid info for existing eventinfo
+	ofstream myfile2;
+	string filename = "out.evetStation.EQ_grid.STA_grid";
+	myfile2.open(filename.c_str());
+	int ilat = 0;
+	int ilon = 0;
+	for(ilat = 0; ilat < this->grid_lat_num ; ilat++)
+		for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
+		{
+			int cu_EQ_num = this->my_grid[ilat][ilon].CU_EQ_NUM;
+			int cu_sta_num = this->my_grid[ilat][ilon].CU_STA_NUM;
+			if(cu_EQ_num > 0 || cu_sta_num > 0)
+			{
+				myfile2<< "GRID_LAT_LON: "<< ilat << " " << ilon << " lat_lon" << 
+				this->my_grid[ilat][ilon].grid_lat<< " " << this->my_grid[ilat][ilon].grid_lon <<endl;
+				myfile2<< "GRID_EQ_NUM: " << this->my_grid[ilat][ilon].CU_EQ_NUM<< endl;
+				myfile2<< "GRID_STA_NUM: " << this->my_grid[ilat][ilon].CU_STA_NUM<< endl;
+			}
+
+
+		}
+	myfile2.close();
+
+
+
 }
 void big_new_record::virtual_station_grid_initiate()
 {
 	cout << "--> Initiate virtual station grid \n";
-	new_grid** my_grid;
+	virtual_station** my_grid;
 	// initiate virtual station grid
 	this->grid_lat_num = (int)(180 / this->VS_LATITUDE_INC);
 	this->grid_lon_num = (int*)malloc(sizeof(int)*this->grid_lat_num);
-	my_grid = (new_grid**)malloc(sizeof(new_grid*)*this->grid_lat_num);
+	my_grid = (virtual_station**)malloc(sizeof(virtual_station*)*this->grid_lat_num);
 
 
 	cout << "grid lat num is " << this->grid_lat_num << endl;
@@ -579,7 +1308,7 @@ void big_new_record::virtual_station_grid_initiate()
 		this->grid_lon_num[ilat] = floor( 2*3.1415926*6371*cos( current_lat * 3.1415926/180) / lat_inc_in_km );
 
 		//cout << " current lat " << ilat << " lon num" << this->grid_lon_num[ilat] << endl;
-		my_grid[ilat] = (new_grid*)malloc(sizeof(new_grid)*this->grid_lon_num[ilat]);
+		my_grid[ilat] = (virtual_station*)malloc(sizeof(virtual_station)*this->grid_lon_num[ilat]);
 		
 		for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
 		{
@@ -588,11 +1317,11 @@ void big_new_record::virtual_station_grid_initiate()
 			//cout << " lat lon "<< current_lat << " "<< current_lon<< endl;
 			my_grid[ilat][ilon].grid_lat = current_lat;
 			my_grid[ilat][ilon].grid_lon = current_lon;
-			my_grid[ilat][ilon].grid_radius = this->VS_RADIUS_DEGREE;
+			//my_grid[ilat][ilon].grid_radius = this->VS_RADIUS_DEGREE;
 
 			// initiate EXisting EQ STA 
 			my_grid[ilat][ilon].EX_EQ_NUM = 0;
-			int MMM = 400;
+			int MMM = 1000;
 			my_grid[ilat][ilon].EX_EQ_NAME = (string*)malloc(sizeof(string)*MMM);
 			my_grid[ilat][ilon].EX_EQ_LAT = (double*)malloc(sizeof(double)*MMM);
 			my_grid[ilat][ilon].EX_EQ_LON = (double*)malloc(sizeof(double)*MMM);
@@ -618,6 +1347,20 @@ void big_new_record::virtual_station_grid_initiate()
 
 	}
 	this->my_grid = my_grid;
+
+
+	// also initiate EQ_LIST
+	int max_EQ = 2000;
+	int max_STA = 20000;
+	this->unique_EQ_num = 0;
+	this->EQ_LIST = (string*)malloc(sizeof(string)*max_EQ);
+	this->EQ_LAT = (double*)malloc(sizeof(double)*max_EQ);	
+	this->EQ_LON = (double*)malloc(sizeof(double)*max_EQ);
+
+	this->unique_STA_num = 0;
+	this->STA_LIST = (string*)malloc(sizeof(string)*max_STA);
+	this->STA_LAT = (double*)malloc(sizeof(double)*max_STA);	
+	this->STA_LON = (double*)malloc(sizeof(double)*max_STA);
 
 
 }
@@ -810,12 +1553,13 @@ void big_new_record::read_eventStation()
 	string tmp;
 	ifstream myfile;
 	myfile.open(this->eventStation.c_str());
-		string sub1;
-		string flag;
+	string sub1;
+	string flag;
 	int line;
 	line = 0;
 	int sta_num = count_file_num(this->eventStation);
-	cout <<"--> big_record  Read in eventStation"<< sta_num << " records" << endl;
+	cout << "--> Read in eventStation "<< sta_num << " stations is read in " << endl;
+
 
 	for(line = 0; line < sta_num ; line++)
 	{
@@ -876,8 +1620,7 @@ void big_new_record::read_eventStation()
 	}
 	myfile.close();
 
-	cout << "Big record read record file done" << endl;
-
+	
 }
 
 
@@ -903,7 +1646,12 @@ void big_new_record::read_sac_file()
 
 	int ista;
 	for(ista = 0; ista < this->sta_num;ista++)
+	{
+		cout << " -> Read sac file " << ista << "/" << this->sta_num << endl; 
+		this->my_record[ista].PHASE = this->PHASE;
+		this->my_record[ista].download_sac_file();
 		this->my_record[ista].read_sac_file();
+	}
 
 
 }

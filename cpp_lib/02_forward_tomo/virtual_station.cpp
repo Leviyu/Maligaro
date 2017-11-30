@@ -2,10 +2,27 @@
 
 
 
-new_grid::new_grid()
+void virtual_station::initiate()
 {
 
-	cout << " new grid is declared! " << endl;
+	// int EQ_max = 100;
+	// this->EQ_NAME_array = new string[EQ_max];
+	// this->EQ_index = 0;
+
+
+	int station_max = 500;
+	this->eventinfo_index = 0;
+	this->eventinfo_index_array = new int[station_max];
+	this->eventStation_index = 0;
+	this->eventStation_index_array = new int[station_max];
+
+
+
+
+
+
+	// ======================
+	cout << " new virtual_station is declared! " << endl;
 	// distribute space for record tag arrat
 	int MAX = 10000;
 	
@@ -17,19 +34,28 @@ new_grid::new_grid()
 	this->fix_slow_BAZ = new double[MAX];
 	this->npts_record_sum = 0;
 	this->long_win = new double[MAX];
-
+	this->eq_skip_flag = 0;
+	this->sta_skip_flag = 0;
 
 
 }
-new_grid::~new_grid()
+
+void virtual_station::destruct()
 {
 
-	
+	delete[] this->eventinfo_index_array;
+	delete[] this->eventStation_index_array;
+	// delete[] this->EQ_NAME_array;
+
+
+	//==============
 	delete[] this->record_tag;
 	delete[] this->long_win;
+
 }
 
-void new_grid::initiate_grid()
+
+void virtual_station::initiate_grid()
 {
 	cout << " --> Build Virtual Station grid network" << endl;
 
@@ -43,40 +69,33 @@ void new_grid::initiate_grid()
 	for(ilat = -89; ilat < 89; ilat+= this->VS_LATITUDE_INC)
 	{
 		current_lat = ilat;
-		
-
-
-
 
 
 	}
-
-
-
-
 }
 
 
-void new_grid::get_grid_dist()
+void virtual_station::get_grid_dist()
 {
 
 
 	// get EQ lat lon
-	
-	double eq_lat = this->my_big_record->my_record[0].eq_lat;
-	double eq_lon = this->my_big_record->my_record[0].eq_lon;
-	double grid_lat , grid_lon;
-	grid_lat = this->grid_lat;
-	grid_lon = this->grid_lon;
 
-	double grid_dist = dist_A_B(eq_lat ,eq_lon, grid_lat , grid_lon);
+	int ilat_eq = this->ilat_eq;
+	int ilon_eq = this->ilon_eq;
+	double eq_lat = this->my_big_record->my_grid[ilat_eq][ilon_eq].grid_lat;
+	double eq_lon = this->my_big_record->my_grid[ilat_eq][ilon_eq].grid_lon;
+	
+	int ilat_sta = this->ilat_sta;
+	int ilon_sta = this->ilon_sta;
+	double sta_lat = this->my_big_record->my_grid[ilat_sta][ilon_sta].grid_lat;
+	double sta_lon = this->my_big_record->my_grid[ilat_sta][ilon_sta].grid_lon;
+
+
+
+	double grid_dist = dist_A_B(eq_lat ,eq_lon, sta_lat , sta_lon);
 	grid_dist = grid_dist/111;
 	this->grid_dist = grid_dist;
-
-
-
-
-
 
 }
 
@@ -84,8 +103,9 @@ void new_grid::get_grid_dist()
 // This function first read in S_ES file 
 // and then t*(S_ES) to find the best fit to virtual stack
 // then find the best fit gaussian to t*(S_ES) and set ONSET on gaussian
-int new_grid::find_stack_ONSET_time()
+int virtual_station::find_stack_ONSET_time()
 {
+
 
 	// 1 . read in S_ES
 	ifstream myfile;
@@ -228,19 +248,14 @@ int new_grid::find_stack_ONSET_time()
 			this->virtual_stack_ONSET = ONSET_time;
 			break;
 		}
-
-
-
 	}
 
-
-
-
+	return 0;
 }
 
 
 
-void new_grid::find_records_within_range()
+void virtual_station::find_records_within_range()
 {
 	
 	int ista;
@@ -277,55 +292,62 @@ void new_grid::find_records_within_range()
 
 }
 
-void new_grid::stack_records_from_one_EQ()
+void virtual_station::stack_records_from_one_EQ()
 {
-
+	cout << "stack_records_from_one_EQ \n"<< endl;
 	int ista;
 	int npts;
-	//double weight_SUM = 0;
-
-
+	double weight;
+	double dist;
+	double sta_lat;
+	double sta_lon;
+	int tag;
 	// option #1 stacked records that are aligned to PHASE PREM time
-	for(npts = 0 ; npts < this->long_npts ; npts ++)
-	{
+	
+	// initiate long_win
+	for(npts = 0; npts < this->long_npts; npts++)
 		this->long_win[npts] = 0;
-		for(ista = 0 ; ista < this->npts_record_sum ; ista++)
+	int stacked_record_num = 0;
+	for(ista = 0 ; ista < this->npts_record_sum ; ista++)
+	{
+		cout << "ista "<< ista << endl;
+
+		tag = this->record_tag[ista];
+		cout << "tag "<< tag << endl;
+		cout << " stacking for vs " << this->my_big_record->my_vs_index << " station index "<< tag << endl; 
+		sta_lon = this->my_big_record->my_record[tag].sta_lon;
+		sta_lat = this->my_big_record->my_record[tag].sta_lat;
+		// cout << "sta lon lat "<< sta_lon << endl;
+		dist = dist_A_B( this->grid_lat, this->grid_lon,  sta_lat , sta_lon );
+		dist = dist / 111;
+
+		//gaussian_func(double a, double b, double c, double d, double x)
+		weight = gaussian_func(1, 0, 4 , 0, dist);
+		if (weight == 0)
+			continue;
+
+
+		for(npts = 0 ; npts < this->long_npts ; npts ++)
 		{
-			int tag = this->record_tag[ista];
-			// calculate the distance between station and grid center
-			double weight;
-
-			double dist;
-			double sta_lat;
-			double sta_lon;
-			sta_lon = this->my_big_record->my_record[tag].sta_lon;
-			sta_lat = this->my_big_record->my_record[tag].sta_lat;
-			dist = dist_A_B( this->grid_lat, this->grid_lon,  sta_lat , sta_lon );
-			dist = dist / 111;
-
-			//gaussian_func(double a, double b, double c, double d, double x)
-			weight = gaussian_func(1, 0, 4 , 0, dist);
-
-
 			if(  this->my_big_record->my_record[tag].long_win[npts] !=  this->my_big_record->my_record[tag].long_win[npts] )
 				continue;
-
 			int current_record_polar = this->my_big_record->my_record[tag].polarity_flag;
 			if(current_record_polar == 0)
 				current_record_polar = 1;
-
-			this->long_win[ npts] += this->my_big_record->my_record[tag].long_win[npts] * weight * current_record_polar;
+			this->long_win[npts] += this->my_big_record->my_record[tag].long_win[npts] * weight * current_record_polar;
 		}
-
+		stacked_record_num ++;
 	}
+
+	if(stacked_record_num == 0)
+		return;
+
 	normalize_array( this->long_win, this->long_npts );
-
-
 
 }
 
 
-void new_grid::get_dt_ave_STD()
+void virtual_station::get_dt_ave_STD()
 {
 
 	double dt_SUM;
@@ -360,7 +382,7 @@ void new_grid::get_dt_ave_STD()
 
 }
 
-void new_grid::get_crust_correction_ave_STD()
+void virtual_station::get_crust_correction_ave_STD()
 {
 
 	double dt_SUM;
@@ -395,29 +417,24 @@ void new_grid::get_crust_correction_ave_STD()
 
 }
 
-void new_grid::output_stacked_record()
+void virtual_station::output_stacked_record()
 {
 
 
 	ofstream myfile;
+	int vs_index = this->my_big_record->my_vs_index;
+	string phase = this->my_big_record->PHASE;
+	this->out_stacked_record_rel_PREM = "long_win.vs."+phase+"."+to_string(vs_index);
 	myfile.open(this->out_stacked_record_rel_PREM.c_str());
-
-	double X[100000];
-
+	
 	int npts;
-
 	normalize_array(this->long_win, this->long_npts);
-
-
-
+	double X[this->long_npts];
 	for(npts = 0; npts < this->long_npts; npts++)
 	{
 		X[npts] = this->LONG_BEG + npts * this->delta;
 		myfile << X[npts] << "  " << this->long_win[npts] << endl;
-
 	}
-
-
 	myfile.close();
 }
 
@@ -426,7 +443,7 @@ void new_grid::output_stacked_record()
 // This code relocated the center of grid based on stations within range
 // if stations within range is less or equal then 3, we skip
 //
-void new_grid::relocate_grid_center()
+void virtual_station::relocate_grid_center()
 {
 	
 	if ( this->npts_record_sum <= this->station_num_threshold)
@@ -487,10 +504,6 @@ void new_grid::relocate_grid_center()
 
 	}
 
-
-
-
-
 }
 
 
@@ -508,7 +521,7 @@ void new_grid::relocate_grid_center()
  *	DATE:				Keywords:
  *	Reference:
 ******************************************************************/
-void new_grid::get_SNR_before_and_after_stack()
+void virtual_station::get_SNR_before_and_after_stack()
 {
 
 	double ave_SNR;
@@ -573,14 +586,7 @@ void new_grid::get_SNR_before_and_after_stack()
 	}
 	else
 		this->stack_SNR= phase_signal / noise_signal;
-
-
-
-
-
-
-
-
-
-
 }
+
+
+

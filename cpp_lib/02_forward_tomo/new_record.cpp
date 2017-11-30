@@ -5,15 +5,20 @@
 #define MAX 4000
 new_record::new_record()
 {
+	// default componente
+	this->COMP = "T";
 
 }
 
 
 new_record::~new_record()
 {
-	delete[] this->angle;
-	delete[] this->radius;
-	delete[] this->long_win;
+	// if(this->angle == this->angle)
+	// 	delete[] this->angle;
+	// if(this->radius == this->radius)
+	// 	delete[] this->radius;
+	// if(this->long_win == this->long_win)
+	// 	delete[] this->long_win;
 }
 
 
@@ -80,7 +85,28 @@ void new_record::get_crustal_correction()
 
 
 
+void new_record::download_sac_file()
+{
+	string EQ 		= this->EQ;
+	string PHASE 	= this->PHASE;
+	string COMP 	= this->COMP;
+	string STA 		= this->STA;
+	string NET 		= this->NET;
+	string sac_file1 = EQ+"/"+EQ + "."+NET+"."+STA+".BH"+COMP+".sac";
+	string sac_file2 = EQ+"/"+EQ + "."+NET+"."+STA+".HH"+COMP+".sac";
+	// cout << sac_file1 << endl;
 
+	if(!is_file_exist(sac_file1))	
+	{
+		string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
+		// string command = "get_EQ_sac "+ sac_file1;
+		exec(command);
+	}
+	//cout << command << endl;
+	//command = "get_EQ_sac "+ sac_file2;
+	//exec(command);
+
+}
 
 
 void new_record::read_sac_file()
@@ -92,8 +118,15 @@ void new_record::read_sac_file()
 	// 1. get PREM time for current record
 	double PREM;
 	PREM = taup_time(this->eq_lat, this->eq_lon, this->eq_dep, this->sta_lat , this->sta_lon, this->PHASE);
+	//cout << 
+		//this->eq_lat << " " <<
+		//this->eq_lon << " "<<
+		//this->eq_dep << " "<<
+		//this->sta_lat << " "<<
+		//this->sta_lon << " "<<
+		//this->PHASE << endl;
 
-	cout << "taup time is " << PREM << endl;
+	//cout << "taup time is " << PREM << endl;
 	if( PREM <= 0 )
 		cout << "ERROR PREM <= 0 EQ lat lon dep " <<  this->eq_lat 
 			<< "  " << this->eq_lon
@@ -133,7 +166,7 @@ void new_record::read_sac_file()
 
 	double abs_beg;
 	double length;
-	cout << " PREM is "<< PREM << " long beg is "<< this->long_beg<< endl;
+	//cout << " PREM is "<< PREM << " long beg is "<< this->long_beg<< endl;
 	abs_beg = PREM + this->long_beg;
 	length = this->long_len;
 
@@ -209,11 +242,11 @@ void new_record::calculate_SNR()
 	npts_phase_beg = (int) ( (this->phase_beg - this->long_beg ) / this->delta );
 	npts_noise_len = (int) (this->noise_len  / this->delta);
 	npts_phase_len = (int) (this->phase_len  / this->delta);
-	cout << " npts_noise_beg" << npts_noise_beg 
-		<< " npts_phase_beg"  << npts_phase_beg
-		<< " npts_noise_len " << npts_noise_len
-		<< " npts_phase_len "<< npts_phase_len
-		<< endl;
+	// cout << " npts_noise_beg" << npts_noise_beg 
+	// 	<< " npts_phase_beg"  << npts_phase_beg
+	// 	<< " npts_noise_len " << npts_noise_len
+	// 	<< " npts_phase_len "<< npts_phase_len
+	// 	<< endl;
 
 	int count;
 	for(count = 0; count < npts_noise_len ; count++)

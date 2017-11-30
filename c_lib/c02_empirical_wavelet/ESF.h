@@ -439,5 +439,8 @@ void store_ES_into_record(new_RECORD* my_record, new_INPUT* my_input, double* cu
 void find_best_match_gaussian_for_iterative_ES(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
 double width_dependent_gaussian_time_delay(double gaussian_factor);
 void reject_records_with_dt_too_close_to_traffic_phase(new_RECORD* my_record, new_INPUT* my_input);
+int stretch_record_restack_ES_based_on_code_choice(new_RECORD* my_record, new_INPUT* my_input, double* ES);
+void redo_for_S_P_remake_EW(new_RECORD* my_record, new_INPUT* my_input);
+int restack_ES_for_phase_code_choice(new_RECORD* my_record, new_INPUT* my_input, double* ES);
 
 #endif

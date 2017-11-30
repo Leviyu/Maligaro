@@ -137,6 +137,7 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 		for(count = 0; count < npts_phase; count++)
 			EW_new[count] = first_EW[count];
 	}
+	printf(" fix missing flag is %d \n", my_input->Fix_missing_sta_flag);
 	if(my_input->Fix_missing_sta_flag == 1)
 	{
 		for(count = 0; count < npts_phase; count++)
@@ -181,6 +182,12 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 	// the whole process with the new masked window
 	// 1. redefine the beyond_window_flag
 	redefine_beyon_wind_flag(my_record,my_input,current_ES,EW_new);
+
+
+
+	// after code choice, we used code picked good records to restack a E.W.
+	// and redo the whole process again just for S/P
+	redo_for_S_P_remake_EW(my_record, my_input);
 
 
 	return 0;

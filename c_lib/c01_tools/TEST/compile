@@ -2,12 +2,12 @@
 
 set c_file = main.c
 set work_dir = .
-set C_DIR = /mnt/data2/hongyu/new_git/hongyulib
+set C_DIR = /mnt/data2/hongyu/EQTime/Maligaro/c_lib
 
 
 set my_lib = $C_DIR
-set tool_lib = $my_lib/01_tool_lib
-set ESF_lib = $my_lib/02_ESF_lib
+set tool_lib = $my_lib/c01_tools
+set ESF_lib = $my_lib/c02_empirical_wavelet
 
 ##set INFILE = $work_dir/INFILE
 ##set sachome = `grep -w SACHOME $INFILE |awk '{print $2}'`

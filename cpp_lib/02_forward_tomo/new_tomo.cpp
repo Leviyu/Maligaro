@@ -19,24 +19,28 @@ void new_tomo::initiate_tomo()
 	cout << "---> Tomography is initiated " << endl;
 	int count;
 
-	
+	this->dep.resize(this->num_dep);
+	this->lat.resize(this->num_lat);
+	this->lon.resize(this->num_lon);
+	this->num_lon2.resize(this->num_lat);
 
-	this->dep = new double[this->num_dep];
-	this->lat = new double[this->num_lat];
-	this->lon = new double[this->num_lon];
-	this->num_lon2 = new int[this->num_lat];
-	this->lon2 = new double*[this->num_lat];
+	//this->lon2 = new double*[this->num_lat];
+	this->lon2.resize(this->num_lat);
 	for(count = 0; count < this->num_lat; count ++)
-		this->lon2[count] = new double[500];
+		//this->lon2[count] = new double[500];
+		this->lon2[count].resize(500);
 
-	this->my_cell = new new_cell**[this->num_dep];
+	//this->my_cell = new new_cell**[this->num_dep];
+	this->my_cell.resize(this->num_dep);
 	int i;
 	for(count = 0; count < this->num_dep; count++)
 	{
-		this->my_cell[count] = new new_cell*[this->num_lat];
+		//this->my_cell[count] = new new_cell*[this->num_lat];
+		this->my_cell[count].resize(this->num_lat);
 		for(i=0; i < this->num_lat; i++)
 		{
-			this->my_cell[count][i] = new new_cell[this->num_lon];
+			//this->my_cell[count][i] = new new_cell[this->num_lon];
+			this->my_cell[count][i].resize(this->num_lon);
 		}
 
 	}
@@ -64,10 +68,9 @@ new_tomo::~new_tomo()
 
 	cout<< "new_tomo is killed flag is  "<<this->flag_is_new_tomo <<endl;
 	int count;
-	int i;
 	// free allocated memory
-	delete[] this->dep;
-	delete[] this->lat;
+	//delete[] this->dep;
+	//delete[] this->lat;
 	//if( this->flag_is_new_tomo.compare("old") == 0 )
 		//delete[] this->lon;
 	//else
@@ -77,18 +80,10 @@ new_tomo::~new_tomo()
 		//delete[] this->lon2;
 	//}
 
-	// delete 1d array
-	for(count = 0; count< this->num_dep; count++)
-	{
-		for(i = 0; i< this->num_lat; i++)
-		{
-			delete[] this->my_cell[count][i];
-		}
-	}
 	// delete 2D array
 	for(count = 0; count< this->num_dep; count++)
 	{
-			delete[] this->my_cell[count];
+			//delete[] this->my_cell[count];
 			//delete[] this->dvs[count];
 			//delete[] this->sum_dvs_in_cell[count];
 			//delete[] this->sum_num_in_cell[count];
@@ -96,7 +91,7 @@ new_tomo::~new_tomo()
 			//delete[] this->gradient[count];
 	}
 	//delete 3D array
-	delete[] this->my_cell;
+	//delete[] this->my_cell;
 	//delete[] this->dvs;
 	//delete[] this->sum_dvs_in_cell;
 	//delete[] this->sum_num_in_cell;
@@ -241,12 +236,13 @@ new_tomo::new_tomo()
 	this->num_lon = 360;
 
 	this->CMB_lat_cell_number = 10;
+	int MAX = 500;
 
-	this->depth_profile = new double[500];
-	this->RMS_dep 		= new double[500];
-	this->RMS_weight 	= new double[500];
-	this->plot_profile_dep = new double[500];
-	this->tomo_layer_array = new double[100];
+	this->depth_profile.resize(MAX);
+	this->RMS_dep.resize(MAX);
+	this->RMS_weight.resize(MAX);
+	this->plot_profile_dep.resize(MAX);
+	this->tomo_layer_array.resize(MAX);
 
 
 }
@@ -255,13 +251,6 @@ new_tomo::new_tomo()
 
 int new_tomo::getDep(int idep)
 {
-
-
-
-
-
-
-
 
 
 	return 0;
@@ -364,12 +353,12 @@ int new_tomo::define_horizontal_profile()
 	double CMB_equator_length;
 	double CMB_latitude_delta_length;
 	double CMB_latitude_delta_length_in_degree;
-		double latitude_angle_in_degree;
-		double latitude_angle_in_radi;
-		int lat_num_cells;
-		double lat_radius;
-		double current_lat_delta_length;
-		double current_lat_delta_length_in_degree;
+		//double latitude_angle_in_degree;
+		//double latitude_angle_in_radi;
+		//int lat_num_cells;
+		//double lat_radius;
+		//double current_lat_delta_length;
+		//double current_lat_delta_length_in_degree;
 	CMB_equator_length = 6371-this->dep[idep];
 	CMB_latitude_delta_length = 3.1415926*CMB_equator_length / this->CMB_lat_cell_number;
 	CMB_latitude_delta_length_in_degree = 180/this->CMB_lat_cell_number;

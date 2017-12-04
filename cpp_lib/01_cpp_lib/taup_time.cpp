@@ -30,8 +30,8 @@ double taup_time(double EQ_lat, double EQ_lon, double EQ_dep, double STA_lat, do
 
 	string command;
 
-	command = "taup_time -mod prem -ph "+ phase + " -evt " + to_string(EQ_lat) + " " + to_string(EQ_lon) +
-		" -sta " + to_string(STA_lat) + " " + to_string(STA_lon) + " -h " + to_string(EQ_dep) + " | awk 'NR==6 {print $4}'";
+	command = "taup_time -mod prem -ph "+ phase + " -evt " + std::to_string(EQ_lat) + " " + std::to_string(EQ_lon) +
+		" -sta " + std::to_string(STA_lat) + " " + std::to_string(STA_lon) + " -h " + std::to_string(EQ_dep) + " | awk 'NR==6 {print $4}'";
 
 
 	//cout << "command is " << command << endl;
@@ -44,15 +44,15 @@ double taup_time(double EQ_lat, double EQ_lon, double EQ_dep, double STA_lat, do
 	if(found != string::npos )
 	{
 		new_phase =  phase.substr(0, phase.size()-1);
-		command = "taup_time -mod prem -ph "+ new_phase + " -evt " + to_string(EQ_lat) + " " + to_string(EQ_lon) +
-			" -sta " + to_string(STA_lat) + " " + to_string(STA_lon) + " -h " + to_string(EQ_dep) 
+		command = "taup_time -mod prem -ph "+ new_phase + " -evt " + std::to_string(EQ_lat) + " " + std::to_string(EQ_lon) +
+			" -sta " + std::to_string(STA_lat) + " " + std::to_string(STA_lon) + " -h " + std::to_string(EQ_dep) 
 			+ " | awk 'NR>5 {print $0}' |awk '$8>180 {print $4}' |awk 'NR==1 {print $0}' ";
 	}
 	else
 	{
 		new_phase = phase;
-		command = "taup_time -mod prem -ph "+ new_phase + " -evt " + to_string(EQ_lat) + " " + to_string(EQ_lon) +
-			" -sta " + to_string(STA_lat) + " " + to_string(STA_lon) + " -h " + to_string(EQ_dep) 
+		command = "taup_time -mod prem -ph "+ new_phase + " -evt " + std::to_string(EQ_lat) + " " + std::to_string(EQ_lon) +
+			" -sta " + std::to_string(STA_lat) + " " + std::to_string(STA_lon) + " -h " + std::to_string(EQ_dep) 
 			+ " | awk 'NR>5 {print $0}' |awk '$8<180 {print $4}' |awk 'NR==1 {print $0}' ";
 	}
 
@@ -83,8 +83,8 @@ double taup_incident(double EQ_lat, double EQ_lon, double EQ_dep, double STA_lat
 
 	string command;
 
-	command = "taup_time -mod prem -ph "+ phase + " -evt " + to_string(EQ_lat) + " " + to_string(EQ_lon) +
-		" -sta " + to_string(STA_lat) + " " + to_string(STA_lon) + " -h " + to_string(EQ_dep) + " | awk 'NR==6 {print $7}'";
+	command = "taup_time -mod prem -ph "+ phase + " -evt " + std::to_string(EQ_lat) + " " + std::to_string(EQ_lon) +
+		" -sta " + std::to_string(STA_lat) + " " + std::to_string(STA_lon) + " -h " + std::to_string(EQ_dep) + " | awk 'NR==6 {print $7}'";
 
 
 	//cout << "command is " << command << endl;
@@ -97,15 +97,15 @@ double taup_incident(double EQ_lat, double EQ_lon, double EQ_dep, double STA_lat
 	if(found != string::npos )
 	{
 		new_phase =  phase.substr(0, phase.size()-1);
-		command = "taup_time -mod prem -ph "+ new_phase + " -evt " + to_string(EQ_lat) + " " + to_string(EQ_lon) +
-			" -sta " + to_string(STA_lat) + " " + to_string(STA_lon) + " -h " + to_string(EQ_dep) 
+		command = "taup_time -mod prem -ph "+ new_phase + " -evt " + std::to_string(EQ_lat) + " " + std::to_string(EQ_lon) +
+			" -sta " + std::to_string(STA_lat) + " " + std::to_string(STA_lon) + " -h " + std::to_string(EQ_dep) 
 			+ " | awk 'NR>5 {print $0}' |awk '$8>180 {print $7}' |awk 'NR==1 {print $0}' ";
 	}
 	else
 	{
 		new_phase = phase;
-		command = "taup_time -mod prem -ph "+ new_phase + " -evt " + to_string(EQ_lat) + " " + to_string(EQ_lon) +
-			" -sta " + to_string(STA_lat) + " " + to_string(STA_lon) + " -h " + to_string(EQ_dep) 
+		command = "taup_time -mod prem -ph "+ new_phase + " -evt " + std::to_string(EQ_lat) + " " + std::to_string(EQ_lon) +
+			" -sta " + std::to_string(STA_lat) + " " + std::to_string(STA_lon) + " -h " + std::to_string(EQ_dep) 
 			+ " | awk 'NR>5 {print $0}' |awk '$8<180 {print $7}' |awk 'NR==1 {print $0}' ";
 	}
 

@@ -17,5 +17,6 @@ int main()
 	my_big_record.initiate_big_record();
 	my_big_record.virtual_station_main();
 
+	cout << " ================ END of code " << endl;
 	return 0;
 }

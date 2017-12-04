@@ -10,8 +10,6 @@ int define_goodness_of_record(new_RECORD* my_record, new_INPUT* my_input)
 	double tstar_factor;
 	double tstar_ccc;
 
-	double tstar_factor_min = 0;
-	double tstar_factor_max = 5;
 	double SNR_threshold = 0;
 	double CCC_threshold = 0;
 	int NUM_station_within_range = 0;
@@ -43,8 +41,6 @@ int define_goodness_of_record(new_RECORD* my_record, new_INPUT* my_input)
 		{
 			if( my_record[ista].polarity * my_record[ista].polar_flag <  0)
 				my_record[ista].polar_correct_flag = 1;
-
-
 		}
 		
 		if( my_record[ista].traffic_phase_nearby == 1)
@@ -52,7 +48,6 @@ int define_goodness_of_record(new_RECORD* my_record, new_INPUT* my_input)
 			my_record[ista].quality = -1;
 			continue;
 		}
-
 
 		if(my_record[ista].quality != -1 &&
 				fabs(SNR) > my_input->SNR_CUT &&

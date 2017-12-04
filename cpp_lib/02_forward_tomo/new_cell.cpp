@@ -11,12 +11,12 @@ new_cell::new_cell()
 	BAZ = 0;
 	num_BAZ = 0;
 	//this->vtk_index_array = new int[10];
+	this->vtk_index_array.resize(10);
 
 }	
 
 new_cell::~new_cell()
 {
 
-	//delete[] this->vtk_index_array;
 
 }

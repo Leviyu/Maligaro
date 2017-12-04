@@ -43,6 +43,7 @@ int sac2xy_with_delta(string sac_file2, double begin_time, double length, double
 	//printf(" beg time %lf len %lf \n", begin_time, length);
 	//printf("nerr is %d   0 is good \n", nerr);
 	//cout << "del ois " << del << " beg is "<< beg<< " begin_time is "<< begin_time << endl;
+	int npts_out = (int)(length/DELTA) ;
 	if(nerr != 0)
 	{
 		printf("ERROR in sax2xy, read in sac file : %s \n",sac_file);
@@ -64,7 +65,11 @@ int sac2xy_with_delta(string sac_file2, double begin_time, double length, double
 	{
 		for(i = 0; i< max ; i++)
 			yarray[i] = 0.00000000001;
+		for(i = 0; i< npts_out ; i++)
+			out_array[i] = 0.00000000001;
 		printf(" ---> bad quality sac, reached end of file %s \n", sac_file);
+		printf(" npts_long_end %d len %d npts_long_beg %d \n", npts_long_end, len, npts_long_beg);
+		return 1;
 	}
 
 
@@ -75,7 +80,6 @@ int sac2xy_with_delta(string sac_file2, double begin_time, double length, double
 	double XTMP[npts_sac];
 	double YTMP[npts_sac];
 
-	int npts_out = (int)(length/DELTA) ;
 	double new_x[npts_out];		// new x to store time
 	double new_y[npts_out];		// new y to store amplitude
 	int icount;
@@ -121,10 +125,8 @@ int sac2xy_with_delta(string sac_file2, double begin_time, double length, double
 	wiginterpd(XTMP,YTMP,npts_sac,new_x,out_array,npts_out,0);
 //printf("use wiginterpd DONE\n");
 
-	free(yarray);
 
 //output_array2("lololololo",new_x, out_array, npts_out,1);
-//f
 
 	return 0;
 }

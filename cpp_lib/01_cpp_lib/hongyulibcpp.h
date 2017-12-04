@@ -10,36 +10,16 @@
 #include<cmath>
 //#include "sacio.h"
 extern "C" {
-//#include "/opt/sac/include/sacio.h"
-#include "/Users/Leviyu/bin/sac/include/sacio.h"
+#include "/opt/sac/include/sacio.h"
+//##include "/Users/Leviyu/bin/sac/include/sacio.h"
 }
 
 using namespace std;
 
 
 
-class CRUST_MODEL
-{
-	public:
 
-		double** boundary;
-		double** vs;
-		double** vp;
-		double** rho;
-
-
-
-		void read_crust_model();
-		void get_single_station_correction(double lat, double lon, double* thickness, double* CRUST_TIME, double* PREM_TIME );
-		void get_single_station_correction_vp(double lat, double lon, double* thickness, double* CRUST_TIME, double* PREM_TIME );
-
-
-		CRUST_MODEL();
-		~CRUST_MODEL();
-
-};
-
-
+int normalize_array_with_flag(double* array, int len, int flag);
 
 // stretch ES by coeff and get output to tmp_ES
 //int stretch_ES_function(double* current_ES, int npts_phase, double coeff,double*  tmp_ES);

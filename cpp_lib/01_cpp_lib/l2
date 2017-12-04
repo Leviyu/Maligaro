@@ -1,1 +1,0 @@
-int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array_out)

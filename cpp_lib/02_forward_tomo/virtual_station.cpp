@@ -4,6 +4,7 @@
 
 void virtual_station::initiate()
 {
+	cout << " --> VS is destructed"  << endl;
 
 	// int EQ_max = 100;
 	// this->EQ_NAME_array = new string[EQ_max];
@@ -12,46 +13,38 @@ void virtual_station::initiate()
 
 	int station_max = 500;
 	this->eventinfo_index = 0;
-	this->eventinfo_index_array = new int[station_max];
+	this->eventinfo_index_array.resize(station_max);
 	this->eventStation_index = 0;
-	this->eventStation_index_array = new int[station_max];
-
-
-
+	this->eventStation_index_array.resize(station_max);
 
 
 
 	// ======================
 	cout << " new virtual_station is declared! " << endl;
 	// distribute space for record tag arrat
-	int MAX = 10000;
+	int MAX = 1000;
 	
-	this->record_tag = new int[MAX];
-	this->fix_BAZ_time = new double[MAX];
-	this->fix_BAZ_slowness = new double[MAX];
-	this->fix_BAZ_amp= new double[MAX];
-	this->fix_slow_time = new double[MAX];
-	this->fix_slow_BAZ = new double[MAX];
+	//this->record_tag = new int[200];
+	this->record_tag.resize(200);
+	//this->fix_BAZ_time = new double[MAX];
+	//this->fix_BAZ_slowness = new double[MAX];
+	//this->fix_BAZ_amp= new double[MAX];
+	//this->fix_slow_time = new double[MAX];
+	//this->fix_slow_BAZ = new double[MAX];
 	this->npts_record_sum = 0;
-	this->long_win = new double[MAX];
+	//this->long_win = new double[MAX];
+	this->long_win.resize(MAX);
 	this->eq_skip_flag = 0;
 	this->sta_skip_flag = 0;
+
+
 
 
 }
 
 void virtual_station::destruct()
 {
-
-	delete[] this->eventinfo_index_array;
-	delete[] this->eventStation_index_array;
-	// delete[] this->EQ_NAME_array;
-
-
-	//==============
-	delete[] this->record_tag;
-	delete[] this->long_win;
-
+	//delete[] this->fix_BAZ_amp;
 }
 
 
@@ -75,28 +68,28 @@ void virtual_station::initiate_grid()
 }
 
 
-void virtual_station::get_grid_dist()
+void virtual_station::get_grid_dist(virtual_station EQ_grid, virtual_station STA_grid)
 {
-
-
-	// get EQ lat lon
-
-	int ilat_eq = this->ilat_eq;
-	int ilon_eq = this->ilon_eq;
-	double eq_lat = this->my_big_record->my_grid[ilat_eq][ilon_eq].grid_lat;
-	double eq_lon = this->my_big_record->my_grid[ilat_eq][ilon_eq].grid_lon;
+	// use ilat_eq/ilon_eq/ilat_sta/ilon_sta to get the
+	// eq_lat eq_lon and sta_lat sta_lon
+	double eq_lat = EQ_grid.grid_lat;
+	double eq_lon = EQ_grid.grid_lon;
 	
-	int ilat_sta = this->ilat_sta;
-	int ilon_sta = this->ilon_sta;
-	double sta_lat = this->my_big_record->my_grid[ilat_sta][ilon_sta].grid_lat;
-	double sta_lon = this->my_big_record->my_grid[ilat_sta][ilon_sta].grid_lon;
+	double sta_lat = STA_grid.grid_lat;
+	double sta_lon = STA_grid.grid_lon;
 
+	this->eq_lat = eq_lat;
+	this->eq_lon = eq_lon;
+	this->sta_lat = sta_lat;
+	this->sta_lon = sta_lon;
 
 
 	double grid_dist = dist_A_B(eq_lat ,eq_lon, sta_lat , sta_lon);
 	grid_dist = grid_dist/111;
 	this->grid_dist = grid_dist;
 
+	cout << " --> get grid distance " << eq_lat << " "<< eq_lon << " "<<sta_lat << " "
+		<< sta_lon << " distance is " << this->grid_dist << endl;
 }
 
 
@@ -106,6 +99,10 @@ void virtual_station::get_grid_dist()
 int virtual_station::find_stack_ONSET_time()
 {
 
+	// first get S_ES file 
+	string S_ES_DIR = this->my_big_record->S_ES_DIR;
+	//string S_ES_DIR = "hello";
+	this->S_ES_file = S_ES_DIR+"/"+this->EQ+".S_ES";
 
 	// 1 . read in S_ES
 	ifstream myfile;
@@ -115,15 +112,11 @@ int virtual_station::find_stack_ONSET_time()
 	double X_TMP[LINE];
 	double S_ES[LINE];
 
-	cout << " S_ES is "<< this->S_ES_file<< endl;
-	cout << " file count is "<< LINE << endl;
+	//cout << " S_ES is "<< this->S_ES_file<< endl;
+	//cout << " file count is "<< LINE << endl;
 
 	for(count = 0; count < LINE; count++)
-	{
 		myfile >> X_TMP[count] >> S_ES[count];
-	}
-
-
 	myfile.close();
 
 
@@ -167,7 +160,8 @@ int virtual_station::find_stack_ONSET_time()
 	}
 
 	double xx[LINE];
-	string phase_win_file = "phase_win."+to_string(this->ilat)+"."+to_string(this->ilon);
+	int vs_index = this->my_big_record->my_vs_index;
+	string phase_win_file = "phase_win.vs."+std::to_string(vs_index);
 	for(count = 0 ; count < LINE; count++)
 		xx[count] = phase_start_time+  count  *this->delta;
 
@@ -198,7 +192,7 @@ int virtual_station::find_stack_ONSET_time()
 	
 	// outout t* E_ES
 	//best_time_shift = 0;
-	string current_tstar_ES = "tstar_ES."+to_string(this->ilat)+"."+to_string(this->ilon);
+	string current_tstar_ES = "tstar_ES."+std::to_string(vs_index);
 	for(count = 0 ; count < LINE; count++)
 		xx[count] = phase_start_time+ ( count - best_time_shift)  *this->delta;
 
@@ -211,7 +205,11 @@ int virtual_station::find_stack_ONSET_time()
 
 	// 3. find best fit gaussian 
 	coeff_min = 0.1;
-	coeff_max = 5;
+	coeff_max = 60;
+	coeff_delta = 5;
+	stretch_gaussian_find_best_match_for_given_interval( best_ES, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES_gau );
+	coeff_min = best_coeff-3;
+	coeff_max = best_coeff + 3;
 	coeff_delta = 0.5;
 	stretch_gaussian_find_best_match_for_given_interval( best_ES, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES_gau );
 	coeff_min = best_coeff-0.3;
@@ -221,7 +219,7 @@ int virtual_station::find_stack_ONSET_time()
 	
 	cout << "gau best ccc "<< best_ccc << " best coeff "<< best_coeff << " best time shift "<< best_time_shift << endl;
 
-	string current_gau = "gau_ES."+to_string(this->ilat)+"."+to_string(this->ilon);
+	string current_gau = "gau_ES."+std::to_string(vs_index);
 	//best_time_shift = 0;
 	for(count = 0 ; count < LINE; count++)
 		xx[count] = phase_start_time+ ( count - best_time_shift - shift_time_tmp)   *this->delta;
@@ -250,6 +248,18 @@ int virtual_station::find_stack_ONSET_time()
 		}
 	}
 
+	// use SNR and CCC to deside if current record is good
+	double SNR_CUT = this->my_big_record->SNR_CUT;
+	double CCC_CUT = this->my_big_record->CCC_CUT;
+	cout << " SNR is "<< this->stack_SNR << " ccc is "<< this->tstar_ccc << endl;
+	cout << "CUT SNR is "<< SNR_CUT << " ccc is "<< CCC_CUT << endl;
+	if( this->stack_SNR > SNR_CUT &&
+			this->tstar_ccc > CCC_CUT )
+		this->quality_flag = 1;
+	else
+		this->quality_flag = 0;
+
+
 	return 0;
 }
 
@@ -268,11 +278,8 @@ void virtual_station::find_records_within_range()
 		double grid_lon = this->grid_lon;
 		double record_lat = this->my_big_record->my_record[ista].sta_lat;
 		double record_lon = this->my_big_record->my_record[ista].sta_lon;
-		double eq_lat = this->my_big_record->my_record[ista].eq_lat;
-		double eq_lon = this->my_big_record->my_record[ista].eq_lon;
-
-
-
+		//double eq_lat = this->my_big_record->my_record[ista].eq_lat;
+		//double eq_lon = this->my_big_record->my_record[ista].eq_lon;
 
 		// calculate the distance bewteen grid and record
 		double distance;
@@ -294,7 +301,7 @@ void virtual_station::find_records_within_range()
 
 void virtual_station::stack_records_from_one_EQ()
 {
-	cout << "stack_records_from_one_EQ \n"<< endl;
+	cout << "stack_records_from_one_EQ "<< endl;
 	int ista;
 	int npts;
 	double weight;
@@ -302,19 +309,22 @@ void virtual_station::stack_records_from_one_EQ()
 	double sta_lat;
 	double sta_lon;
 	int tag;
-	// option #1 stacked records that are aligned to PHASE PREM time
+	return;
 	
 	// initiate long_win
 	for(npts = 0; npts < this->long_npts; npts++)
 		this->long_win[npts] = 0;
 	int stacked_record_num = 0;
+
+
+	return ;
 	for(ista = 0 ; ista < this->npts_record_sum ; ista++)
 	{
-		cout << "ista "<< ista << endl;
+		//cout << "working on ista "<< ista << endl;
 
 		tag = this->record_tag[ista];
-		cout << "tag "<< tag << endl;
-		cout << " stacking for vs " << this->my_big_record->my_vs_index << " station index "<< tag << endl; 
+		//cout << "tag "<< tag << endl;
+		//cout << " stacking for vs " << this->my_big_record->my_vs_index << " station index "<< tag << endl; 
 		sta_lon = this->my_big_record->my_record[tag].sta_lon;
 		sta_lat = this->my_big_record->my_record[tag].sta_lat;
 		// cout << "sta lon lat "<< sta_lon << endl;
@@ -322,18 +332,20 @@ void virtual_station::stack_records_from_one_EQ()
 		dist = dist / 111;
 
 		//gaussian_func(double a, double b, double c, double d, double x)
-		weight = gaussian_func(1, 0, 4 , 0, dist);
+		//weight = gaussian_func(1, 0, 4 , 0, dist);
+		weight = 1;
 		if (weight == 0)
 			continue;
+		int current_record_polar = this->my_big_record->my_record[tag].polarity_flag;
+		current_record_polar = 1;
+		if(current_record_polar == 0)
+			current_record_polar = 1;
 
-
+		//cout << "working on ista "<< ista <<" weight :"<< weight<< " current_record_polar is "<<current_record_polar << endl;
 		for(npts = 0 ; npts < this->long_npts ; npts ++)
 		{
-			if(  this->my_big_record->my_record[tag].long_win[npts] !=  this->my_big_record->my_record[tag].long_win[npts] )
-				continue;
-			int current_record_polar = this->my_big_record->my_record[tag].polarity_flag;
-			if(current_record_polar == 0)
-				current_record_polar = 1;
+			//if(  this->my_big_record->my_record[tag].long_win[npts] !=  this->my_big_record->my_record[tag].long_win[npts] )
+				//continue;
 			this->long_win[npts] += this->my_big_record->my_record[tag].long_win[npts] * weight * current_record_polar;
 		}
 		stacked_record_num ++;
@@ -342,8 +354,7 @@ void virtual_station::stack_records_from_one_EQ()
 	if(stacked_record_num == 0)
 		return;
 
-	normalize_array( this->long_win, this->long_npts );
-
+	normalize_array_with_flag( &this->long_win[0], this->long_npts ,1);
 }
 
 
@@ -424,16 +435,17 @@ void virtual_station::output_stacked_record()
 	ofstream myfile;
 	int vs_index = this->my_big_record->my_vs_index;
 	string phase = this->my_big_record->PHASE;
+	cout << "====================== > in VS vsindex is "<< vs_index <<endl;
 	this->out_stacked_record_rel_PREM = "long_win.vs."+phase+"."+to_string(vs_index);
 	myfile.open(this->out_stacked_record_rel_PREM.c_str());
 	
 	int npts;
-	normalize_array(this->long_win, this->long_npts);
+	normalize_array_with_flag(&this->long_win[0], this->long_npts,1);
 	double X[this->long_npts];
 	for(npts = 0; npts < this->long_npts; npts++)
 	{
 		X[npts] = this->LONG_BEG + npts * this->delta;
-		myfile << X[npts] << "  " << this->long_win[npts] << endl;
+		myfile << X[npts] << "  " << this->long_win[npts]  << endl;
 	}
 	myfile.close();
 }
@@ -550,7 +562,6 @@ void virtual_station::get_SNR_before_and_after_stack()
 	// make sure the long window exist
 	if( this->long_win[0] != this->long_win[0])
 		cout << "->> ERROR long win is not read in yet, SNR cant be calcualted" << endl;
-
 
 
 	double noise_signal;

@@ -1,2 +1,0 @@
-int CCC_posi(double* x, int npts_x, double* y, int npts_y, int* shift, double* ccc , int flag);
-int CCC( double* x, int npts_x, double* y, int npts_y, int*shift, double* ccc, int flag)

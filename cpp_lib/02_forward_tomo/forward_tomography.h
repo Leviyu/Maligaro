@@ -11,8 +11,9 @@
 #include "../01_cpp_lib/hongyulibcpp.h"
 #include<cmath>
 #include<complex>
+#include<vector>
 //extern "C"{
-//#include "ESF.h"
+//#include "../../c_lib/c01_tools/hongyulib.h"
 //}
 using namespace std;
 
@@ -44,7 +45,7 @@ class new_cell
 	double 	BAZ;
 	int		num_BAZ;
 	int 	vtk_index;
-	int*	vtk_index_array;
+	vector<int>	vtk_index_array;
 
 	new_cell();
 	~new_cell();
@@ -73,25 +74,25 @@ class new_tomo
 
 		double weight_ratio_path_length_RMS_tomo;
 		int		num_dep,num_lat,num_lon;
-		int* num_lon2;
+		vector<int> num_lon2;
 		double dep_min, dep_max, dep_delta;
 		double lat_min, lat_max, lat_delta;
 		double lon_min, lon_max, lon_delta;
 
 
 		int dep_profile_num;
-		double* depth_profile;
+		vector<double> depth_profile;
 
 		// plotting parameter
 		int plot_profile_num;
-		double* plot_profile_dep;
+		vector<double> plot_profile_dep;
 
 		// iteration info
 		int current_iteration;
 		int current_layer_num;
 		int tomo_iterations;
 		int tomo_layer_number;
-		double* tomo_layer_array;
+		vector<double> tomo_layer_array;
 
 		double current_layer_dep_min;		// depth of current layer min value
 		double current_layer_dep_max;		// depth of current layer max value
@@ -101,12 +102,12 @@ class new_tomo
 		string taup_path_dir;
 		string cross_point_dir;
 
-		double* dep;
-		double* lat;
-		double* lon;
-		double** lon2;
+		vector<double> dep;
+		vector<double> lat;
+		vector<double> lon;
+		vector< vector<double> >  lon2;
 
-		new_cell*** my_cell;
+		vector< vector< vector<new_cell>  >  > my_cell;
 
 
 
@@ -147,8 +148,8 @@ class new_tomo
 		int print();
 
 		int RMS_layer_num;
-		double* RMS_dep;
-		double* RMS_weight;
+		vector<double> RMS_dep;
+		vector<double> RMS_weight;
 		double get_delta_lat_lon_distance_with_depth(int index_dep);
 
 
@@ -252,7 +253,7 @@ class new_record
 		double phase_len;
 		double  long_beg;
 		double  long_len;
-		double* long_win;
+		vector<double> long_win;
 		string read_sac_flag;		
 		double delta;
 		double phase_beg_rel_PREM;		// phase begin time relative to PREM
@@ -282,22 +283,27 @@ class new_record
 		double current_iteration_coeff;
 
 		// store info for taup_path
-		double* angle;
-		double* radius;
+		vector<double> angle;
+		vector<double> radius;
 		int taup_path_max_num;
 
 		// here is the array to store the cross-points for each record
 		int CP_num;
-		double* CP_lat;
-		double* CP_lon;
-		double* CP_dep;
-		int* CP_ilat;
-		int* CP_ilon;
-		int* CP_idep;
-		double*	CP_dl;
-		double*	CP_v_PREM;			// PREM velocity 
-		double* CP_weight;			// weight from CCC and SNR
-		double* current_CP_weight;
+		
+		vector<double> CP_lat;
+		vector<double> CP_lon;
+		vector<double> CP_dep;
+		vector<int> CP_ilat;
+		vector<int> CP_ilon;
+		vector<int> CP_idep;
+		vector<double> CP_dl;
+		vector<double>  CP_v_PREM;
+		vector<double> current_CP_weight;
+		vector<double> CP_weight;
+
+
+
+
 		void initiate_CP();
 		void free_CP();
 
@@ -322,18 +328,16 @@ class new_record
 		string sac_file;
 		void download_sac_file();
 
-		CRUST_MODEL* my_crust;
+		vector<CRUST_MODEL> my_crust;
 
 		// record related EQ bin and STA bin
 		int EQ_BIN_NUM;
-		int* EQ_BIN_LAT;
-		int* EQ_BIN_LON;
+		vector<int> EQ_BIN_LAT;
+		vector<int> EQ_BIN_LON;
 
 		int STA_BIN_NUM;
-		int* STA_BIN_LAT;
-		int* STA_BIN_LON;
-
-
+		vector<int> STA_BIN_LAT;
+		vector<int> STA_BIN_LON;
 
 		new_record();
 		~new_record();
@@ -352,6 +356,7 @@ class big_new_record
 		double VS_STA_RADIUS_DEGREE;
 		double VS_RECORD_NUM_THRESHOLD;
 		double VS_EXISTING_RECORD_NUM_THRESHOLD;
+		string S_ES_DIR;
 
 		int eventinfo_max_threshold;
 		int eventStation_min_threshold;
@@ -363,22 +368,24 @@ class big_new_record
 		string SRCDIR;
 
 
+		double SNR_CUT;
+		double CCC_CUT;
 
 		// unique EQ and STA storage
 		int unique_EQ_num;
-		string* EQ_LIST;
-		double* EQ_LAT;
-		double* EQ_LON;
+		vector<string> EQ_LIST;
+		vector<double>  EQ_LAT;
+		vector<double>  EQ_LON;
 		int unique_STA_num;
-		string* STA_LIST;
-		double* STA_LAT;
-		double* STA_LON;
+		vector<string> STA_LIST;
+		vector<double>  STA_LAT;
+		vector<double>  STA_LON;
 
 		int sta_num;
 		string record_file;
 		string eventStation;
-		new_record* my_record;
-		new_record* existing_record;
+		vector<new_record> my_record;
+		vector<new_record> existing_record;
 		double delta;
 		double long_len;
 		double long_beg;
@@ -405,14 +412,14 @@ class big_new_record
 		void read_sac_file();
 		void calculate_SNR();
 		void read_in_polarity_file();
-		virtual_station** my_grid;
-		virtual_station* my_vs; 
+		vector<vector<virtual_station> > my_grid;
+		vector<virtual_station> my_vs; 
 		int my_vs_index;
 
 
 		// grid related parameter
 		int grid_lat_num;
-		int* grid_lon_num;
+		vector<int> grid_lon_num;
 
 
 		void virtual_station_grid_initiate();
@@ -440,6 +447,7 @@ class big_new_record
 		void make_virtual_station(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta);
 		void make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, int ieq_index);
 		void individual_VS_processing();
+		void output_VS_info_for_current_VS(int ivs);
 
 
 };
@@ -465,11 +473,11 @@ class virtual_station : public new_record
 
 		string exist;
 
-		// string* EQ_NAME_array;
+		// vector<string> EQ_NAME_array;
 		int EQ_index;
-		int* eventinfo_index_array;
+		vector<int> eventinfo_index_array;
 		int eventinfo_index;
-		int* eventStation_index_array;
+		vector<int> eventStation_index_array;
 		int eventStation_index;
 		void initiate();
 		void destruct();
@@ -489,7 +497,7 @@ class virtual_station : public new_record
 
 		// for records within grid range, store record tag info
 		int npts_record_sum;
-		int* record_tag;				// store the record line number in eventinfo to make sure that we can find each record
+		vector<int> record_tag;				// store the record line number in eventinfo to make sure that we can find each record
 
 		// for given EQ, when we do stacking, we need az baz slowness info
 		double grid_dist;					// distance from EQ to grid center
@@ -508,7 +516,7 @@ class virtual_station : public new_record
 		double phase_beg;
 		double phase_len;
 		int     long_npts;
-		double* long_win;			// the stacked record for current grid
+		vector<double> long_win;			// the stacked record for current grid
 		int station_num_threshold;			//  if station number in range is not greater then this value, grid is skipped
 		double ave_SNR;						// average SNR of records within range
 		double stack_SNR;
@@ -520,7 +528,7 @@ class virtual_station : public new_record
 		double gau_ccc;
 		double gau_factor;
 
-		int quality;
+		double quality;
 
 		// when we do stacking, arrays to store time-slowness-amplitude info
 		
@@ -531,16 +539,14 @@ class virtual_station : public new_record
 
 
 
-		double* fix_BAZ_time;
-		double* fix_BAZ_slowness;
-		double* fix_BAZ_amp;
-
-		double* fix_slow_time;
-		double* fix_slow_BAZ;
-		double* fix_slow_amp;
-
-		double fix_BAZ_delay_time;
-		double fix_slow_delay_time;
+		//double* fix_BAZ_time;
+		//double* fix_BAZ_slowness;
+		//double* fix_BAZ_amp;
+		//double* fix_slow_time;
+		//double* fix_slow_BAZ;
+		//double* fix_slow_amp;
+		//double fix_BAZ_delay_time;
+		//double fix_slow_delay_time;
 
 		big_new_record* my_big_record;
 		void find_records_within_range();
@@ -551,13 +557,16 @@ class virtual_station : public new_record
 
 		void relocate_grid_center();
 		void get_SNR_before_and_after_stack();
-		void get_grid_dist();
+		void get_grid_dist(virtual_station EQ_grid, virtual_station STA_grid);
 
 
 		// virtual_station();
 		// ~virtual_station();
 
 		void initiate_grid();
+
+
+
 
 		// station stacking usage
 		string 	out_stacked_record_rel_PREM;
@@ -571,24 +580,24 @@ class virtual_station : public new_record
 
 		// existing  EQ and STA storage
 		int EX_EQ_NUM;
-		string* EX_EQ_NAME;
-		double* EX_EQ_LAT;
-		double* EX_EQ_LON;
+		vector<string> EX_EQ_NAME;
+		vector<double> EX_EQ_LAT;
+		vector<double> EX_EQ_LON;
 
 		int EX_STA_NUM;
-		string* EX_STA_NAME;
-		double* EX_STA_LAT;
-		double* EX_STA_LON;
+		vector<string> EX_STA_NAME;
+		vector<double> EX_STA_LAT;
+		vector<double> EX_STA_LON;
 		// current  EQ and STA storage
 		int CU_EQ_NUM;
-		string* CU_EQ_NAME;
-		double* CU_EQ_LAT;
-		double* CU_EQ_LON;
+		vector<string> CU_EQ_NAME;
+		vector<double> CU_EQ_LAT;
+		vector<double> CU_EQ_LON;
 
 		int CU_STA_NUM;
-		string* CU_STA_NAME;
-		double* CU_STA_LAT;
-		double* CU_STA_LON;
+		vector<string> CU_STA_NAME;
+		vector<double> CU_STA_LAT;
+		vector<double> CU_STA_LON;
 
 		// skip flag
 		// if eventStation does not give enough 
@@ -607,7 +616,27 @@ class virtual_station : public new_record
 
 
 
+class CRUST_MODEL
+{
+	public:
 
+		vector< vector<double> > boundary;
+		vector< vector<double> > vs;
+		vector< vector<double> > vp;
+		vector< vector<double> > rho;
+		
+
+
+
+		void read_crust_model();
+		void get_single_station_correction(double lat, double lon, double* thickness, double* CRUST_TIME, double* PREM_TIME );
+		void get_single_station_correction_vp(double lat, double lon, double* thickness, double* CRUST_TIME, double* PREM_TIME );
+
+
+		CRUST_MODEL();
+		~CRUST_MODEL();
+
+};
 
 
 #endif

@@ -2,7 +2,7 @@
 #include "forward_tomography.h"
 
 
-#define MAX 4000
+#define MAX 2000
 new_record::new_record()
 {
 	// default componente
@@ -13,12 +13,6 @@ new_record::new_record()
 
 new_record::~new_record()
 {
-	// if(this->angle == this->angle)
-	// 	delete[] this->angle;
-	// if(this->radius == this->radius)
-	// 	delete[] this->radius;
-	// if(this->long_win == this->long_win)
-	// 	delete[] this->long_win;
 }
 
 
@@ -65,23 +59,15 @@ void new_record::get_crustal_correction()
 	double PREM_TIME;
 
 	cout << "lat lon "<< lat << " "<< lon << endl;
-	this->my_crust->get_single_station_correction(lat , lon, &thickness , &CRUST_TIME, &PREM_TIME );
+	//this->my_crust->get_single_station_correction(lat , lon, &thickness , &CRUST_TIME, &PREM_TIME );
+	this->my_crust[0].get_single_station_correction(lat , lon, &thickness , &CRUST_TIME, &PREM_TIME );
 
 
 	this->crust_correction = PREM_TIME - CRUST_TIME  ;
 
 	//cout << " curst correction for "<< this->STA << " is "<< this->crust_correction << endl;
 
-
-
-
-
 }
-
-
-
-
-
 
 
 
@@ -94,12 +80,20 @@ void new_record::download_sac_file()
 	string NET 		= this->NET;
 	string sac_file1 = EQ+"/"+EQ + "."+NET+"."+STA+".BH"+COMP+".sac";
 	string sac_file2 = EQ+"/"+EQ + "."+NET+"."+STA+".HH"+COMP+".sac";
+	string sod_sac1 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+sac_file1;
+	string sod_sac2 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+sac_file2;
 	// cout << sac_file1 << endl;
 
-	if(!is_file_exist(sac_file1))	
+	if(!is_file_exist(sac_file1) && is_file_exist(sod_sac1))	
 	{
-		string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
-		// string command = "get_EQ_sac "+ sac_file1;
+		//string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
+		string command = "get_EQ_sac "+ sac_file1;
+		exec(command);
+	}
+	if(!is_file_exist(sac_file2) && is_file_exist(sod_sac2))	
+	{
+		//string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
+		string command = "get_EQ_sac "+ sac_file2;
 		exec(command);
 	}
 	//cout << command << endl;
@@ -112,7 +106,8 @@ void new_record::download_sac_file()
 void new_record::read_sac_file()
 {
 	// allocation long win memory
-	this->long_win = new double[MAX];
+	//this->long_win = new double[MAX];
+	this->long_win.resize(MAX);
 
 
 	// 1. get PREM time for current record
@@ -142,13 +137,7 @@ void new_record::read_sac_file()
 	double delta =  this->delta;
 
 
-	int len = 0;
-	int max = 1000000;
-	int nerr = 0;
-	float del = 0;
-	float beg = 0;
 	int NUM = 1000000;
-	double yarray[NUM];
 
 	string EQ 		= this->EQ;
 	string PHASE 	= this->PHASE;
@@ -176,13 +165,12 @@ void new_record::read_sac_file()
 		//<< "delta " << this->delta
 		//<< endl;
 
-	sac2xy_with_delta(this->sac_file,abs_beg, length, this->long_win, this->delta);
+	sac2xy_with_delta(this->sac_file,abs_beg, length, &this->long_win[0], this->delta);
 
 
 
 	// write xy window
-	double* X;
-	X = new double[NUM];
+	double X[NUM];
 	int count;
 	int npts = (int) (LON_LEN / delta);
 	for(count = 0; count < npts; count++)
@@ -190,7 +178,7 @@ void new_record::read_sac_file()
 		X[count] = LON_BEG + count * delta;
 	}
 	//normalize this longwin
-	normalize_array(this->long_win, npts);
+	normalize_array(&this->long_win[0], npts);
 
 	string long_win_name = "long_win."+this->EQ+"."+this->STA+"."+this->PHASE;
 //cout << "output "<< long_win_name << endl;
@@ -210,7 +198,6 @@ void new_record::read_sac_file()
 
 
 
-	delete[] X;
 
 
 }
@@ -272,7 +259,7 @@ void new_record::calculate_SNR()
 		this->SNR = 1;
 
 
-	cout << " STA "<< this->STA << " SNR " << this->SNR << endl;
+	//cout << " STA "<< this->STA << " SNR " << this->SNR << endl;
 
 
 }
@@ -305,8 +292,8 @@ void new_record::read_cross_point_info(new_tomo* my_tomo)
 
 
 		// free taup angle and radius
-		delete[] this->angle;
-		delete[] this->radius;
+		//delete[] this->angle;
+		//delete[] this->radius;
 
 		//cout << "file does not exist" << endl;
 	}
@@ -734,8 +721,8 @@ void new_record::read_taup_path_info(string taup_path_dir)
 	int line_max;
 	line_max = count_file_num(this->taup_path_file);
 	// allocate memory for taup angle and radius
-	this->angle = new double[line_max];
-	this->radius = new double[line_max];
+	this->angle.resize(line_max);
+	this->radius.resize(line_max);
 	double angle[line_max];
 	double radius[line_max];
 
@@ -808,36 +795,23 @@ void new_record::read_taup_path_info(string taup_path_dir)
 void new_record::initiate_CP()
 {
 	//cout << "--> Initiate CP info " << endl;
-	this->CP_v_PREM = new double[MAX];
-	this->CP_lat = new double[MAX];
-	this->CP_dep = new double[MAX];
-	this->CP_lon = new double[MAX];
-	this->CP_lat = new double[MAX];
-	this->CP_ilat = new int[MAX];
-	this->CP_idep = new int[MAX];
-	this->CP_ilon = new int[MAX];
-	this->CP_dl = new double[MAX];
-	this->CP_weight = new double[MAX];
-	this->current_CP_weight = new double[MAX];
+	this->CP_v_PREM.resize(MAX);
+	this->CP_lat.resize(MAX);
+	this->CP_dep.resize(MAX);
+	this->CP_lon.resize(MAX);
+	this->CP_lat.resize(MAX);
+	this->CP_ilat.resize(MAX);
+	this->CP_idep.resize(MAX);
+	this->CP_ilon.resize(MAX);
+	this->CP_dl.resize(MAX);
+	this->CP_weight.resize(MAX);
+	this->current_CP_weight.resize(MAX);
 
 
 }
 void new_record::free_CP()
 {
 	////cout << "--> Initiate CP info " << endl;
-	//
-	//
-	delete[] this->CP_v_PREM;
-	delete[] this->CP_lat;
-	delete[] this->CP_lon;
-	delete[] this->CP_dep;
-	delete[] this->CP_ilat;
-	delete[] this->CP_ilon;
-	delete[] this->CP_idep;
-	delete[] this->CP_dl;
-	delete[] this->CP_weight;
-	delete[] this->current_CP_weight;
-
 }
 
 

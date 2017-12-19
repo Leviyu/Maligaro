@@ -2,7 +2,7 @@
 // calculate and output the STD of ES
 int output_STD_of_second_ES(new_RECORD* my_record,new_INPUT*  my_input,double* current_ES)
 {
-fprintf(my_input->out_logfile,"---> output_STD_of_ES second Begin\n");
+	printf("---> output_STD_of_ES second Begin\n");
 	double amplitude();
 	int stretch_ES_function();
 	int normalize_array();
@@ -19,6 +19,16 @@ fprintf(my_input->out_logfile,"---> output_STD_of_ES second Begin\n");
 	double stretch_factor_record;
 
 
+
+
+	//int amplitudeloc(double* array, int len, int* max_amp_loc, double* amplitude, int flag) 
+	int max_loc;
+	double amp_ES;
+	double amp_phase;
+	amplitudeloc(current_ES, npts_phase, &max_loc, &amp_ES,1);
+	if(amp_ES == 0 ) amp_ES = 1;
+
+
 	for(pcount = 0; pcount < npts_phase ; pcount ++)
 	{
 		STD[pcount] = 0;
@@ -26,19 +36,22 @@ fprintf(my_input->out_logfile,"---> output_STD_of_ES second Begin\n");
 		weight_sum = 0;
 		for(ista = 0; ista < my_input->sta_num; ista ++)
 		{
-			if(my_record[ista].quality != -1 )
-			{
+
+			//if(my_record[ista].quality > 0 )
+			//{
 				// calculate the std
 				//weight = my_record[ista].weight;
 				weight = my_record->weight;
 				if(weight == 0)
 					continue;
-
+				amplitudeloc(my_record[ista].stretched_phase_win, npts_phase, &max_loc, &amp_phase,1);
+				if(amp_phase == 0) amp_phase = 1;
 				//normalize_array(my_record[ista].stretched_phase_win,npts_phase);
-				STD[pcount] += pow( (current_ES[pcount] - my_record[ista].stretched_phase_win[pcount] ) ,2 ) * weight;
+				STD[pcount] += pow( (current_ES[pcount]/ amp_ES - 
+							my_record[ista].stretched_phase_win[pcount]  / amp_phase) ,2 ) * weight;
 				weight_sum += weight;
 				num = num + 1;
-			}	
+			//}	
 		}
 		if(weight_sum == 0)
 		{
@@ -73,10 +86,10 @@ fprintf(my_input->out_logfile,"---> output_STD_of_ES second Begin\n");
 	out = fopen(out_file, "w" );
 
 	for(pcount = 0; pcount < npts_phase ; pcount++)
-		fprintf(out," %lf %10.3lf \n",pcount*my_input->delta, current_ES[pcount] + STD[pcount]);
+		fprintf(out," %lf %10.3lf \n",pcount*my_input->delta, current_ES[pcount] / amp_ES + STD[pcount]);
 
 	for(pcount = npts_phase-1; pcount >= 0 ; pcount--)
-		fprintf(out," %lf %10.3lf \n", pcount*my_input->delta, current_ES[pcount] - STD[pcount]);
+		fprintf(out," %lf %10.3lf \n", pcount*my_input->delta, current_ES[pcount] / amp_ES - STD[pcount]);
 
 	fclose(out);
 	return 0;

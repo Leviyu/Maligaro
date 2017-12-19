@@ -47,7 +47,6 @@ int stretch_record_restack_ES_based_on_code_choice(new_RECORD* my_record, new_IN
 		if(strstr(my_record[ista].name, "PPP") != NULL)
 			continue;
 
-
 		if(my_record[ista].weight == 0)
 			continue;
 		for(i=0;i<npts_phase;i++)

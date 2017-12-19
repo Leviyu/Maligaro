@@ -181,7 +181,6 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 	// for records that have dt outside of allowable window, we redo 
 	// the whole process with the new masked window
 	// 1. redefine the beyond_window_flag
-	redefine_beyon_wind_flag(my_record,my_input,current_ES,EW_new);
 
 
 
@@ -189,6 +188,7 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 	// and redo the whole process again just for S/P
 	redo_for_S_P_remake_EW(my_record, my_input);
 
+	redefine_beyon_wind_flag(my_record,my_input,current_ES,EW_new);
 
 	return 0;
 }

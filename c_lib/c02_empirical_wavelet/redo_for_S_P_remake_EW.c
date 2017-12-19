@@ -15,6 +15,8 @@ void redo_for_S_P_remake_EW(new_RECORD* my_record, new_INPUT* my_input)
 	double stretched_EW[npts_phase];
 	int ista;
 	int count;
+	int max_loc;
+	double amp;
 
 	
 	// initiate
@@ -26,18 +28,29 @@ void redo_for_S_P_remake_EW(new_RECORD* my_record, new_INPUT* my_input)
 
 	for(ista = 0; ista < my_input->sta_num ; ista++)
 	{
+		my_record[ista].beyong_window_flag = 0;
+		read_phase_window(&my_record[ista], my_input);
 		if(my_record[ista].quality <= 0)
 			continue;
+		//int amplitudeloc(double* array, int len, int* max_amp_loc, double* amplitude, int flag) 
+		amplitudeloc(my_record[ista].phase_win , npts_phase, & max_loc , & amp, 1 );
 		for(count = 0; count < npts_phase ; count++)
-			EW[count] += my_record[ista].phase_win[count] * my_record[ista].weight;
-		// 1. redefine the beyond_window_flag
-		my_record[ista].beyong_window_flag = 1;
-	}
+			EW[count] += my_record[ista].phase_win[count] / amp * my_record[ista].weight;
+		//char sta_file[200];
+		//sprintf(sta_file,"sta_%s",my_record[ista].name);
+		//printf(" MMMMM output stat %s sta_file %s \n", my_record[ista].name, sta_file);
+		//output_array1(sta_file,my_record[ista].phase_win, npts_phase);
 
+	}
+	//int output_array1( char* output_name, double* array1,int file_num)
+	//output_array1("my_EW",EW,npts_phase);
+
+
+	/*
 
 	// 0. use all good records to stack new EW
 	int loop_num;
-	int loop_num_max = 3;
+	int loop_num_max = 2;
 	for(loop_num = 2; loop_num <= loop_num_max ; loop_num ++)
 	{
 		printf(" loop %d / %d \n", loop_num , loop_num_max);
@@ -57,6 +70,7 @@ void redo_for_S_P_remake_EW(new_RECORD* my_record, new_INPUT* my_input)
 	// 1. stretched records to EW
 	strcpy(my_input->stretch_flag, "stretch");
 	stretch_ES_and_CCC(my_record,my_input,EW);
+	*/
 
 
 	// 2. stretch records to restack
@@ -64,6 +78,7 @@ void redo_for_S_P_remake_EW(new_RECORD* my_record, new_INPUT* my_input)
 	output_STD_of_second_ES(my_record,my_input, stretched_EW);
 	output_current_ES_for_phase_second(my_input, stretched_EW);
 
+	output_array1("my_EW",stretched_EW,npts_phase);
 
 	//3. tstar
 	strcpy(my_input->stretch_flag,"tstar");
@@ -77,10 +92,7 @@ void redo_for_S_P_remake_EW(new_RECORD* my_record, new_INPUT* my_input)
 
 	define_stretch_EW_ONSET( my_record, my_input);
 	output_ES_for_each_record(my_record, my_input);
-	
-
-	redefine_beyon_wind_flag(my_record,my_input,stretched_EW,stretched_EW);
-
+	//redefine_beyon_wind_flag(my_record,my_input,stretched_EW,stretched_EW);
 }
 
 

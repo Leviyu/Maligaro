@@ -37,10 +37,15 @@ int stretch_record_restack_ES(new_RECORD* my_record, new_INPUT* my_input, double
 
 	for(ista=0;ista< my_input->sta_num; ista ++)
 	{
-		//my_record[ista].weight = get_weight_from_SNR_CCC( my_record[ista].SNR, my_record[ista].ccc);
-		//my_record[ista].weight = get_weight_from_SNR_CCC( my_record[ista].SNR, ccc_use);
-		//if(my_record[ista].quality == -1)
-			//continue;
+		if(my_record[ista].quality == -1)
+			continue;
+		if(my_record[ista].traffic_phase_nearby == 1 )
+			continue;
+		if(fabs(my_record[ista].SNR) < my_input->SNR_CUT)
+			continue;
+		if(fabs(my_record[ista].ccc) < 0.8 )
+			continue;
+
 
 
 		// hongyu change

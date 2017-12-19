@@ -19,6 +19,9 @@ int read_phase_window(new_RECORD* my_record, new_INPUT* my_input)
 
 	}
 
+
+	//printf(" sta %s phase beg is %lf \n", my_record->name, my_record->phase_beg);
+
 	double long_beg = my_record->long_beg;
 	double long_len = my_record->long_len;
 	double phase_beg = my_record->phase_beg;
@@ -40,7 +43,8 @@ int read_phase_window(new_RECORD* my_record, new_INPUT* my_input)
 
 		 if(my_record->beyong_window_flag == 1)
 		 {
-			 back_time_window = my_input->mask_win_max ;
+			 //back_time_window = my_input->mask_win_max ;
+		 	back_time_window = my_input->mask_win_max + my_input->EW_period;
 			 //printf("back_time_window is %lf \n", back_time_window);
 		 }
 

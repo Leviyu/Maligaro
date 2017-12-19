@@ -25,18 +25,22 @@ int stretch_ES_and_CCC(new_RECORD* my_record, new_INPUT* my_input, double* curre
 
 			coeff_min = 0.1;
 			coeff_max = 8.0;
-			coeff_array[0] = 1;
-			coeff_array[1] = 0.5;
-			coeff_array[2] = 0.25;
-			//coeff_array[3] = 0.1;
-			//coeff_array[4] = 0.03;
-			//coeff_array[5] = 0.01;
-			//coeff_array[6] = 0.02;
-			//coeff_array[7] = 0.01;
+			coeff_array[0] = 2;
+			coeff_array[1] = 1;
+			coeff_array[2] = 0.5;
+			coeff_array[3] = 0.25;
+			coeff_array[4] = 0.13;
+			coeff_array[5] = 0.7;
+			coeff_array[6] = 0.35;
+			coeff_array[7] = 0.2;
+			coeff_array[8] = 0.1;
+			coeff_array[9] = 0.05;
+			coeff_array[10] = 0.02;
+			coeff_array[11] = 0.01;
 
 		stretch_ES_find_best_match_for_given_interval(&my_record[ista], current_ES, my_record[ista].phase_win, npts_phase, coeff_min, coeff_max, coeff_array[0], &best_ccc, &best_coeff,&best_time_shift,stretched_ES, my_input);
 
-		max_num = 3;
+		max_num = 12;
 		for(count = 1; count < max_num  ; count ++)
 		{
 			coeff_min = best_coeff - coeff_array[count-1]/2;
@@ -44,7 +48,7 @@ int stretch_ES_and_CCC(new_RECORD* my_record, new_INPUT* my_input, double* curre
 			coeff_delta = coeff_array[count];
 			stretch_ES_find_best_match_for_given_interval(&my_record[ista], current_ES, my_record[ista].phase_win, npts_phase, coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff,&best_time_shift,stretched_ES, my_input);
 			//printf(" stretching find best %d / %d ccc  %lf \n", count, max_num, best_ccc);
-			if(best_ccc > 0.95)
+			if(best_ccc > 0.97)
 				break;
 		}
 

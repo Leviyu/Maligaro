@@ -42,7 +42,7 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 	// loop ccc ES with each record
 	for(ista=0;ista<my_input->sta_num;ista++)
 	{
-		if( my_record[ista].beyong_window_flag == -1.0)
+		if( my_record[ista].beyong_window_flag == -1)
 			continue;
 
 		if(my_record[ista].polar_flag == 0)
@@ -94,7 +94,10 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 		// if shift too big, we shift it back
 		// ===========================================================
 		shift_time = npts_shift*my_input->delta;
+		//if(fabs(shift_time) > 20)
+			//shift_time = 0;
 
+		//printf(" STA %s  shift time is %lf \n",my_record[ista].name, shift_time);
 
 		my_record[ista].phase_beg -= shift_time;
 

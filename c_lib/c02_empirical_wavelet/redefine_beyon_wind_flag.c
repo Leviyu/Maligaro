@@ -12,16 +12,18 @@ void redefine_beyon_wind_flag(new_RECORD* my_record, new_INPUT* my_input,
 	for(ista = 0; ista < my_input->sta_num ; ista++)
 	{
 		if( my_record[ista].dt_obs_prem > my_input->mask_win_max  )
-		{
+			my_record[ista].quality = -1;
+		//{
 			//printf("redefine beyond wind for %s \n", my_record[ista].name);
-			my_record[ista].beyong_window_flag = 1;
+			//my_record[ista].beyong_window_flag = 1;
 			//2. for records beyong, we mask out the beyong window
-			my_record[ista].phase_beg = my_input->phase_beg;
-			read_phase_window(&my_record[ista],my_input);
-		}
-		else
-			my_record[ista].beyong_window_flag = -1;
+			//my_record[ista].phase_beg = my_input->phase_beg;
+			//read_phase_window(&my_record[ista],my_input);
+		//}
+		//else
+			//my_record[ista].beyong_window_flag = -1;
 	}
+	return ;
 	
 
 	//2. loop and iterative stack

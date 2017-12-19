@@ -7,7 +7,6 @@ new_record::new_record()
 {
 	// default componente
 	this->COMP = "T";
-
 }
 
 
@@ -20,13 +19,9 @@ void new_record::get_incident()
 {
 	double incident;
 	incident = taup_incident(this->eq_lat, this->eq_lon, this->eq_dep, this->sta_lat , this->sta_lon, this->PHASE);
-
 	this->incident = incident;
 
 }
-
-
-
 
 /******************************************************************
  * This script calcuate the crustal correction for current record
@@ -78,27 +73,32 @@ void new_record::download_sac_file()
 	string COMP 	= this->COMP;
 	string STA 		= this->STA;
 	string NET 		= this->NET;
-	string sac_file1 = EQ+"/"+EQ + "."+NET+"."+STA+".BH"+COMP+".sac";
-	string sac_file2 = EQ+"/"+EQ + "."+NET+"."+STA+".HH"+COMP+".sac";
-	string sod_sac1 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+sac_file1;
-	string sod_sac2 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+sac_file2;
+	string sac_file1 = EQ + "."+NET+"."+STA+".BH"+COMP+".sac";
+	string sac_file2 = EQ + "."+NET+"."+STA+".HH"+COMP+".sac";
+	string sod_sac1 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+EQ+"/"+sac_file1;
+	string sod_sac2 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+EQ+"/"+sac_file2;
+	string sac_file = "";
 	// cout << sac_file1 << endl;
 
 	if(!is_file_exist(sac_file1) && is_file_exist(sod_sac1))	
 	{
 		//string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
-		string command = "get_EQ_sac "+ sac_file1;
+		string command = "get_EQ_sac "+ EQ+"/"+sac_file1;
 		exec(command);
+		sac_file = sac_file1;
+		string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file1;
+		exec(filter_command);
 	}
 	if(!is_file_exist(sac_file2) && is_file_exist(sod_sac2))	
 	{
 		//string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
-		string command = "get_EQ_sac "+ sac_file2;
+		string command = "get_EQ_sac "+ EQ +"/"+sac_file2;
 		exec(command);
+		sac_file = sac_file2;
+		string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file2;
+		exec(filter_command);
 	}
-	//cout << command << endl;
-	//command = "get_EQ_sac "+ sac_file2;
-	//exec(command);
+
 
 }
 
@@ -112,14 +112,15 @@ void new_record::read_sac_file()
 
 	// 1. get PREM time for current record
 	double PREM;
-	PREM = taup_time(this->eq_lat, this->eq_lon, this->eq_dep, this->sta_lat , this->sta_lon, this->PHASE);
-	//cout << 
-		//this->eq_lat << " " <<
-		//this->eq_lon << " "<<
-		//this->eq_dep << " "<<
-		//this->sta_lat << " "<<
-		//this->sta_lon << " "<<
-		//this->PHASE << endl;
+	//PREM = taup_time(this->eq_lat, this->eq_lon, this->eq_dep, this->sta_lat , this->sta_lon, this->PHASE);
+	string taup_command = "get_taupTime "+ this->EQ + " "+ this->STA + " "+ this->PHASE + " > tmp.taup";
+	exec(taup_command);
+	ifstream mytaup;
+	mytaup.open("tmp.taup");
+	mytaup >> PREM;
+	mytaup.close();
+
+	
 
 	//cout << "taup time is " << PREM << endl;
 	if( PREM <= 0 )
@@ -167,7 +168,7 @@ void new_record::read_sac_file()
 
 	sac2xy_with_delta(this->sac_file,abs_beg, length, &this->long_win[0], this->delta);
 
-
+	//this->convert_long_win_to_velocity();
 
 	// write xy window
 	double X[NUM];
@@ -183,6 +184,7 @@ void new_record::read_sac_file()
 	string long_win_name = "long_win."+this->EQ+"."+this->STA+"."+this->PHASE;
 //cout << "output "<< long_win_name << endl;
 
+	this->get_polar_flag();
 
 	double long_win_flipped[npts];
 	for(count = 0; count < npts; count++)
@@ -200,7 +202,51 @@ void new_record::read_sac_file()
 
 
 
+
 }
+
+
+void new_record::convert_long_win_to_velocity()
+{
+	int npts = (int)(this->long_len / this->delta);
+	int count = 0;
+	for(count = 0; count < npts- 1; count ++)
+	{
+		this->long_win[count] = this->long_win[count+1] - this->long_win[count];
+	}
+
+	return;
+}
+
+void new_record::get_polar_flag()
+{
+	
+	string EQ = this->EQ;
+	string STA = this->STA;
+	string PHASE = this->PHASE;
+	string COMP = "T";
+
+	string command = "csh make_polar "+ EQ + " "+ STA + " "+ PHASE + " "+ COMP + " > tmp.polar";
+	exec(command);
+
+	double polar = 0;
+	ifstream myfile;
+	myfile.open("./tmp.polar");
+	myfile >> polar ;
+	myfile.close();
+
+	//cout << "current station flag is "<< polar << endl;
+	this->polarity = polar;
+
+	if(this->polarity > 0)
+		this->polarity_flag = 1;
+	else
+		this->polarity_flag = -1;
+
+
+}
+
+
 
 void new_record::calculate_SNR()
 {
@@ -292,8 +338,6 @@ void new_record::read_cross_point_info(new_tomo* my_tomo)
 
 
 		// free taup angle and radius
-		//delete[] this->angle;
-		//delete[] this->radius;
 
 		//cout << "file does not exist" << endl;
 	}

@@ -4,12 +4,7 @@
 
 void virtual_station::initiate()
 {
-	cout << " --> VS is destructed"  << endl;
-
-	// int EQ_max = 100;
-	// this->EQ_NAME_array = new string[EQ_max];
-	// this->EQ_index = 0;
-
+	//cout << " --> VS is destructed"  << endl;
 
 	int station_max = 500;
 	this->eventinfo_index = 0;
@@ -17,20 +12,12 @@ void virtual_station::initiate()
 	this->eventStation_index = 0;
 	this->eventStation_index_array.resize(station_max);
 
-
-
 	// ======================
-	cout << " new virtual_station is declared! " << endl;
+	//cout << " new virtual_station is declared! " << endl;
 	// distribute space for record tag arrat
 	int MAX = 1000;
 	
-	//this->record_tag = new int[200];
 	this->record_tag.resize(200);
-	//this->fix_BAZ_time = new double[MAX];
-	//this->fix_BAZ_slowness = new double[MAX];
-	//this->fix_BAZ_amp= new double[MAX];
-	//this->fix_slow_time = new double[MAX];
-	//this->fix_slow_BAZ = new double[MAX];
 	this->npts_record_sum = 0;
 	//this->long_win = new double[MAX];
 	this->long_win.resize(MAX);
@@ -39,12 +26,10 @@ void virtual_station::initiate()
 
 
 
-
 }
 
 void virtual_station::destruct()
 {
-	//delete[] this->fix_BAZ_amp;
 }
 
 
@@ -88,8 +73,8 @@ void virtual_station::get_grid_dist(virtual_station EQ_grid, virtual_station STA
 	grid_dist = grid_dist/111;
 	this->grid_dist = grid_dist;
 
-	cout << " --> get grid distance " << eq_lat << " "<< eq_lon << " "<<sta_lat << " "
-		<< sta_lon << " distance is " << this->grid_dist << endl;
+	//cout << " --> get grid distance " << eq_lat << " "<< eq_lon << " "<<sta_lat << " "
+		//<< sta_lon << " distance is " << this->grid_dist << endl;
 }
 
 
@@ -99,10 +84,14 @@ void virtual_station::get_grid_dist(virtual_station EQ_grid, virtual_station STA
 int virtual_station::find_stack_ONSET_time()
 {
 
-	// first get S_ES file 
 	string S_ES_DIR = this->my_big_record->S_ES_DIR;
-	//string S_ES_DIR = "hello";
 	this->S_ES_file = S_ES_DIR+"/"+this->EQ+".S_ES";
+
+	// check if S_ES exist
+	if(! is_file_exist(this->S_ES_file)  )
+		return 1;
+		
+
 
 	// 1 . read in S_ES
 	ifstream myfile;
@@ -112,24 +101,33 @@ int virtual_station::find_stack_ONSET_time()
 	double X_TMP[LINE];
 	double S_ES[LINE];
 
-	//cout << " S_ES is "<< this->S_ES_file<< endl;
-	//cout << " file count is "<< LINE << endl;
+	//cout << " S_ES is "<< this->S_ES_file<< " file count is "<< LINE << endl;
+	//cout << " Stack SNR is " << this->stack_SNR << endl;
 
 	for(count = 0; count < LINE; count++)
 		myfile >> X_TMP[count] >> S_ES[count];
 	myfile.close();
 
+	// find the maximum location
+	int max_loc = 0;
+	double amp = 0;
+	
+	int npts_beg = (int) ( -20 / this->delta );
+	int npts_end = (int) ( 20 / this->delta );
+	for(count = npts_beg ; count < npts_end ; count++  )
+	{
+		if( this->long_win[count] > amp )
+		{
+			amp = this->long_win[count];
+			max_loc = count;
+		}
+	}
+	//cout << " maxloc is  "<< max_loc << " amp is "<< amp << endl;
 
-	// this->long is the stacked window, we cut the window to be the same size of S_ES
-	// a find peak
-	// int amplitudeloc(double* array, int len, int* max_amp_loc, double* amplitude, int flag)
-	int max_loc;
-	double amp;
-
-
+	/*
 	// we use a smaller window to find the phase max loc
-	int long_zoom_beg_npts = (int) ( (fabs(this->LONG_BEG) - 15 ) / this->delta);
-	double long_zoom_len = 50;
+	int long_zoom_beg_npts = (int) ( (fabs(this->LONG_BEG) - 20 ) / this->delta);
+	double long_zoom_len = 40;
 	int npts_long_zoom = long_zoom_len/this->delta;
 	double long_zoom[npts_long_zoom];
 	for(count = 0; count < npts_long_zoom ; count++ )
@@ -137,16 +135,13 @@ int virtual_station::find_stack_ONSET_time()
 		long_zoom[count] = this->long_win[ long_zoom_beg_npts + count];
 	}
 
-
-
-	//amplitudeloc( this->long_win, this->long_npts, & max_loc, &amp,1 );
 	amplitudeloc( long_zoom  , npts_long_zoom, & max_loc, &amp,1 );
 	if( max_loc > 50000 || max_loc < -50000 )
 		max_loc = 0;
 	if ( long_zoom_beg_npts  > 50000 || long_zoom_beg_npts < -50000 )
 		long_zoom_beg_npts = 0;
-
 	max_loc = max_loc + long_zoom_beg_npts;
+	*/
 
 
 
@@ -156,7 +151,11 @@ int virtual_station::find_stack_ONSET_time()
 	cout << "phase start time is "<< phase_start_time << endl;
 	for(count = 0 ; count < LINE ; count++)
 	{
-		phase_win[count] = this->long_win[ max_loc - LINE/2 + count];
+		int npts_tmp = (int) (max_loc - LINE/2) + count;
+		if(npts_tmp >= this->long_npts || npts_tmp < 0 )
+			phase_win[count] = 0;
+		else
+			phase_win[count] = this->long_win[npts_tmp];
 	}
 
 	double xx[LINE];
@@ -167,27 +166,34 @@ int virtual_station::find_stack_ONSET_time()
 
 	output_array2(phase_win_file,xx,phase_win,LINE,0 );
 
-	
-
 
 
 	// 2. t* S_ES to fit virtual stack
 	double coeff_min = 0.5;
-	double coeff_max = 5;
-	double coeff_delta = 0.5;
+	double coeff_max = 30;
+	double coeff_delta = 5;
 	double best_ccc;
 	double best_coeff;
 	int best_time_shift;
 	double best_ES[LINE];
 	double best_ES_gau[LINE];
 	stretch_record_find_best_match_for_given_interval( S_ES,phase_win, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES );
-	//stretch_record_find_best_match_for_given_interval( S_ES,this->long_win, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES );
 
-	coeff_min = best_coeff - 0.3;
-	coeff_max = best_coeff + 0.3;
+	coeff_min = best_coeff - 3;
+	coeff_max = best_coeff + 3;
+	coeff_delta = 1;
+	stretch_record_find_best_match_for_given_interval( S_ES,phase_win, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES );
+	//cout << " best ccc "<< best_ccc << " best coeff "<< best_coeff << " best time shift "<< best_time_shift << endl;
+
+	coeff_min = best_coeff - 0.5;
+	coeff_max = best_coeff + 0.5;
+	coeff_delta = 0.3;
+	stretch_record_find_best_match_for_given_interval( S_ES,phase_win, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES );
+	//cout << " best ccc "<< best_ccc << " best coeff "<< best_coeff << " best time shift "<< best_time_shift << endl;
+	coeff_min = best_coeff - 0.15;
+	coeff_max = best_coeff + 0.15;
 	coeff_delta = 0.1;
 	stretch_record_find_best_match_for_given_interval( S_ES,phase_win, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES );
-
 	cout << " best ccc "<< best_ccc << " best coeff "<< best_coeff << " best time shift "<< best_time_shift << endl;
 	
 	// outout t* E_ES
@@ -208,15 +214,18 @@ int virtual_station::find_stack_ONSET_time()
 	coeff_max = 60;
 	coeff_delta = 5;
 	stretch_gaussian_find_best_match_for_given_interval( best_ES, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES_gau );
-	coeff_min = best_coeff-3;
+	coeff_min = best_coeff - 3;
 	coeff_max = best_coeff + 3;
-	coeff_delta = 0.5;
+	coeff_delta = 1;
 	stretch_gaussian_find_best_match_for_given_interval( best_ES, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES_gau );
-	coeff_min = best_coeff-0.3;
-	coeff_max = best_coeff + 0.3;
+	coeff_min = best_coeff-0.5;
+	coeff_max = best_coeff + 0.5;
+	coeff_delta = 0.3;
+	stretch_gaussian_find_best_match_for_given_interval( best_ES, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES_gau );
+	coeff_min = best_coeff-0.15;
+	coeff_max = best_coeff + 0.15;
 	coeff_delta = 0.1;
 	stretch_gaussian_find_best_match_for_given_interval( best_ES, LINE,  coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff, & best_time_shift, best_ES_gau );
-	
 	cout << "gau best ccc "<< best_ccc << " best coeff "<< best_coeff << " best time shift "<< best_time_shift << endl;
 
 	string current_gau = "gau_ES."+std::to_string(vs_index);
@@ -233,6 +242,7 @@ int virtual_station::find_stack_ONSET_time()
 
 	//find the gaussian function ONSET
 	 //amplitudeloc( this->long_win, this->long_npts, & max_loc, &amp,1 );   	
+	//cout << " find the ONSET time" << endl;
 	amplitudeloc( best_ES_gau ,LINE, &max_loc, &amp,1 );
 	int ONSET;
 	double ONSET_time;
@@ -247,12 +257,14 @@ int virtual_station::find_stack_ONSET_time()
 			break;
 		}
 	}
+	cout << " stack ONSET is " << this->virtual_stack_ONSET << endl;
 
+	//cout << " make code choice for record "<< endl;
 	// use SNR and CCC to deside if current record is good
 	double SNR_CUT = this->my_big_record->SNR_CUT;
 	double CCC_CUT = this->my_big_record->CCC_CUT;
 	cout << " SNR is "<< this->stack_SNR << " ccc is "<< this->tstar_ccc << endl;
-	cout << "CUT SNR is "<< SNR_CUT << " ccc is "<< CCC_CUT << endl;
+	//cout << "CUT SNR is "<< SNR_CUT << " ccc is "<< CCC_CUT << endl;
 	if( this->stack_SNR > SNR_CUT &&
 			this->tstar_ccc > CCC_CUT )
 		this->quality_flag = 1;
@@ -309,7 +321,6 @@ void virtual_station::stack_records_from_one_EQ()
 	double sta_lat;
 	double sta_lon;
 	int tag;
-	return;
 	
 	// initiate long_win
 	for(npts = 0; npts < this->long_npts; npts++)
@@ -317,7 +328,6 @@ void virtual_station::stack_records_from_one_EQ()
 	int stacked_record_num = 0;
 
 
-	return ;
 	for(ista = 0 ; ista < this->npts_record_sum ; ista++)
 	{
 		//cout << "working on ista "<< ista << endl;
@@ -332,21 +342,20 @@ void virtual_station::stack_records_from_one_EQ()
 		dist = dist / 111;
 
 		//gaussian_func(double a, double b, double c, double d, double x)
-		//weight = gaussian_func(1, 0, 4 , 0, dist);
-		weight = 1;
+		weight = gaussian_func(1, 0, 10 , 0, dist);
 		if (weight == 0)
 			continue;
 		int current_record_polar = this->my_big_record->my_record[tag].polarity_flag;
-		current_record_polar = 1;
-		if(current_record_polar == 0)
-			current_record_polar = 1;
 
 		//cout << "working on ista "<< ista <<" weight :"<< weight<< " current_record_polar is "<<current_record_polar << endl;
 		for(npts = 0 ; npts < this->long_npts ; npts ++)
 		{
-			//if(  this->my_big_record->my_record[tag].long_win[npts] !=  this->my_big_record->my_record[tag].long_win[npts] )
-				//continue;
-			this->long_win[npts] += this->my_big_record->my_record[tag].long_win[npts] * weight * current_record_polar;
+			if(  this->my_big_record->my_record[tag].long_win[npts] !=  
+					this->my_big_record->my_record[tag].long_win[npts] )
+				continue;
+			//this->long_win[npts] += 1;
+			this->long_win[npts] += this->my_big_record->my_record[tag].long_win[npts] 
+				* weight * current_record_polar;
 		}
 		stacked_record_num ++;
 	}
@@ -355,6 +364,14 @@ void virtual_station::stack_records_from_one_EQ()
 		return;
 
 	normalize_array_with_flag( &this->long_win[0], this->long_npts ,1);
+	// output stacked record
+	int count = 0;
+	ofstream myfile;
+	myfile.open("out.stack."+std::to_string(this->my_big_record->my_vs_index));
+	for(count = 0; count < this->long_npts ; count ++)
+		myfile << this->long_win[count] << endl;
+	myfile.close();
+	
 }
 
 
@@ -430,22 +447,30 @@ void virtual_station::get_crust_correction_ave_STD()
 
 void virtual_station::output_stacked_record()
 {
+	cout << " --> output_stacked_record" << endl;
 
 
 	ofstream myfile;
+	
 	int vs_index = this->my_big_record->my_vs_index;
 	string phase = this->my_big_record->PHASE;
-	cout << "====================== > in VS vsindex is "<< vs_index <<endl;
+	//cout << "====================== > in VS vsindex is "<< vs_index << " PHASE is " <<phase  <<endl;
 	this->out_stacked_record_rel_PREM = "long_win.vs."+phase+"."+to_string(vs_index);
 	myfile.open(this->out_stacked_record_rel_PREM.c_str());
+
 	
-	int npts;
-	normalize_array_with_flag(&this->long_win[0], this->long_npts,1);
+	//normalize_array_with_flag(&this->long_win[0], this->long_npts,1);
+	int max_loc;
+	double amp;
+
+	amplitudeloc(&this->long_win[0],this->long_npts,&max_loc, &amp,1);
+
 	double X[this->long_npts];
+	int npts;
 	for(npts = 0; npts < this->long_npts; npts++)
 	{
 		X[npts] = this->LONG_BEG + npts * this->delta;
-		myfile << X[npts] << "  " << this->long_win[npts]  << endl;
+		myfile << X[npts] << "  " << this->long_win[npts] /fabs(amp) << endl;
 	}
 	myfile.close();
 }
@@ -596,7 +621,15 @@ void virtual_station::get_SNR_before_and_after_stack()
 		this->stack_SNR = 1;
 	}
 	else
+	{
+		phase_signal /= npts_phase_len;
+		noise_signal /= npts_noise_len;
 		this->stack_SNR= phase_signal / noise_signal;
+	}
+
+
+	return ;
+
 }
 
 

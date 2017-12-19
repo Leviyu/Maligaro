@@ -32,7 +32,7 @@ int normalize_array_with_flag(double* array, int len, int flag)
 	int icount;
 	for(icount = 0; icount < len ; icount ++)
 	{
-		array[icount] = array[icount] / fabs(amp);
+		array[icount] /=  fabs(amp);
 	}
 	return 0;
 }

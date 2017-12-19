@@ -49,14 +49,10 @@ class new_cell
 
 	new_cell();
 	~new_cell();
-
-
 };
-
 // Model Structure
 class new_tomo
 {
-
 	public:
 		string INFILE;
 		string MODEL_INFILE;
@@ -199,9 +195,6 @@ class new_tomo
 		new_tomo();
 		~new_tomo();
 };
-
-
-
 // Record Structure
 class new_record
 {
@@ -317,6 +310,7 @@ class new_record
 		void read_cross_point_info( new_tomo* my_tomo);
 		void read_taup_path_info(string taup_path_dir);
 		void find_cross_points(new_tomo* my_tomo);
+		void convert_long_win_to_velocity();
 
 		void calculate_tomo_correction(new_tomo* my_tomo);
 		void get_ellip_corr();
@@ -327,6 +321,7 @@ class new_record
 		void get_incident();
 		string sac_file;
 		void download_sac_file();
+		void get_polar_flag();
 
 		vector<CRUST_MODEL> my_crust;
 
@@ -341,16 +336,14 @@ class new_record
 
 		new_record();
 		~new_record();
-
 };
-
 // declare big_new_record
 class big_new_record
 {
 	public:
 		big_new_record();
 		~big_new_record();
-
+//
 		double VS_LATITUDE_INC;
 		double VS_EQ_RADIUS_DEGREE;
 		double VS_STA_RADIUS_DEGREE;
@@ -428,7 +421,7 @@ class big_new_record
 		void catagorize_eventstation_to_VS();
 		void count_record_existance_for_grid_pair();
 		int loop_EX_EQ_STA_count_record(virtual_station* eq_grid, virtual_station* sta_grid);
-		void output_VS_info();
+		void output_VS_info_for_one_VS(int vs_index);
 		void catagorize_records_into_VS_based_on_each_record( new_record* my_record, int sta_num);
 		void for_each_EQ_check_num_records_for_stacking();
 		int find_EQ_STA_bin_record_existance_num(new_record* my_record, int sta_num, int ilat_eq, 
@@ -446,26 +439,12 @@ class big_new_record
 		int find_EQ_STA_PHASE_number_in_eventStation(string EQ_NAME, string STA);
 		void make_virtual_station(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta);
 		void make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, int ieq_index);
-		void individual_VS_processing();
-		void output_VS_info_for_current_VS(int ivs);
-
-
+		int individual_VS_processing();
+		void plot_current_vs(int vs_index);
 };
-
-
-// declare virtual_station
-// class virtual_station : public new_record
-// {
-// 	public:
-		
-// };
-
-
-
 class virtual_station : public new_record
 {
 	public:
-
 		int ilat_eq;
 		int ilon_eq;
 		int ilat_sta;
@@ -549,6 +528,7 @@ class virtual_station : public new_record
 		//double fix_slow_delay_time;
 
 		big_new_record* my_big_record;
+		
 		void find_records_within_range();
 		void stack_records_from_one_EQ();
 		void output_stacked_record();
@@ -571,10 +551,10 @@ class virtual_station : public new_record
 		// station stacking usage
 		string 	out_stacked_record_rel_PREM;
 		string 	out_stacked_record_raw;
-		double* record_win_rel_PREM;
-		double* record_win_rel_PREM_shifted;
-		double* record_win_raw;
-		double* record_win_raw_shifted;
+		//double* record_win_rel_PREM;
+		//double* record_win_rel_PREM_shifted;
+		//double* record_win_raw;
+		//double* record_win_raw_shifted;
 
 
 
@@ -611,15 +591,10 @@ class virtual_station : public new_record
 		// grid eventinfo/eventStation number
 		// int exist_eventStation;
 		// int exist_eventinfo;
-
 };
-
-
-
 class CRUST_MODEL
 {
 	public:
-
 		vector< vector<double> > boundary;
 		vector< vector<double> > vs;
 		vector< vector<double> > vp;
@@ -635,7 +610,6 @@ class CRUST_MODEL
 
 		CRUST_MODEL();
 		~CRUST_MODEL();
-
 };
 
 

@@ -8,6 +8,7 @@
 #include<string>
 #include<vector>
 #include<cmath>
+#include<math.h>
 //#include "sacio.h"
 extern "C" {
 #include "/opt/sac/include/sacio.h"

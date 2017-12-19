@@ -19,6 +19,13 @@ int stretch_record_find_best_match_for_given_interval(double* record,
 
 	output_array1("origional_gaussian",ES_win,npts_phase);
 
+	if(coeff_min < 0)
+		coeff_min = 0.1;
+	if(coeff_max <= coeff_min)
+	{
+		coeff_max = coeff_min + 1;
+		coeff_delta = 0.5;
+	}
 
 	int NUM;
 	int NUM_max; // number of stretching needed
@@ -44,8 +51,8 @@ int stretch_record_find_best_match_for_given_interval(double* record,
 //printf("--> tstar beg for %lf \n", coeff);
 		double tmp_ES[npts_phase];
 		//1. stretch ES
-		stretch_ES_function(ES_win, npts_phase, coeff, tmp_ES);
-		//tstar_ES_function(ES_win, npts_phase, coeff, tmp_ES);
+		//stretch_ES_function(ES_win, npts_phase, coeff, tmp_ES);
+		tstar_ES_function(ES_win, npts_phase, coeff, tmp_ES);
 		//output_array("stretched_gaussian",tmp_ES,npts_phase);
 		
 
@@ -89,6 +96,12 @@ int stretch_record_find_best_match_for_given_interval(double* record,
 	*best_ccc = stretched_CCC[index_max];
 	*best_time_shift = stretched_timeshift[index_max];
 	*best_coeff = stretched_coefficient[index_max];
+
+	if(*best_ccc == 0)
+		*best_ccc = 0.5;
+	if(*best_coeff == 0)
+		*best_coeff = 0.1;
+
 	for(count=0;count<npts_phase;count++)
 		best_ES[count] = stretched_ES[index_max][count];
 

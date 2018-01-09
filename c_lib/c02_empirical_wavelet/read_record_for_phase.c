@@ -4,9 +4,8 @@
 int read_record_for_phase(new_RECORD* my_record, new_INPUT* my_input)
 {
 	printf("---> Read record for phase Begin Here \n");
-	int i,j,k;
-	int read_record_for_phase_for_one_sta(new_RECORD* my_record, new_INPUT* my_input);
-
+	int i;
+	reprocessing_get_prem_shift_time(my_record,my_input);
 
 	for(i=0; i<my_input->sta_num;i++)
 	{

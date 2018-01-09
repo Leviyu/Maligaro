@@ -14,15 +14,11 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 	double first_EW[npts_phase];
 	int restack_flag;
 
-
-	//puts("         ---> get first E.W.");
-	// store all the E.W. produced while stacking
 	double** ES;
 	ES = (double**)malloc(sizeof(double*)*30);
 	for(i=0;i<30;i++)
 		ES[i] = (double*)malloc(sizeof(double)*npts_phase);
 	
-	//get_first_EW_for_phase(my_record,my_input,ES[1]);
 	get_first_EW_for_phase(my_record,my_input,first_EW);
 	for(i=0;i<npts_phase; i++ )
 		ES[1][i] = first_EW[i];
@@ -57,9 +53,6 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 
 		// normalize ES
 		normalize_array(ES[loop_num + 1], npts_phase);
-
-
-		
 
 		// if ccc new_ES & old_ES > 0.99 exit
 		for(i = 0; i< npts_phase; i++)

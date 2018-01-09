@@ -10,7 +10,6 @@ int read_input_info(new_INPUT* my_input)
 	in=fopen(INFILE_name,"r");
 	char buff[200];
 	char read_tmp[200];
-	char tmp[200];
 	int N=200,count;
 
 
@@ -100,6 +99,8 @@ int read_input_info(new_INPUT* my_input)
 			sscanf(read_tmp,"%s %d " ,buff, &my_input->ED_CHECKED_FLAG);
 		else if (strcmp(buff,"<Fix_missing_sta_flag>") == 0)
 			sscanf(read_tmp,"%s %d " ,buff, &my_input->Fix_missing_sta_flag);
+		else if (strcmp(buff,"<Reprocessing_Flag>") == 0)
+			sscanf(read_tmp,"%s %d " ,buff, &my_input->Reprocessing_Flag);
 	}
 
 	fclose(in2);

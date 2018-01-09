@@ -80,6 +80,16 @@ int stretch_ES_and_CCC_tstar(new_RECORD* my_record, new_INPUT* my_input, double*
 		double shift_time_max = 1000;
 		my_record[ista].phase_beg -= shift_time;
 
+		// if reprocessing_flag is 1, we dont allow big shift
+		// if shift is greater then 3sec, then we hardwire it to be 0
+		//if(my_input->Reprocessing_Flag == 1 && 
+				//fabs(shift_time) > 3 )
+		//{
+			//printf(" --> reprocessing_flag STA %s shifted %lf \n", my_record[ista].name, shift_time);
+			//shift_time = 0;
+		//}
+
+
 		// update phase win
 		read_phase_window(&my_record[ista],my_input);
 

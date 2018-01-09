@@ -7,6 +7,7 @@
 #include<math.h>
 #include<sacio.h>
 #include<time.h>
+#include "../c01_tools/hongyulib.h"
 
 struct new_INPUT
 {
@@ -101,6 +102,8 @@ struct new_INPUT
 
 	int Fix_missing_sta_flag;
 
+	int Reprocessing_Flag;
+
 };
 typedef struct new_INPUT new_INPUT;
 
@@ -192,6 +195,8 @@ struct new_RECORD
 	double ccc;				// cross-correlation coefficient between Empirical source and the record
 	double SNR;				
 	double SNR2;
+	double SNR3;
+	double SNR4;
 	double SNR_sig;
 	double SNR_noi;
 	double ONSET;
@@ -199,7 +204,13 @@ struct new_RECORD
 	double misfit;
 	double misfit2;
 	double misfit_pre;
+	double misfit_pre2T;
+	double misfit_pre3T;
+	double misfit_pre4T;
 	double misfit_bak;
+	double misfit_bak2T;
+	double misfit_bak3T;
+	double misfit_bak4T;
 
 	double record_gaussian_factor;
 	double record_gaussian_area;
@@ -266,6 +277,7 @@ struct new_RECORD
 	double beyong_window_flag;
 
 
+	double dt_picked_shift;
 
 
 };
@@ -433,6 +445,7 @@ int stretch_record_find_best_match_for_given_interval(double* record,
 		double coeff_delta, double* best_ccc, double* best_coeff,
 		int* best_time_shift, double* best_ES);
 
+void reprocessing_get_prem_shift_time(new_RECORD* my_record, new_INPUT* my_input);
 void redefine_beyon_wind_flag(new_RECORD* my_record, new_INPUT* my_input, 
 		double* current_ES,double* EW_new);
 void store_ES_into_record(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
@@ -442,5 +455,6 @@ void reject_records_with_dt_too_close_to_traffic_phase(new_RECORD* my_record, ne
 int stretch_record_restack_ES_based_on_code_choice(new_RECORD* my_record, new_INPUT* my_input, double* ES);
 void redo_for_S_P_remake_EW(new_RECORD* my_record, new_INPUT* my_input);
 int restack_ES_for_phase_code_choice(new_RECORD* my_record, new_INPUT* my_input, double* ES);
+int get_SNR3_and_4_for_record(double* phase_win,int phase_npts, double* noise_win,int noise_npts, double* SNR3, double* SNR4);
 
 #endif

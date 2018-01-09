@@ -33,8 +33,8 @@ printf("---> Restack E.W. \n ");
 
 
 		my_record[ista].weight = get_weight_from_SNR_CCC( my_record[ista].SNR, my_record[ista].ccc);
-		if(strstr(my_record[ista].name, "PPP") != NULL )
-			continue;
+		//if(strstr(my_record[ista].name, "PPP") != NULL )
+			//continue;
 
 		if(my_record[ista].weight == 0)
 			continue;

@@ -65,6 +65,7 @@ int amplitudeloc(double* array, int len, int* max_amp_loc, double* amplitude, in
 			*amplitude = AMP_nega;
 		}
 	}
+	//printf("max loc is %d amp is %lf \n", *max_amp_loc,*amplitude);
 
 	return 0;
 }

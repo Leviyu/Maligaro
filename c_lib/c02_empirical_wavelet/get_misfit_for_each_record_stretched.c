@@ -58,17 +58,21 @@ puts("---> Get Misfit for each recrod and get the SNR for stretched");
 		double phase_signal=0;
 		double noise_signal=0;
 		int i;
+		int signal_npts = 0;
+		int noise_npts = 0;
 		for(i=npts_ONSET;i<npts_ENDSET;i++)
 		{
 			phase_signal += fabs(my_record[ista].phase_win[i]);
+			signal_npts++;
 		}
 
 		for(i=0;i<my_record[ista].npts_noise;i++)
 		{
 			noise_signal += fabs(my_record[ista].noise_win[i]);
+			noise_npts ++;
 		}
 		//printf("noise signal is %lf phase signa; is %lf npts noise phase %d %d\n", noise_signal, phase_signal, my_record[ista].npts_noise,my_record[ista].npts_phase);
-		if( noise_signal == 0 )
+		if( noise_signal == 0 || noise_npts == 0)
 		{
 			puts("ERROR: noise_signal is 0 SNR problem!");
 			my_record[ista].quality = -1;
@@ -77,9 +81,11 @@ puts("---> Get Misfit for each recrod and get the SNR for stretched");
 		}
 		else
 		{
-			double SNR_sig = phase_signal / (npts_ENDSET - npts_ONSET);
-			double SNR_noi = noise_signal / (my_record[ista].noise_len/my_input->delta);
-			//printf("SNR sig is %lf SNR nos is %lf \n", SNR_sig, SNR_noi);
+			//double SNR_sig = phase_signal / (npts_ENDSET - npts_ONSET);
+			//double SNR_noi = noise_signal / (my_record[ista].noise_len/my_input->delta);
+			// exclide those that we have masked to be zero
+			double SNR_sig = phase_signal / signal_npts;
+			double SNR_noi = noise_signal / noise_npts;
 			double SNR = SNR_sig/SNR_noi;
 			my_record[ista].SNR_sig = SNR_sig;
 			my_record[ista].SNR_noi = SNR_noi;
@@ -111,16 +117,7 @@ puts("---> Get Misfit for each recrod and get the SNR for stretched");
 					SNR_noise_for_S =1;
 				my_record[ista].SNR2 = SNR_sig / SNR_noise_for_S;
 
-
-
-
 			}
-
-
-
-
-
-
 
 		}
 

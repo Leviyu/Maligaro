@@ -1,0 +1,28 @@
+	// read INFILE information
+	FILE* in2;
+	char INFILE_name2[200];
+	sprintf(INFILE_name2,"INFILE");
+	in2=fopen(INFILE_name2,"r");
+
+
+	file_num = count_file_num(INFILE_name2);
+//printf("file name is %s file num is %d \n",INFILE_name,file_num);
+
+	for(count = 0;count < file_num; count ++)
+	{
+		fgets(read_tmp,N, in2);              // line
+		sscanf(read_tmp,"%s" ,buff);
+//printf("read in %s \n",buff);
+		if (strcmp(buff,"<T_star_lib>") == 0)
+			sscanf(read_tmp,"%s %s" ,buff, my_input->tstar_lib);
+		else if (strcmp(buff,"<ED_CHECK_FILE>") == 0)
+			sscanf(read_tmp,"%s %s" ,buff, my_input->ed_checked_file);
+		else if (strcmp(buff,"<ED_CHECK_FLAG>") == 0)
+			sscanf(read_tmp,"%s %d " ,buff, &my_input->ED_CHECKED_FLAG);
+		else if (strcmp(buff,"<Fix_missing_sta_flag>") == 0)
+			sscanf(read_tmp,"%s %d " ,buff, &my_input->Fix_missing_sta_flag);
+		else if (strcmp(buff,"<Reprocessing_Flag>") == 0)
+			sscanf(read_tmp,"%s %d " ,buff, &my_input->Reprocessing_Flag);
+	}
+
+	fclose(in2);

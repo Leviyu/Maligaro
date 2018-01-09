@@ -67,7 +67,16 @@ int get_ONSET_ENDSET_for_each_record_origional_phase(new_RECORD* my_record,
 			}
 		}
 
-		npts_ENDSET = npts_peak + (npts_peak - npts_ONSET);
+		//npts_ENDSET = npts_peak + (npts_peak - npts_ONSET);
+		for( i = npts_peak; i< npts_phase ; i++)
+		{
+			if(fabs( my_record[ista].stretched_ES_win[i] ) < fabs(noise_level) )
+			{
+				npts_ENDSET = i;
+				break;
+			}
+		}
+
 		// convert npts ONSET into dt
 		dt_ONSET = my_record[ista].phase_beg + npts_ONSET * my_input->delta ;
 		int npts_peak_ONSET = npts_peak - npts_ONSET;

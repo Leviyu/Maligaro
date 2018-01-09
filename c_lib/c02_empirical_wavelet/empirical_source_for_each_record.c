@@ -94,6 +94,17 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 		// if shift too big, we shift it back
 		// ===========================================================
 		shift_time = npts_shift*my_input->delta;
+
+
+
+		// if reprocessing_flag is 1, we dont allow big shift
+		// if shift is greater then 3sec, then we hardwire it to be 0
+		if(my_input->Reprocessing_Flag == 1 && 
+				fabs(shift_time) > 3 )
+		{
+			printf(" --> reprocessing_flag STA %s shifted %lf \n", my_record[ista].name, shift_time);
+			shift_time = 0;
+		}
 		//if(fabs(shift_time) > 20)
 			//shift_time = 0;
 

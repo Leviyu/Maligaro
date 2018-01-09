@@ -48,6 +48,19 @@ int define_goodness_of_record(new_RECORD* my_record, new_INPUT* my_input)
 			my_record[ista].quality = -1;
 			continue;
 		}
+		// if is SS and misfit pre is too big, reject
+		if(strcmp( my_record[ista].PHASE, "SS") == 0 && my_record[ista].misfit_pre > 0.25 )
+		{
+			my_record[ista].quality = -1;
+			continue;
+		}
+		// if record is too skinny, stretch_factor < 0.8, reject
+		if( my_record[ista].best_stretch_coefficient < 0.8 )
+		{
+			my_record[ista].quality = -1;
+			continue;
+		}
+
 
 		if(my_record[ista].quality != -1 &&
 				fabs(SNR) > my_input->SNR_CUT &&

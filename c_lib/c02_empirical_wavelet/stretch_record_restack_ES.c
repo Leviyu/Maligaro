@@ -37,47 +37,47 @@ int stretch_record_restack_ES(new_RECORD* my_record, new_INPUT* my_input, double
 
 	for(ista=0;ista< my_input->sta_num; ista ++)
 	{
-		if(my_record[ista].quality == -1)
-			continue;
-		if(my_record[ista].traffic_phase_nearby == 1 )
-			continue;
-		if(fabs(my_record[ista].SNR) < my_input->SNR_CUT)
-			continue;
-		if(fabs(my_record[ista].ccc) < 0.8 )
-			continue;
+		if( my_input->Reprocessing_Flag != 1) 
+		{
+			if(my_record[ista].quality == -1)
+				continue;
+			if(my_record[ista].traffic_phase_nearby == 1 )
+				continue;
+			if(fabs(my_record[ista].SNR) < my_input->SNR_CUT)
+				continue;
+			if(fabs(my_record[ista].ccc) < 0.8 )
+				continue;
+		}
 
 
 
 		// hongyu change
 		// here we grab records from eventinfo.final
-		// and we only use records that we picked already to construct the S E.W.
-		if( strcmp( my_record[ista].PHASE, "S" )  == 0 
-			&& my_input->ED_CHECKED_FLAG == 1 && 
-			my_record[ista].checked_to_be_good == 1)
-		{
-			double kkk = 1;
-		}
-		else 
-		{
-			continue;
-		}
+		//// and we only use records that we picked already to construct the S E.W.
+		//if( strcmp( my_record[ista].PHASE, "S" )  == 0 
+			//&& my_input->ED_CHECKED_FLAG == 1 && 
+			//my_record[ista].checked_to_be_good == 1)
+		//{
+			//double kkk = 1;
+		//}
+		//else 
+		//{
+			//continue;
+		//}
 
 		//printf(" %d th record weight is %lf \n", ista, my_record[ista].weight);
 		if( my_record[ista].best_stretch_coefficient == 0)
 			my_record[ista].best_stretch_coefficient = 1;
 		stretch_factor_record = 1/my_record[ista].best_stretch_coefficient;
 		//stretch phase win using stretch factor
+		//
+		printf(" record %s is stretched %lf to stack EW2 \n", my_record[ista].name,stretch_factor_record);
 		stretch_ES_function(my_record[ista].phase_win, npts_phase, stretch_factor_record, my_record[ista].stretched_phase_win);
 		my_record[ista].stretched_phase_win_flag = 1;
 
-		if(strstr(my_record[ista].name, "PPP") != NULL)
+		if(strstr(my_record[ista].name, "PPP") != NULL && my_input->Reprocessing_Flag != 1)
 			continue;
 
-		// output the stretched record
-		//for(i=0;i<npts_phase;i++)
-			//x_phase[i] = my_record[ista].phase_beg + i*my_input->delta;
-		//sprintf(stretch_record_out_name,"%s.%s.%s.%s.phase_stretch", my_record[ista].EQ,my_record[ista].name,my_record[ista].PHASE,my_record[ista].COMP);
-		//output_array2(stretch_record_out_name,x_phase,my_record[ista].stretched_phase_win, npts_phase, 0);
 
 		if(my_record[ista].weight == 0)
 			continue;

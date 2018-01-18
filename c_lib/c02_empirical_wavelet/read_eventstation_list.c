@@ -43,9 +43,11 @@ printf("---> Read polarity  info \n");
 	FILE* in2;
 	sprintf(my_input->polarity_file,"eventinfo.polarity.%s.%s",my_input->PHASE,my_input->COMP);
 	in2=fopen(my_input->polarity_file,"r");
+	int filenum = count_file_num(my_input->polarity_file);
 	int ista;
+	double tmp_polarity = 0;
 	// read in polarity file info
-	for(i = 0; i< my_input->sta_num ; i++)
+	for(i = 0; i< filenum ; i++)
 	{
 		if(!in2) 
 		{
@@ -53,19 +55,21 @@ printf("---> Read polarity  info \n");
 			break;
 		}
 		fgets(buff3,N,in2);
-		sscanf(buff3, "%s %lf ", sta_tmp, &my_record[i].polarity);
+		sscanf(buff3, "%s %lf ", sta_tmp, &tmp_polarity);
 		//printf("sta %s polarity is %lf \n", my_record[i].name, my_record[i].polarity);
 		for(ista =0; ista<my_input->sta_num;ista ++)
 		{
 			if(strcmp(sta_tmp,my_record[ista].name)==0)
 			{
+				my_record[ista].polarity = tmp_polarity;
+			//printf("sta %s polarity is %lf \n", my_record[ista].name, tmp_polarity);
 			// set polar_flag according to the polarity info
-			if( my_record[i].polarity > 0.15)
-				my_record[i].polar_flag = 1;
-			else if( my_record[i].polarity < -0.15)
-				my_record[i].polar_flag = -1;
+			if( my_record[ista].polarity > 0.15)
+				my_record[ista].polar_flag = 1;
+			else if( my_record[ista].polarity < -0.15)
+				my_record[ista].polar_flag = -1;
 			else 
-				my_record[i].polar_flag = 0;
+				my_record[ista].polar_flag = 0;
 			break;
 			}
 			else

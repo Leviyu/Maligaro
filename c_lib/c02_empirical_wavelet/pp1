@@ -1,8 +1,0 @@
-		for( i = npts_peak; i< npts_phase ; i++)
-		{
-			if(fabs( my_record[ista].stretched_ES_win[i] ) < fabs(noise_level) )
-			{
-				npts_ENDSET = i;
-				break;
-			}
-		}

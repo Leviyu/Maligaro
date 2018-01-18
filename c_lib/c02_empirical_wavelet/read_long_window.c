@@ -5,6 +5,8 @@ int read_long_window(char* sac_file, new_RECORD* my_record, new_INPUT* my_input)
 	void wiginterpd();
 	int traffic_zero_out(new_RECORD* my_record, new_INPUT* my_input);
 
+	// manually shifted time is added to PREM time
+	//double long_beg = my_record->long_beg + my_record->dt_picked_shift;
 	double long_beg = my_record->long_beg;
 	double long_len = my_record->long_len;
 	char velocity_or_displacement[200];
@@ -133,8 +135,9 @@ int read_long_window(char* sac_file, new_RECORD* my_record, new_INPUT* my_input)
 	//wiginterpd(x_tmp,  y_tmp, npts_long_len,  new_x, new_y,new_npts , 0);
 
 	// flip the recrod according to the polarity
-	if(polar_flag !=0 )
+	if(polar_flag == -1 )
 	{
+		printf(" sta %s is flipped cause of polarity %d \n", my_record->name , polar_flag);
 	for(i=0;i< new_npts;i++)
 		new_y[i] = new_y[i] * polar_flag;
 	}

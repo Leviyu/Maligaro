@@ -179,9 +179,9 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 
 	// after code choice, we used code picked good records to restack a E.W.
 	// and redo the whole process again just for S/P
-	redo_for_S_P_remake_EW(my_record, my_input);
+	//redo_for_S_P_remake_EW(my_record, my_input);
 
-	redefine_beyon_wind_flag(my_record,my_input,current_ES,EW_new);
+	//redefine_beyon_wind_flag(my_record,my_input,current_ES,EW_new);
 
 	return 0;
 }

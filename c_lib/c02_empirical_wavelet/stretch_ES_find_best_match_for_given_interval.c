@@ -64,7 +64,12 @@ int stretch_ES_find_best_match_for_given_interval(new_RECORD* my_record, double*
 
 
 		// shift and ccc comes from ccc between padded record and ES
-		CCC(ES_tmp,npts_phase,record_tmp, npts_phase, &npts_shift, &ccc, ccc_flag);  
+		if(my_input->Reprocessing_Flag != 1)
+			CCC(ES_tmp,npts_phase,record_tmp, npts_phase, &npts_shift, &ccc, ccc_flag);  
+		else if(my_input->Reprocessing_Flag == 1)
+			CCC2(ES_tmp,npts_phase,record_tmp, npts_phase, &npts_shift, &ccc, ccc_flag,
+					my_input->npts_Reprocessing_shift);  
+
 		//store info
 		stretched_CCC[NUM] = ccc;
 		stretched_coefficient[NUM] = coeff;

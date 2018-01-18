@@ -176,6 +176,9 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		// get misfit_pre2T
 		npts_beg = npts_ONSET - 2*(npts_ENDSET - npts_ONSET);
 		npts_end = npts_ONSET - 1*(npts_ENDSET - npts_ONSET);
+		if( npts_beg < 0) npts_beg = 0;
+		if( npts_end >= npts_phase) npts_end = npts_phase -1;
+
 		misfit_diff = 0;
 		for(count = npts_beg; count < npts_end; count++)
 		{
@@ -190,6 +193,8 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		// get misfit_pre3T
 		npts_beg = npts_ONSET - 3*(npts_ENDSET - npts_ONSET);
 		npts_end = npts_ONSET - 2*(npts_ENDSET - npts_ONSET);
+		if( npts_beg < 0) npts_beg = 0;
+		if( npts_end >= npts_phase) npts_end = npts_phase -1;
 		misfit_diff = 0;
 		for(count = npts_beg; count < npts_end; count++)
 		{
@@ -202,9 +207,9 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		misfit = misfit_diff / d_npts;
 		my_record[ista].misfit_pre3T = misfit;
 
-		printf("misfit pre pre2T pre3T %lf %lf %lf \n", my_record[ista].misfit_pre,
-				my_record[ista].misfit_pre2T,
-				my_record[ista].misfit_pre3T);
+		//printf("misfit pre pre2T pre3T %lf %lf %lf \n", my_record[ista].misfit_pre,
+				//my_record[ista].misfit_pre2T,
+				//my_record[ista].misfit_pre3T);
 
 // ===========================================================
 //	get misfit measurement misfit_bak
@@ -232,6 +237,8 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		// get misfit_bak2T
 		npts_beg = npts_ENDSET + 1*(npts_ENDSET - npts_ONSET);
 		npts_end = npts_ENDSET + 2*(npts_ENDSET - npts_ONSET);
+		if( npts_beg < 0) npts_beg = 0;
+		if( npts_end >= npts_phase) npts_end = npts_phase -1;
 		misfit_diff = 0;
 		for(count = npts_beg; count < npts_end; count++)
 		{
@@ -246,6 +253,8 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		// get misfit_bak3T
 		npts_beg = npts_ENDSET + 2*(npts_ENDSET - npts_ONSET);
 		npts_end = npts_ENDSET + 3*(npts_ENDSET - npts_ONSET);
+		if( npts_beg < 0) npts_beg = 0;
+		if( npts_end >= npts_phase) npts_end = npts_phase -1;
 		misfit_diff = 0;
 		for(count = npts_beg; count < npts_end; count++)
 		{

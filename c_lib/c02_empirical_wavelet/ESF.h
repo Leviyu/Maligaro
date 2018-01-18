@@ -103,6 +103,8 @@ struct new_INPUT
 	int Fix_missing_sta_flag;
 
 	int Reprocessing_Flag;
+	double Reprocessing_shift;	// alloable shift for reprocessing
+	int npts_Reprocessing_shift;	// alloable shift for reprocessing
 
 };
 typedef struct new_INPUT new_INPUT;
@@ -391,6 +393,7 @@ int get_first_EW_for_phase(new_RECORD* my_record, new_INPUT* my_input, double* E
 int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input);
 int get_ONSET_ENDSET_for_each_record_origional_phase(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
 int CCC( double* x, int npts_x, double* y, int npts_y, int*shift, double* ccc, int flag);
+int CCC2( double* x, int npts_x, double* y, int npts_y, int*shift, double* ccc, int flag,int n3);
 int get_misfit_for_each_record_origional_record(new_RECORD* my_record, new_INPUT* my_input);
 double get_weight_from_SNR_CCC(double SNR, double ccc_orig);
 int tstar_ES_function(double* current_ES, int npts_phase, double coeff,double*  tmp_ES, char* tstar_lib);

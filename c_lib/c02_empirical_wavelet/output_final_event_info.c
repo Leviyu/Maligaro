@@ -102,6 +102,8 @@ double polarity = my_record->polarity;
 	strcpy(phase_name,my_record->PHASE);
 	int polar_flag = my_record->polar_flag;
 	int quality_flag = my_record->quality;
+	if (my_input->Reprocessing_Flag == 1)
+		quality_flag = 1;
 	double prem = my_record->prem;
 	double amp = my_record->amplitude;
 	double misfit = my_record->misfit;

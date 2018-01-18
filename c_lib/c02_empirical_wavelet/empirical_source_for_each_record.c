@@ -86,7 +86,11 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 		//int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array_out)
 		// ===========================================================
 		construct_array_with_main_lobe(my_record[ista].phase_win, &npts_phase, tmp_new_PHASE);
-		CCC(tmp_new_ES,npts_phase,tmp_new_PHASE, npts_phase, &npts_shift, &ccc, ccc_flag);
+		if( my_input->Reprocessing_Flag == 1)
+			CCC2(tmp_new_ES,npts_phase,tmp_new_PHASE, npts_phase, &npts_shift, &ccc, ccc_flag, my_input->npts_Reprocessing_shift);
+		else
+			CCC(tmp_new_ES,npts_phase,tmp_new_PHASE, npts_phase, &npts_shift, &ccc, ccc_flag);
+
 
 //printf("--->sta %s loop %d ccc %lf \n", my_record[ista].name, loop_num, ccc);
 		// ===========================================================
@@ -99,12 +103,18 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 
 		// if reprocessing_flag is 1, we dont allow big shift
 		// if shift is greater then 3sec, then we hardwire it to be 0
-		if(my_input->Reprocessing_Flag == 1 && 
-				fabs(shift_time) > 3 )
-		{
-			printf(" --> reprocessing_flag STA %s shifted %lf \n", my_record[ista].name, shift_time);
-			shift_time = 0;
-		}
+		//if(my_input->Reprocessing_Flag == 1 && 
+				//fabs(shift_time) > 3 )
+		//{
+			//printf(" --> reprocessing_flag STA %s shifted %lf \n", my_record[ista].name, shift_time);
+			//shift_time = 0;
+		//}
+		//if( my_input->Reprocessing_Flag == 1 &&
+				//loop_num == 1)
+		//{
+			//shift_time = -1*my_record[ista].dt_picked_shift;
+			//printf("loop 1 --> reprocessing_flag STA %s shifted %lf \n", my_record[ista].name, shift_time);
+		//}
 		//if(fabs(shift_time) > 20)
 			//shift_time = 0;
 

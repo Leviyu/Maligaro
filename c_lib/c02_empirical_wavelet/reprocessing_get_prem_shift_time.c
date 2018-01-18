@@ -12,6 +12,9 @@ void reprocessing_get_prem_shift_time(new_RECORD* my_record, new_INPUT* my_input
 	char read_tmp[400];
 	int N = 1000;
 
+	my_input->Reprocessing_shift = 3;
+	my_input->npts_Reprocessing_shift = (int)(my_input->Reprocessing_shift / my_record->delta);
+
 
 	int ista = 0;
 	for(ista = 0; ista < my_input->sta_num ; ista++)
@@ -39,7 +42,7 @@ void reprocessing_get_prem_shift_time(new_RECORD* my_record, new_INPUT* my_input
 				break;
 			}
 		}
-		printf("sta %s dt shift %lf \n", my_record[ista].name, my_record[ista].dt_picked_shift);
+		//printf("sta %s dt shift %lf \n", my_record[ista].name, my_record[ista].dt_picked_shift);
 		fclose(in2);
 	}
 

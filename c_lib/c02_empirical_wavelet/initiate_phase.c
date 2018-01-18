@@ -10,7 +10,9 @@ int initiate_phase(new_RECORD* my_record,double prem, char* sac_file, new_INPUT*
 	strcpy(my_record->COMP,my_input->COMP);
 	my_record->long_beg = my_input->long_beg;
 	my_record->long_len = my_input->long_len;
-	my_record->phase_beg = my_input->phase_beg;
+	// change phase beg
+	//my_record->phase_beg = my_input->phase_beg;
+	my_record->phase_beg = my_input->phase_beg + my_record->dt_picked_shift;;
 	my_record->phase_len = my_input->phase_len;
 	my_record->noise_beg = my_input->noise_beg;
 	my_record->noise_len = my_input->noise_len;
@@ -22,7 +24,8 @@ int initiate_phase(new_RECORD* my_record,double prem, char* sac_file, new_INPUT*
 	
 
 
-	my_record->prem = prem + my_record->dt_picked_shift; 	
+	//my_record->prem = prem + my_record->dt_picked_shift; 	
+	my_record->prem = prem;
 	my_record->long_win=(double*)malloc(sizeof(double)*(int)(my_record->long_len/my_input->delta));
 	my_record->long_orig=(double*)malloc(sizeof(double)*(int)(my_record->long_len/my_input->delta));
 	my_record->phase_win=(double*)malloc(sizeof(double)*(int)(my_record->phase_len/my_input->delta));

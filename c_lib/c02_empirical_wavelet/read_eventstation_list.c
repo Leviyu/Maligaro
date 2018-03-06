@@ -37,45 +37,47 @@ printf("---> Read eventstation list info \n");
 	fclose(in);
 
 
-printf("---> Read polarity  info \n");
-
+	printf("---> Read polarity  info \n");
 	// read in polarity info
 	FILE* in2;
 	sprintf(my_input->polarity_file,"eventinfo.polarity.%s.%s",my_input->PHASE,my_input->COMP);
-	in2=fopen(my_input->polarity_file,"r");
-	int filenum = count_file_num(my_input->polarity_file);
-	int ista;
-	double tmp_polarity = 0;
-	// read in polarity file info
-	for(i = 0; i< filenum ; i++)
+	if(file_exist(my_input->polarity_file) == 1)
 	{
-		if(!in2) 
+		in2=fopen(my_input->polarity_file,"r");
+		int filenum = count_file_num(my_input->polarity_file);
+		int ista;
+		double tmp_polarity = 0;
+		// read in polarity file info
+		for(i = 0; i< filenum ; i++)
 		{
-			printf("ERROR polarity file empty \n");
-			break;
-		}
-		fgets(buff3,N,in2);
-		sscanf(buff3, "%s %lf ", sta_tmp, &tmp_polarity);
-		//printf("sta %s polarity is %lf \n", my_record[i].name, my_record[i].polarity);
-		for(ista =0; ista<my_input->sta_num;ista ++)
-		{
-			if(strcmp(sta_tmp,my_record[ista].name)==0)
+			if(!in2) 
 			{
-				my_record[ista].polarity = tmp_polarity;
-			//printf("sta %s polarity is %lf \n", my_record[ista].name, tmp_polarity);
-			// set polar_flag according to the polarity info
-			if( my_record[ista].polarity > 0.15)
-				my_record[ista].polar_flag = 1;
-			else if( my_record[ista].polarity < -0.15)
-				my_record[ista].polar_flag = -1;
-			else 
-				my_record[ista].polar_flag = 0;
-			break;
+				printf("ERROR polarity file empty \n");
+				break;
 			}
-			else
-				continue;
-		}
+			fgets(buff3,N,in2);
+			sscanf(buff3, "%s %lf ", sta_tmp, &tmp_polarity);
+			//printf("sta %s polarity is %lf \n", my_record[i].name, my_record[i].polarity);
+			for(ista =0; ista<my_input->sta_num;ista ++)
+			{
+				if(strcmp(sta_tmp,my_record[ista].name)==0)
+				{
+					my_record[ista].polarity = tmp_polarity;
+				//printf("sta %s polarity is %lf \n", my_record[ista].name, tmp_polarity);
+				// set polar_flag according to the polarity info
+				if( my_record[ista].polarity > 0.15)
+					my_record[ista].polar_flag = 1;
+				else if( my_record[ista].polarity < -0.15)
+					my_record[ista].polar_flag = -1;
+				else 
+					my_record[ista].polar_flag = 0;
+				break;
+				}
+				else
+					continue;
+			}
 
+		}
 	}
 	//fclose(in2);
 

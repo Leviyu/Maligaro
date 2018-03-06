@@ -133,6 +133,7 @@ double polarity = my_record->polarity;
 	double ccc3 = my_record->CCC3;
 	double SNR3 = my_record->SNR3;
 	double SNR4 = my_record->SNR4;
+	int noise_too_short_flag = my_record->noise_too_short_flag;
 	//printf("ccc2 \n");
 
 
@@ -140,13 +141,17 @@ double polarity = my_record->polarity;
 	// for Lp Sdiff SS SSS data, we add delay time to the dt_residual
 	//double dt_obs_prem = my_record->dt_obs_prem - my_input->bp_delay_time;
 	double dt_obs_prem = my_record->dt_obs_prem;
+	// for postprocessing
+	// hardwire dt to be dt_picked shift
+	if(my_input->Reprocessing_Flag == 1) 
+		dt_obs_prem = my_record->dt_picked_shift;
 
 
-	fprintf(out,"%6s %6s %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %13s %2d %2d %8.3lf %17.14lf %5.2lf %5.2lf %6.1lf %6s %5.2lf %5.2lf %5.2lf %5s %5.2lf %6d %5.2lf %5.2lf %8.3lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %6d %6d %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf \n",
+	fprintf(out,"%6s %6s %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %13s %2d %2d %8.3lf %17.14lf %5.2lf %5.2lf %6.1lf %6s %5.2lf %5.2lf %5.2lf %5s %5.2lf %6d %5.2lf %5.2lf %8.3lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %6d %6d %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %3d\n",
 			sta, NET, DIST, AZ, BAZ, STA_lat, STA_lon, EQ_lat, EQ_lon, EQ_dep, EQ_mag, EQ_name, polar_flag, quality_flag, prem, amp, ccc ,SNR, dt_obs_prem, phase_name,
 			best_ccc, best_coefficient, misfit, COMP, time_phase_peak, npts_phase_peak, noise_beg, noise_len, phase_beg_time_relative_to_prem, record_weight,SNR2, misfit2,
 			ONSET, ENDSET, best_tstar, best_tstar_ccc, ccc3, misfit_pre, misfit_bak, record_gaussian_factor, emp_gaussian_factor, gaussian_misfit, polarity, polar_correct_flag, 
-			traffic_phase_nearby, misfit_pre2T, misfit_pre3T,misfit_bak2T, misfit_bak3T,SNR3,SNR4);
+			traffic_phase_nearby, misfit_pre2T, misfit_pre3T,misfit_bak2T, misfit_bak3T,SNR3,SNR4,noise_too_short_flag);
 	return 0;
 }
 

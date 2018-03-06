@@ -25,7 +25,7 @@
 int CCC_posi2(double* x, int npts_x, double* y, int npts_y, int* shift, double* ccc , int flag,int n3);
 int CCC2( double* x, int npts_x, double* y, int npts_y, int*shift, double* ccc, int flag,int n3)
 {
-	//printf("--> Working on CCC2 \n");
+	//printf("--> Working on CCC2  n3 is %d \n", n3);
 	int i,j;
 	double x_tmp[npts_x +1];
 	double y_tmp[npts_y +1];
@@ -146,14 +146,18 @@ int CCC_posi2(double* x, int npts_x, double* y, int npts_y, int* shift, double* 
 //printf("denom is %lf\n", denom);
 
 
-	for(npts_shift = -1*n3 ; npts_shift < n3; npts_shift ++)
+	for(npts_shift = -1* ( npts_y - 1) ; npts_shift < npts_x  -1; npts_shift ++)
 	{
+		if(npts_shift < - n3 || npts_shift > n3 )
+		{
+			continue;
+		}
+		//printf(" working on %d \n", npts_shift);
 		for( i_x = 0; i_x < npts_x; i_x ++)
 		{
 			i_y = i_x - npts_shift;
 
-			if(i_y < 0 || i_y > npts_y -1 || npts_shift + npts_y - 1 < 0 ||
-					npts_shift + npts_y - 1 >= npts_x + npts_y -1)
+			if(i_y < 0 || i_y > npts_y -1 )
 				continue;
 			else 
 				ccc_posi[npts_shift + npts_y - 1] += ( x[i_x] - x_ave) * (y[i_y] - y_ave) / denom;
@@ -162,13 +166,20 @@ int CCC_posi2(double* x, int npts_x, double* y, int npts_y, int* shift, double* 
 
 
 	double max_ccc_posi = 0;
-	int npts_shift_posi;
+	int npts_shift_posi = 0;
 
 	if(flag == 1)
 	{
+		max_ccc_posi = 0.01;
+		npts_shift_posi = 0;
 		for(i = 0; i< npts_x + npts_y -1 ; i++)
+		//for(i = npts_y -n3; i< npts_y + n3 ; i++)
 		{
-	//if( fabs(ccc_posi[i]) > fabs( max_ccc_posi)  )
+			//if( i < npts_y - n3 || i > npts_y + n3 -1)
+				//continue;
+			//printf("on %d   range %d %d       \n", i, npts_y - n3 , npts_y + n3);
+			if (i < 0 || i > npts_x + npts_y -2)
+				continue;
 			if( ccc_posi[i] >  max_ccc_posi )
 			{
 				max_ccc_posi = ccc_posi[i];
@@ -177,14 +188,20 @@ int CCC_posi2(double* x, int npts_x, double* y, int npts_y, int* shift, double* 
 			}
 		}
 
-	*shift = npts_shift_posi;
-	*ccc = max_ccc_posi;
+		*shift = npts_shift_posi;
+		*ccc = max_ccc_posi;
 	}
 	else if (flag == -1)
 	{
-		max_ccc_posi =0;
+		max_ccc_posi = 0.01;
+		npts_shift_posi = 0;
 		for(i = 0; i< npts_x + npts_y -1 ; i++)
+		//for(i = npts_y -n3; i< npts_y + n3 ; i++)
 		{
+			//if( i < npts_y - n3 || i > npts_y + n3 -1)
+				//continue;
+			if (i < 0 || i > npts_x + npts_y -1)
+				continue;
 	//if( fabs(ccc_posi[i]) > fabs( max_ccc_posi)  )
 			if( ccc_posi[i] <  max_ccc_posi )
 			{
@@ -194,8 +211,8 @@ int CCC_posi2(double* x, int npts_x, double* y, int npts_y, int* shift, double* 
 			}
 		}
 
-	*shift = npts_shift_posi;
-	*ccc = max_ccc_posi;
+		*shift = npts_shift_posi;
+		*ccc = max_ccc_posi;
 	}
 
 	return 0;

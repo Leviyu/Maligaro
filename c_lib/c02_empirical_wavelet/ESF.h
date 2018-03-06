@@ -106,6 +106,9 @@ struct new_INPUT
 	double Reprocessing_shift;	// alloable shift for reprocessing
 	int npts_Reprocessing_shift;	// alloable shift for reprocessing
 
+	char* shift_info_out;
+	FILE* out_shift;
+
 };
 typedef struct new_INPUT new_INPUT;
 
@@ -142,6 +145,7 @@ struct new_RECORD
 								// if 1 == positive
 								// -1 == negative
 								// 0 == not set
+	int noise_too_short_flag;
 	int polar_correct_flag;
 								//
 	int npts_signal_beg;
@@ -169,6 +173,7 @@ struct new_RECORD
 	double* stretched_phase_win;	// stores the stretched phase win to best match E.W.
 	int npts_phase;
 	double phase_beg;			// window begin time for current phase eg. -10s
+	double phase_beg_back;
 	double phase_len;
 
 	double* noise_win;			// noise window
@@ -394,6 +399,8 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input);
 int get_ONSET_ENDSET_for_each_record_origional_phase(new_RECORD* my_record, new_INPUT* my_input, double* current_ES);
 int CCC( double* x, int npts_x, double* y, int npts_y, int*shift, double* ccc, int flag);
 int CCC2( double* x, int npts_x, double* y, int npts_y, int*shift, double* ccc, int flag,int n3);
+int CCC_posi2(double* x, int npts_x, double* y, int npts_y, int* shift, double* ccc , int flag,int n3);
+int CCC_posi(double* x, int npts_x, double* y, int npts_y, int* shift, double* ccc , int flag);
 int get_misfit_for_each_record_origional_record(new_RECORD* my_record, new_INPUT* my_input);
 double get_weight_from_SNR_CCC(double SNR, double ccc_orig);
 int tstar_ES_function(double* current_ES, int npts_phase, double coeff,double*  tmp_ES, char* tstar_lib);
@@ -458,6 +465,8 @@ void reject_records_with_dt_too_close_to_traffic_phase(new_RECORD* my_record, ne
 int stretch_record_restack_ES_based_on_code_choice(new_RECORD* my_record, new_INPUT* my_input, double* ES);
 void redo_for_S_P_remake_EW(new_RECORD* my_record, new_INPUT* my_input);
 int restack_ES_for_phase_code_choice(new_RECORD* my_record, new_INPUT* my_input, double* ES);
-int get_SNR3_and_4_for_record(double* phase_win,int phase_npts, double* noise_win,int noise_npts, double* SNR3, double* SNR4);
+int output_ES_with_STD_loop(new_RECORD* my_record,new_INPUT*  my_input,double* current_ES, int loop_num);
+int get_SNR3_and_4_for_record(double* phase_win,int phase_npts, double* noise_win,int noise_npts, double* SNR3, double* SNR4, new_INPUT* my_input);
+int zero_out_traffic_phase( new_RECORD* my_record, new_INPUT* my_input);
 
 #endif

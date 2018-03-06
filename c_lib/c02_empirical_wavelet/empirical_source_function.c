@@ -13,6 +13,7 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 	double current_ES[npts_phase];
 	double first_EW[npts_phase];
 	int restack_flag;
+	int count;
 
 	double** ES;
 	ES = (double**)malloc(sizeof(double*)*30);
@@ -26,6 +27,9 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 	puts("============================================\n");
 	puts( "==============First CCC loop Begin ==============\n");
 	puts("============================================\n");
+	my_input->shift_info_out = (char*)malloc(sizeof(char)*200);
+	sprintf(my_input->shift_info_out,"shiftinfo.out");
+	my_input->out_shift = fopen(my_input->shift_info_out,"w");
 	// ===========================================================
 	//	2. start loop ccc to get a stable E.W.
 	// ===========================================================
@@ -85,6 +89,9 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 			break;
 		}
 
+		
+		// output ES and STD for each iteration
+		output_ES_with_STD_loop(my_record, my_input,current_ES, loop_num);
 
 		if(fabs(ccc) > 0.95 )
 			break;
@@ -93,7 +100,14 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 	// we need to store the E.W. into every record`s ES_win
 	store_ES_into_record(my_record, my_input, current_ES);
 
-	find_best_match_gaussian_for_iterative_ES(my_record,my_input,current_ES);
+
+	// use 1T to zero out traffic phase
+	for(count = 0; count < my_input->sta_num; count++)
+	{
+		zero_out_traffic_phase(&my_record[count], my_input);
+	 	read_noise_window(&my_record[count],  my_input);
+	}
+
 
 
 	//output long and phase whindow
@@ -116,10 +130,16 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 	output_STD_of_second_ES(my_record,my_input, stretch_record_stack);
 	output_current_ES_for_phase_second(my_input, stretch_record_stack);
 
+	// for non S phase use current_ES
+	// for S use stretch_record_stack
+	if(strcmp(my_input->PHASE,"S")!=0 && strcmp(my_input->PHASE,"P")!=0)
+		find_best_match_gaussian_for_iterative_ES(my_record,my_input,current_ES);
+	else
+		find_best_match_gaussian_for_iterative_ES(my_record,my_input,stretch_record_stack);
+
 
 	 //define E.W. to use here
 	double EW_new[npts_phase];
-	int count;
 	if(strcmp(my_input->PHASE,"S") == 0 || strcmp(my_input->PHASE,"P") == 0 )
 	{
 		for(count = 0; count < npts_phase; count++)

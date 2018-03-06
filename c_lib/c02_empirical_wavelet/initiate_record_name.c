@@ -81,6 +81,7 @@ int initiate_record_name(new_RECORD* my_record)
 	my_record->num_traffic = 0;
 	my_record->traffic_range_sec = 0;
 	my_record->beyong_window_flag = 0;
+	my_record->noise_too_short_flag = 0;
 
 
 	return 0;

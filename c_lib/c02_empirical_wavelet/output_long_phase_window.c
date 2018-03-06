@@ -45,27 +45,28 @@ int output_long_phase_window_for_each(new_RECORD* my_record, new_INPUT* my_input
 	// when phase is ScS and the distance > 76 and the peak location is within 
 	// the first 7second then we get rid of the first 7 second and find the amplitude
 	//if( strcmp(my_record->PHASE,"ScS") ==0 && my_record->DIST > 75 && max_loc2 < 100 )
-	if( max_loc2 < 70 )
+	int npts_skip = 100;
+	if( max_loc2 < npts_skip )
 	{
 		//printf("revious amp is %lf \n",amp2);
 		double new_cut[3000];
 		int kkk;
-		for(kkk = 0; kkk< my_record->npts_phase -70; kkk++)
+		for(kkk = 0; kkk< my_record->npts_phase -npts_skip; kkk++)
 		{
-			new_cut[kkk] = my_record->phase_win[kkk+70];
+			new_cut[kkk] = my_record->phase_win[kkk+npts_skip];
 		}
-		amplitudeloc(new_cut, my_record->npts_phase -70, &max_loc2, &amp2,1);
+		amplitudeloc(new_cut, my_record->npts_phase -npts_skip, &max_loc2, &amp2,1);
 	}
-	else if( max_loc2 > my_record->npts_phase - 70 )
+	else if( max_loc2 > my_record->npts_phase - npts_skip )
 	{
 		//printf("revious amp is %lf \n",amp2);
 		double new_cut[3000];
 		int kkk;
-		for(kkk = 0; kkk< my_record->npts_phase -70; kkk++)
+		for(kkk = 0; kkk< my_record->npts_phase -npts_skip; kkk++)
 		{
 			new_cut[kkk] = my_record->phase_win[kkk];
 		}
-		amplitudeloc(new_cut, my_record->npts_phase -70, &max_loc2, &amp2,1);
+		amplitudeloc(new_cut, my_record->npts_phase -npts_skip, &max_loc2, &amp2,1);
 	}
 		
 

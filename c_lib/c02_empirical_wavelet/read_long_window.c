@@ -137,7 +137,7 @@ int read_long_window(char* sac_file, new_RECORD* my_record, new_INPUT* my_input)
 	// flip the recrod according to the polarity
 	if(polar_flag == -1 )
 	{
-		printf(" sta %s is flipped cause of polarity %d \n", my_record->name , polar_flag);
+		//printf(" sta %s is flipped cause of polarity %d \n", my_record->name , polar_flag);
 	for(i=0;i< new_npts;i++)
 		new_y[i] = new_y[i] * polar_flag;
 	}
@@ -225,6 +225,8 @@ int traffic_zero_out( new_RECORD* my_record, new_INPUT* my_input)
 //printf(" zero out %d / %d phase %s \n", count , my_record->num_traffic, my_record->traffic_phase[count]);
 		int pad_length = 8;
 		int npts_pad_each_side = (int)( pad_length / my_input->delta);
+		//int npts_min = (int)(-15 / my_input->delta);
+		//int npts_max_with_1T = (int) (20 / my_input->delta) + 
 
 		int npts_beg_pad;
 		int npts_end_pad;

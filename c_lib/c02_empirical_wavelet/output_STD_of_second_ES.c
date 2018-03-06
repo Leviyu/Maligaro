@@ -42,7 +42,7 @@ int output_STD_of_second_ES(new_RECORD* my_record,new_INPUT*  my_input,double* c
 				// calculate the std
 				//weight = my_record[ista].weight;
 				weight = my_record->weight;
-				if(weight == 0)
+				if(weight == 0 && my_input->Reprocessing_Flag != 1)
 					continue;
 				amplitudeloc(my_record[ista].stretched_phase_win, npts_phase, &max_loc, &amp_phase,1);
 				if(amp_phase == 0) amp_phase = 1;
@@ -53,12 +53,12 @@ int output_STD_of_second_ES(new_RECORD* my_record,new_INPUT*  my_input,double* c
 				num = num + 1;
 			//}	
 		}
-		if(weight_sum == 0)
+		if(num == 0)
 		{
 			STD[pcount] = 0;
 			continue;
 		}
-		STD[pcount] = sqrt( STD[pcount] / weight_sum );
+		STD[pcount] = sqrt( STD[pcount] / num );
 	}
 
 

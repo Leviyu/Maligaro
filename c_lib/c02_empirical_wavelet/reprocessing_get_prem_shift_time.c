@@ -12,7 +12,7 @@ void reprocessing_get_prem_shift_time(new_RECORD* my_record, new_INPUT* my_input
 	char read_tmp[400];
 	int N = 1000;
 
-	my_input->Reprocessing_shift = 3;
+	my_input->Reprocessing_shift = 13;
 	my_input->npts_Reprocessing_shift = (int)(my_input->Reprocessing_shift / my_record->delta);
 
 
@@ -38,7 +38,10 @@ void reprocessing_get_prem_shift_time(new_RECORD* my_record, new_INPUT* my_input
 			sscanf(read_tmp,"%s" ,buff);
 			if (strcmp(buff,my_record[ista].name) == 0)
 			{
-				sscanf(read_tmp,"%s %lf" ,buff, &my_record[ista].dt_picked_shift);
+				sscanf(read_tmp,"%s %lf %d %lf " ,buff, &my_record[ista].dt_picked_shift,
+						&my_record[ista].polar_flag, &my_record[ista].polarity);
+				printf("reprocessing sta %s is shifted %lf \n", my_record[ista].name,
+						my_record[ista].dt_picked_shift);
 				break;
 			}
 		}

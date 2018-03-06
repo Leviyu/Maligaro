@@ -162,9 +162,9 @@ int CCC_posi(double* x, int npts_x, double* y, int npts_y, int* shift, double* c
 
 	if(flag == 1)
 	{
+		max_ccc_posi = 0.1;
 		for(i = 0; i< npts_x + npts_y -1 ; i++)
 		{
-	//if( fabs(ccc_posi[i]) > fabs( max_ccc_posi)  )
 			if( ccc_posi[i] >  max_ccc_posi )
 			{
 				max_ccc_posi = ccc_posi[i];
@@ -173,25 +173,23 @@ int CCC_posi(double* x, int npts_x, double* y, int npts_y, int* shift, double* c
 			}
 		}
 
-	*shift = npts_shift_posi;
-	*ccc = max_ccc_posi;
+		*shift = npts_shift_posi;
+		*ccc = max_ccc_posi;
 	}
 	else if (flag == -1)
 	{
-		max_ccc_posi =0;
+		max_ccc_posi = 0.1;
 		for(i = 0; i< npts_x + npts_y -1 ; i++)
 		{
-	//if( fabs(ccc_posi[i]) > fabs( max_ccc_posi)  )
 			if( ccc_posi[i] <  max_ccc_posi )
 			{
 				max_ccc_posi = ccc_posi[i];
 				npts_shift_posi = -1*(npts_y - 1 - i);
-				//printf(" posti npts is %d max ccc is %lf \n", i, max_ccc_posi);
 			}
 		}
 
-	*shift = npts_shift_posi;
-	*ccc = max_ccc_posi;
+		*shift = npts_shift_posi;
+		*ccc = max_ccc_posi;
 	}
 
 	return 0;

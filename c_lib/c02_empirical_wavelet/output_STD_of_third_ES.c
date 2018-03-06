@@ -4,7 +4,7 @@
 // calculate and output the STD of ES
 int output_STD_of_third_ES(new_RECORD* my_record,new_INPUT*  my_input,double* current_ES)
 {
-	fprintf(my_input->out_logfile,"---> output_STD_of_ES 3rd Begin\n");
+	printf("---> output_STD_of_ES 3rd Begin\n");
 	double amplitude();
 	int stretch_ES_function();
 	int normalize_array();
@@ -33,24 +33,26 @@ int output_STD_of_third_ES(new_RECORD* my_record,new_INPUT*  my_input,double* cu
 		weight_sum = 0 ;
 		for(ista = 0; ista < my_input->sta_num; ista ++)
 		{
-			if(my_record[ista].quality > 0 )
-			{
-				// calculate the std
-				weight = my_record->weight;
-				amplitudeloc(my_record[ista].stretched_phase_win, npts_phase, &max_loc, &amp_phase,1);
-				if(amp_phase == 0) amp_phase = 1;
-				STD[pcount] += pow( (current_ES[pcount] / amp_ES 
-							- my_record[ista].stretched_phase_win[pcount]  / amp_phase) ,2 ) * weight;
-				weight_sum += weight;
-				num = num + 1;
-			}	
+			if(my_record[ista].quality <= 0 && my_input->Reprocessing_Flag != 1)
+				continue;
+			// calculate the std
+			weight = my_record->weight;
+			if(my_input->Reprocessing_Flag == 1)
+				weight = 1;
+			amplitudeloc(my_record[ista].stretched_phase_win, npts_phase, &max_loc, &amp_phase,1);
+			if(amp_phase == 0) amp_phase = 1;
+			STD[pcount] += pow( (current_ES[pcount] / amp_ES 
+						- my_record[ista].stretched_phase_win[pcount]  / amp_phase) ,2 ) * weight;
+			weight_sum += weight;
+			num = num + 1;
 		}
-		if(weight_sum == 0)
+		//printf(" num stations used for STD %d \n", num);
+		if(num == 0)
 		{
 			STD[pcount] = 0;
 			continue;
 		}
-		STD[pcount] = sqrt( STD[pcount] / weight_sum );
+		STD[pcount] = sqrt( STD[pcount] / num );
 	}
 
 

@@ -24,7 +24,7 @@ int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array
 	int npts_peak_min, npts_peak_max, npts_peak;
 	double peak_max, peak_min, value_peak;
 	int count, flag;
-	double cut_min = 0.2;
+	double cut_min = 0.1;
 	double cut_max = 1.0;
 	double array_tmp[*npts_in];
 	int kkk;
@@ -37,18 +37,46 @@ int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array
 	// get the peak value and loc
 	amplitudeloc(array_in, *npts_in, &npts_peak_max, &peak_max,1);
 
+
+	// if peak is within the first or last 10sec window, we make a new array
+	// with first and last 10sec masked and re find peak
+	//printf(" peak max is %d \n", npts_peak_max);
+	int skip_npts = 80;
+	if(npts_peak_max < skip_npts || npts_peak_max > *npts_in - skip_npts)
+	{
+		double tmpArray[*npts_in];
+		for(kkk = 0; kkk < *npts_in ; kkk++)
+		{
+			if( kkk < skip_npts || kkk > *npts_in - skip_npts)
+				tmpArray[kkk] = 0;
+			else
+				tmpArray[kkk] = array_in[kkk];
+		}
+		amplitudeloc(tmpArray, *npts_in, &npts_peak_max, &peak_max,1);
+
+	}
+
+
+
+
 	// sometimes the array has peak value at the front or the end, 
 	// we creat an algorithm to make sure that the peak is always chosen to be somewhere in
 	// the middle of the trace, if it is at the end points, we chop off 10points/1sec and redo the process
 	int npts_cut = npts_peak_max;
 	if( npts_cut == 0 || npts_cut == *npts_in-1)
+	//if( npts_cut < 100 || npts_cut > *npts_in-1 - 100)
 	{
 	current_npts = *npts_in;
 	kkk_time = 1;
 	cut_time_sum = 0;
 	while( npts_cut == 0 || npts_cut == current_npts-1)
+	// we change it in a way that the npts_cut, which is the peak location, 
+	// are not allowed to be in the first or last 10sec of the window
+	//while( npts_cut <100 || npts_cut > current_npts-1 - 100 )
 	{
-		current_npts = *npts_in - kkk_time * 20;
+		// chop off 2* 10 points
+		// lets try chop off 2* 20
+		current_npts = *npts_in - kkk_time * 40;
 		if( current_npts < 40 )
 			break;
 		for(kkk = 0; kkk< current_npts; kkk++) 

@@ -103,17 +103,15 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 
 		// if reprocessing_flag is 1, we dont allow big shift
 		// if shift is greater then 3sec, then we hardwire it to be 0
-		//if(my_input->Reprocessing_Flag == 1 && 
-				//fabs(shift_time) > 3 )
+		//if(my_input->Reprocessing_Flag == 1 &&  fabs(shift_time) > 5 )
 		//{
 			//printf(" --> reprocessing_flag STA %s shifted %lf \n", my_record[ista].name, shift_time);
 			//shift_time = 0;
 		//}
-		//if( my_input->Reprocessing_Flag == 1 &&
-				//loop_num == 1)
+		//if( my_input->Reprocessing_Flag == 1 && loop_num == 1)
 		//{
 			//shift_time = -1*my_record[ista].dt_picked_shift;
-			//printf("loop 1 --> reprocessing_flag STA %s shifted %lf \n", my_record[ista].name, shift_time);
+			////printf("loop 1 --> reprocessing_flag STA %s shifted %lf \n", my_record[ista].name, shift_time);
 		//}
 		//if(fabs(shift_time) > 20)
 			//shift_time = 0;
@@ -131,6 +129,9 @@ int empirical_source_for_each_record(new_RECORD* my_record, new_INPUT* my_input,
 		// ===========================================================
 		read_phase_window(&my_record[ista],my_input);
 
+		fprintf(my_input->out_shift,"loop_num %d sta %s shift %lf ccc %lf \n",
+				loop_num, my_record[ista].name,
+				shift_time,ccc);
 
 		my_record[ista].ccc = ccc;
 

@@ -36,6 +36,8 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 			continue;
 		// use max value as the phase peak
 			// assumption is that the phase peak will always be the first peak
+			//
+		//printf( "--> on %d / %d \n", ista, my_input->sta_num );
 
 		AMP = 0;
 		for(i = 0; i<npts_phase;i++)
@@ -61,8 +63,10 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		double noise_level = AMP * amp_crit;
 
 		// go from peak forward to the onset time where value is smaller then noise level
+		// instead of use stretched ES win, we should be using phase_win
 		for( i = npts_peak; i> 1 ; i--)
 		{
+			//if(fabs( my_record[ista].stretched_ES_win[i] ) < fabs(noise_level) )
 			if(fabs( my_record[ista].stretched_ES_win[i] ) < fabs(noise_level) )
 			{
 				npts_ONSET = i;
@@ -283,11 +287,19 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		{
 			phase_signal += fabs(my_record[ista].phase_win[i]);
 		}
-
+		
+		int value_noise_npts = 0;
 		for(i=0;i<my_record[ista].npts_noise;i++)
 		{
+			if( my_record[ista].noise_win[i] == 0)
+				continue;
+			value_noise_npts ++;
 			noise_signal += fabs(my_record[ista].noise_win[i]);
 		}
+		if(value_noise_npts < 100)
+			my_record[ista].noise_too_short_flag = 1;
+
+
 		//printf("noise signal is %lf phase signa; is %lf npts noise phase %d %d\n", noise_signal, phase_signal, my_record[ista].npts_noise,my_record[ista].npts_phase);
 		if( noise_signal == 0 || npts_ONSET == npts_ENDSET)
 		{
@@ -298,7 +310,8 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		else
 		{
 			double SNR_sig = phase_signal / (npts_ENDSET - npts_ONSET);
-			double SNR_noi = noise_signal / (my_record[ista].noise_len/my_input->delta);
+			//double SNR_noi = noise_signal / (my_record[ista].noise_len/my_input->delta);
+			double SNR_noi = noise_signal / value_noise_npts;
 			double SNR = SNR_sig/SNR_noi;
 			my_record[ista].SNR_sig = SNR_sig;
 			my_record[ista].SNR_noi = SNR_noi;
@@ -309,6 +322,7 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 // ===========================================================
 //	get misfit measurement misfit2
 // ===========================================================
+		//printf("==> get misfit2 \n");
 		misfit_diff = 0;
 		misfit_ES = 0;
 		for(count = npts_ONSET; count < npts_ENDSET; count++)
@@ -358,7 +372,7 @@ int get_ONSET_ENDSET_for_each_record_stretched(new_RECORD* my_record, new_INPUT*
 		double SNR3 = 0;
 		double SNR4 = 0;
 		int npts_noise = (int)(my_input->noise_len / my_input->delta);
-		get_SNR3_and_4_for_record(my_record[ista].phase_win, npts_phase, my_record[ista].noise_win, npts_noise, &SNR3, &SNR4);
+		get_SNR3_and_4_for_record(my_record[ista].phase_win, npts_phase, my_record[ista].noise_win, npts_noise, &SNR3, &SNR4, my_input);
 
 		my_record[ista].SNR3 = SNR3;
 		my_record[ista].SNR4 = SNR4;

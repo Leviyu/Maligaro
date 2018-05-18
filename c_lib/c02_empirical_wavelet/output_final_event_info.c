@@ -22,6 +22,45 @@ int output_final_pick_onset_info_for_record(new_RECORD* my_record, FILE* out)
 
 	return 0;
 }
+
+
+void get_record_gau_ave_std(new_RECORD* my_record, new_INPUT* my_input)
+{
+
+	int i = 0;
+
+	double sum = 0;
+	int count = 0;
+	for( i = 0; i < my_input->sta_num; i++)
+	{
+		if ( my_record[i].record_gaussian_factor != my_record[i].record_gaussian_factor)
+			continue;
+		sum = sum + my_record[i].record_gaussian_factor;
+		count ++;
+	}
+	if( count == 0)
+	{
+		my_input->gau_ave = 15.0;
+		my_input->gau_std = 2;
+		return;
+	}
+	else
+		my_input->gau_ave = sum / count;
+
+	count = 0;
+	sum = 0;
+	for( i = 0; i < my_input->sta_num; i++)
+	{
+		if ( my_record[i].record_gaussian_factor != my_record[i].record_gaussian_factor)
+			continue;
+		sum = sum + ( my_record[i].record_gaussian_factor  - my_input->gau_ave) * 
+			(my_record[i].record_gaussian_factor  - my_input->gau_ave);
+	}
+	my_input->gau_std = sqrt(sum / count);
+
+}
+
+
 int output_final_event_info(new_RECORD* my_record, new_INPUT* my_input)
 {
 	printf("-> output final eventinfo \n");
@@ -41,6 +80,7 @@ int output_final_event_info(new_RECORD* my_record, new_INPUT* my_input)
 	//sprintf(out_eventpick,"eventpick.%s.%s.%s",my_input->EQ, phase, my_input->COMP);
 	//out2=fopen(out_eventpick,"w");
 	
+	get_record_gau_ave_std(my_record,my_input);
 
 	for(ista = 0; ista< my_input->sta_num;ista++)
 	{
@@ -54,6 +94,121 @@ int output_final_event_info(new_RECORD* my_record, new_INPUT* my_input)
 
 	return 0;
 }
+
+double SNR_weight(double a)
+{
+	if( a < 1.5)
+		return 0;
+	else if(a < 2.0)
+		return 0.5;
+	else if (a > 5.0)
+		return 1;
+	else
+	{
+		double slope = (1-0.5)/(5-2);
+		return slope*(a - 2) + 0.5;
+	}
+}
+
+
+double CCC_weight(double a)
+{
+	if (a < 0.92)
+		return 0.5;
+	else if(a >= 0.98) 
+		return 1.0;
+	else
+	{
+		double slope = (1.0-0.5)/(0.98 - 0.92);
+		return slope*(a - 0.92)+0.5;
+	}
+}
+
+double misfit_weight(double a)
+{
+	if(a < 0.05)
+		return 1.0;
+	else if (a < 0.1)
+	{
+		double slope = (0.5 - 1.0) / (0.1 - 0.05);
+		return slope*(a - 0.05) + 1.0;
+	}
+}
+
+double PRE_weight(double a)
+{
+	double b = fabs(a);
+	if (b < 0.2)
+		return 1.0;
+	else if(b < 0.4) {
+		double slope = (0 - 1)/(0.4-0.2);
+		return (b - 0.2)*slope + 1.0;
+	}
+	else
+		return 0;
+}
+double polarity_weight(double a)
+{
+	double b = fabs(a);
+	if (b < 0.05)
+	{
+		double slope = (0.5-0.3)/(0.05-0);
+		return slope*(b - 0) + 0.3;
+	}
+	else if(b < 0.1) {
+		double slope = (1 - 0.5)/(0.1-0.05);
+		return (b - 0.05)*slope + 0.5;
+	}
+	else
+		return 1.0;
+}
+double post_weight(double a)
+{
+	if( a < 0.5)
+		return 1.0;
+	else if (a < 1)
+	{
+		double slope = (0 - 1)/(1.0 - 0.5);
+		return 1+(a - 0.5)*slope;
+	}
+	else 
+		return 0.0;
+}
+double gau_weight(double a, double gau_ave, double gau_std)
+{
+	if ( fabs(a - gau_ave) < gau_std)
+		return 1.0;
+	else 
+		return 0.5;
+
+}
+
+
+
+
+
+double define_final_weight(new_RECORD* my_record, new_INPUT* my_input)
+{
+	double wSNR,wCCC,wMISFIT,wPRE,wPRE2,wPRE3,wPOST,wPOST2,wPOST3, wPolarity,wGAU;
+
+	wSNR = SNR_weight(my_record->SNR);
+	wCCC = CCC_weight(my_record->CCC3);
+	wMISFIT = misfit_weight(my_record->misfit);
+	wPRE = PRE_weight(my_record->misfit_pre);
+	wPRE2 = PRE_weight(my_record->misfit_pre2T);
+	wPRE3 = PRE_weight(my_record->misfit_pre3T);
+	wPOST = post_weight(my_record->misfit_bak);
+	wPOST2 = post_weight(my_record->misfit_bak2T);
+	wPOST3 = post_weight(my_record->misfit_bak3T);
+	wPolarity = polarity_weight(my_record->polarity);
+	wGAU = gau_weight(my_record->record_gaussian_factor, my_input->gau_ave, my_input->gau_std);
+
+	my_record->final_weight = wSNR * wCCC * wMISFIT*wPRE*wPRE2*wPRE3*wPOST*wPolarity*wGAU;
+
+	return 0;
+}
+
+
 
 int output_final_event_info_for_record(new_RECORD* my_record, FILE* out, new_INPUT* my_input)
 {
@@ -114,7 +269,7 @@ double polarity = my_record->polarity;
 	double noise_beg = my_record->noise_beg;
 	double noise_len = my_record->noise_len;
 	double phase_beg_time_relative_to_prem = my_record->phase_beg;
-	double record_weight = my_record->weight;
+	double record_weight = my_record->final_weight;
 	double misfit2 = my_record->misfit2;
 	double misfit_pre = my_record->misfit_pre;
 	double misfit_pre2T = my_record->misfit_pre2T;
@@ -143,8 +298,8 @@ double polarity = my_record->polarity;
 	double dt_obs_prem = my_record->dt_obs_prem;
 	// for postprocessing
 	// hardwire dt to be dt_picked shift
-	if(my_input->Reprocessing_Flag == 1) 
-		dt_obs_prem = my_record->dt_picked_shift;
+	//if(my_input->Reprocessing_Flag == 1) 
+		//dt_obs_prem = my_record->dt_picked_shift;
 
 
 	fprintf(out,"%6s %6s %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %13s %2d %2d %8.3lf %17.14lf %5.2lf %5.2lf %6.1lf %6s %5.2lf %5.2lf %5.2lf %5s %5.2lf %6d %5.2lf %5.2lf %8.3lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %6d %6d %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %3d\n",

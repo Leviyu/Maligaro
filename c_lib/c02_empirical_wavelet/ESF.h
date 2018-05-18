@@ -31,6 +31,8 @@ struct new_INPUT
 	double distmin, distmax;
 
 	int iteration_flag;
+	double gau_ave;
+	double gau_std;
 
 	double S_filter_delay;					// filter delay of 10sec filter for S Empirical Wavelet
 
@@ -134,6 +136,7 @@ struct new_RECORD
 	double eq_mag;
 
 	double weight;			// weight of current record that goes into the E.W.
+	double final_weight;
 
 	int NPTS;				// total points of data
 	double B;					// begin time 

@@ -19,13 +19,14 @@
 
 int get_first_EW_for_phase(new_RECORD* my_record, new_INPUT* my_input, double* ES)
 {
-		printf("---> Get first EW for phase\n");
+		printf("---> Get first EW for phase current phase is %s \n",my_input->PHASE);
 		// for ScS/ SS/ SSS/ ScSScS/ Sdiff, construct E.W. using S E.W.
 		if(strcmp(my_input->PHASE,"S")==0 || strcmp(my_input->PHASE,"P")==0)
 		{
 			// if main_ES.out exist, then we use it for S too
 			if( file_exist("main_ES.out") == 1)
 			{
+				printf("main_ES.out exist!\n");
 				read_in_modified_S_ES(my_input,ES);
 			}
 			else

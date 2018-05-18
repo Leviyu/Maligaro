@@ -58,6 +58,7 @@ int prem(double depth, double* radius_out, double* density_out, double* Vpv_out,
 double amplitude(double* array, int len);
 
 int normalize_array(double* array, int len);
+int normalize_array_posi(double* array, int len);
 
 int amplitudeloc(double* array, int len, int* max_amp_loc, double* amplitude, int flag);
 

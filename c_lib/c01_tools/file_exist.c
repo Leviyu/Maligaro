@@ -15,11 +15,12 @@ int file_exist(char *filename)
 
     FILE *file;
 	file = fopen(filename,"r");
-	if ( file != NULL )
+	if ( file == NULL )
+		return 0;
+	else
 	   {
 			fclose(file);
       		return 1;
  		}
-   return 0;
 }
 

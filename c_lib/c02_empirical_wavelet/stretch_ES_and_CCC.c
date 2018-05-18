@@ -48,8 +48,8 @@ int stretch_ES_and_CCC(new_RECORD* my_record, new_INPUT* my_input, double* curre
 			coeff_delta = coeff_array[count];
 			stretch_ES_find_best_match_for_given_interval(&my_record[ista], current_ES, my_record[ista].phase_win, npts_phase, coeff_min, coeff_max, coeff_delta, &best_ccc, &best_coeff,&best_time_shift,stretched_ES, my_input);
 			//printf(" stretching find best %d / %d ccc  %lf \n", count, max_num, best_ccc);
-			if(best_ccc > 0.99)
-				break;
+			//if(best_ccc > 0.99)
+				//break;
 		}
 
 		double shift_time = best_time_shift*my_input->delta;

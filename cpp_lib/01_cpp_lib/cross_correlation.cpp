@@ -21,7 +21,7 @@
 *	Key words: ccc
 *************************************************************/
 int CCC_posi(double* x, int npts_x, double* y, int npts_y, int* shift, double* ccc , int flag);
-int CCC( double* x, int npts_x, double* y, int npts_y, int*shift, double* ccc, int flag)
+int CCC( double* x, int npts_x, double* y, int npts_y, int* shift, double* ccc, int flag)
 {
 	int i,j;
 	double x_tmp[npts_x +1];

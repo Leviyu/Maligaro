@@ -31,7 +31,6 @@ int normalize_array_with_flag(double* array, int len, int flag);
 
 void cart2sph(double x, double y, double z, double* lat, double* lon, double* dep );
 
-//int CCC( double* x, int npts_x, double* y, int npts_y, int*shift, double* ccc, int flag);
 double dist_A_B(double A_lat, double A_lon, double B_lat, double B_lon);
 double point_AZ_dist_point(double A_lat, double A_lon, double AZ, double dist, double* B_lat, double* B_lon);
 
@@ -162,13 +161,13 @@ int stretch_gaussian_find_best_match_for_given_interval(double* phase_win, int n
 int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array_out);
 
 int CCC_posi(double* x, int npts_x, double* y, int npts_y, int* shift, double* ccc , int flag);
-int CCC( double* x, int npts_x, double* y, int npts_y, int*shift, double* ccc, int flag);
+int CCC( double* x, int npts_x, double* y, int npts_y, int* shift, double* ccc, int flag);
 
 
 int stretch_record_find_best_match_for_given_interval(double* record,
 		double* phase_win, int npts_phase, double coeff_min, double coeff_max, 
 		double coeff_delta, double* best_ccc, double* best_coeff,
-		int* best_time_shift, double* best_ES);
+		int* best_time_shift, double* best_ES,int flag);
 
 int stretch_ES_function(double* current_ES, int npts_phase, double coeff,double*  tmp_ES);
 

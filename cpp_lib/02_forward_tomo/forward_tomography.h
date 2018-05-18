@@ -217,7 +217,7 @@ class new_record
 		double BAZ;
 		int polarity_flag;	
 		int  quality_flag;			// 1 is good -1 is bad 0 is not known
-		double CCC;
+		double ccc;
 		double SNR;
 		double stretch_ccc;
 		double stretch_coeff;
@@ -247,6 +247,8 @@ class new_record
 		double  long_beg;
 		double  long_len;
 		vector<double> long_win;
+		vector<double> phase_win;
+		vector<double> long_win_orig;
 		string read_sac_flag;		
 		double delta;
 		double phase_beg_rel_PREM;		// phase begin time relative to PREM
@@ -360,6 +362,9 @@ class big_new_record
 		double phase_dist_max;
 		string SRCDIR;
 
+		double MASK_MIN;
+		double MASK_MAX;
+
 
 		double SNR_CUT;
 		double CCC_CUT;
@@ -408,6 +413,7 @@ class big_new_record
 		vector<vector<virtual_station> > my_grid;
 		vector<virtual_station> my_vs; 
 		int my_vs_index;
+		int my_vs_index_old;
 
 
 		// grid related parameter
@@ -445,6 +451,7 @@ class big_new_record
 class virtual_station : public new_record
 {
 	public:
+		int ivs;
 		int ilat_eq;
 		int ilon_eq;
 		int ilat_sta;
@@ -452,15 +459,23 @@ class virtual_station : public new_record
 
 		string exist;
 
+
 		// vector<string> EQ_NAME_array;
 		int EQ_index;
 		vector<int> eventinfo_index_array;
 		int eventinfo_index;
 		vector<int> eventStation_index_array;
 		int eventStation_index;
-		void initiate();
+		void initiate(big_new_record* my_big_record);
 		void destruct();
 
+		double MASK_MIN;
+		double MASK_MAX;
+		double one_period;
+		void calculate_misfit(double* tstar_ES, double* phase_win, int npts);
+
+
+		double amp_scale;
 
 
 		// grid basic information
@@ -499,6 +514,7 @@ class virtual_station : public new_record
 		int station_num_threshold;			//  if station number in range is not greater then this value, grid is skipped
 		double ave_SNR;						// average SNR of records within range
 		double stack_SNR;
+		double stack_SNR_peak;
 		string S_ES_file;
 		int find_stack_ONSET_time();
 		double virtual_stack_ONSET;
@@ -537,7 +553,17 @@ class virtual_station : public new_record
 
 		void relocate_grid_center();
 		void get_SNR_before_and_after_stack();
-		void get_grid_dist(virtual_station EQ_grid, virtual_station STA_grid);
+		//void get_grid_dist(virtual_station EQ_grid, virtual_station STA_grid);
+		void get_grid_dist(const virtual_station& EQ_grid, const virtual_station& STA_grid);
+		void get_grid_dist_final();
+		void get_traffic_time();
+		void update_VS_info();
+		void mask_window_and_store_into_long_orig();
+		void make_quality_decision();
+		void calculate_VS_misfit(double* tstar_ES, double* phase_win, int npts);
+		void define_ONSET_ENDSET();
+		void define_period_for_record();
+		void update_SNR();
 
 
 		// virtual_station();
@@ -545,6 +571,9 @@ class virtual_station : public new_record
 
 		void initiate_grid();
 
+		// initiate traffic phase storage
+		vector<string> traffic_phase_list;
+		vector<double> traffic_phase_time;
 
 
 

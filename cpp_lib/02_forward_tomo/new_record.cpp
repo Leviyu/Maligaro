@@ -80,31 +80,44 @@ void new_record::download_sac_file()
 	string sac_file = "";
 	// cout << sac_file1 << endl;
 
-	if(!is_file_exist(sac_file1) && is_file_exist(sod_sac1))	
-	{
-		//string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
-		string command = "get_EQ_sac "+ EQ+"/"+sac_file1;
-		exec(command);
-		sac_file = sac_file1;
-		string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file1;
-		exec(filter_command);
-	}
-	if(!is_file_exist(sac_file2) && is_file_exist(sod_sac2))	
-	{
-		//string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
-		string command = "get_EQ_sac "+ EQ +"/"+sac_file2;
-		exec(command);
-		sac_file = sac_file2;
-		string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file2;
-		exec(filter_command);
-	}
 
+	// if sac_file exist, we continue
+	// else if sod_sac exist, copy and c06
+	//if(!is_file_exist(sac_file1)  )	
+	//{
+		if(is_file_exist(sod_sac1))
+		{
+			//string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
+			string command = "get_EQ_sac "+ EQ+"/"+sac_file1;
+			exec(command);
+			sac_file = sac_file1;
+			string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file1 + " " + PHASE;
+			exec(filter_command);
+		}
+	//}
+	//if(!is_file_exist(sac_file2)  )	
+	//{
+		if(is_file_exist(sod_sac2))
+		{
+			//string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
+			string command = "get_EQ_sac "+ EQ +"/"+sac_file2;
+			exec(command);
+			sac_file = sac_file2;
+			string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file2 + " "+ PHASE ;
+			exec(filter_command);
+		}
+	//}
 
 }
 
 
+
+
+
 void new_record::read_sac_file()
 {
+	cout << "--> Read sac file"<< endl;
+	int count;
 	// allocation long win memory
 	//this->long_win = new double[MAX];
 	this->long_win.resize(MAX);
@@ -136,9 +149,12 @@ void new_record::read_sac_file()
 	double LON_BEG = this->long_beg;
 	double LON_LEN = this->long_len;
 	double delta =  this->delta;
-
-
 	int NUM = 1000000;
+	int npts = (int) (LON_LEN / delta);
+	//double X[npts];
+	vector<double> X(npts,0);
+
+
 
 	string EQ 		= this->EQ;
 	string PHASE 	= this->PHASE;
@@ -152,6 +168,12 @@ void new_record::read_sac_file()
 		this->sac_file = sac_file1;
 	else if( is_file_exist(sac_file2) )
 		this->sac_file = sac_file2;
+	else
+	{
+		// if both not exist, we hardwire sac_file to be 0
+		for(count = 0; count < npts; count++)
+			this->long_win[count] = 0.1;
+	}
 
 
 	double abs_beg;
@@ -171,9 +193,6 @@ void new_record::read_sac_file()
 	//this->convert_long_win_to_velocity();
 
 	// write xy window
-	double X[NUM];
-	int count;
-	int npts = (int) (LON_LEN / delta);
 	for(count = 0; count < npts; count++)
 	{
 		X[count] = LON_BEG + count * delta;
@@ -181,12 +200,22 @@ void new_record::read_sac_file()
 	//normalize this longwin
 	normalize_array(&this->long_win[0], npts);
 
+
+	// for wired condition, we mask out the record with 0.1 array
+	//
+	if( this->long_win[0] != this->long_win[0] )
+		for(count = 0; count < npts; count++)
+			this->long_win[count] = 0.1;
+
+
+
 	string long_win_name = "long_win."+this->EQ+"."+this->STA+"."+this->PHASE;
 //cout << "output "<< long_win_name << endl;
 
 	this->get_polar_flag();
 
-	double long_win_flipped[npts];
+	//double long_win_flipped[npts];
+	vector<double> long_win_flipped(npts,0);
 	for(count = 0; count < npts; count++)
 	{
 		if( this->polarity_flag == 0)
@@ -196,11 +225,7 @@ void new_record::read_sac_file()
 
 	}
 
-	output_array2(long_win_name , X,long_win_flipped , npts, 0);
-
-
-
-
+	output_array2(long_win_name , &X[0],&long_win_flipped[0] , npts, 0);
 
 
 }
@@ -250,15 +275,17 @@ void new_record::get_polar_flag()
 
 void new_record::calculate_SNR()
 {
-
+	cout << "--> Calculate SNR "<< endl;
 	// this function calculate the SNR of current record for current PHASE
 	
 
 	// 1. check if noise_beg and noise len defined
 	if( this->noise_beg == 0 || this->noise_len == 0 || this->noise_beg != this->noise_beg )
+	{
 		cout << "ERROR Noise window for current station is not defined" << endl;
-
-
+		this->SNR = 0.5;
+		return;
+	}
 
 
 	double noise_signal;
@@ -275,12 +302,12 @@ void new_record::calculate_SNR()
 	npts_phase_beg = (int) ( (this->phase_beg - this->long_beg ) / this->delta );
 	npts_noise_len = (int) (this->noise_len  / this->delta);
 	npts_phase_len = (int) (this->phase_len  / this->delta);
-	// cout << " npts_noise_beg" << npts_noise_beg 
-	// 	<< " npts_phase_beg"  << npts_phase_beg
-	// 	<< " npts_noise_len " << npts_noise_len
-	// 	<< " npts_phase_len "<< npts_phase_len
-	// 	<< endl;
-
+	//cout << " npts_noise_beg" << npts_noise_beg 
+	 	//<< " npts_phase_beg"  << npts_phase_beg
+	 	//<< " npts_noise_len " << npts_noise_len
+	 	//<< " npts_phase_len "<< npts_phase_len
+	 	//<< endl;
+//
 	int count;
 	for(count = 0; count < npts_noise_len ; count++)
 	{
@@ -298,14 +325,13 @@ void new_record::calculate_SNR()
 		this->SNR = 1;
 	}
 	else
-		this->SNR = phase_signal / noise_signal;
+		this->SNR = (phase_signal/ npts_phase_len) / (noise_signal / npts_noise_len);
 
 
 	if(this->SNR != this->SNR )
-		this->SNR = 1;
+		this->SNR = 0.5;
 
-
-	//cout << " STA "<< this->STA << " SNR " << this->SNR << endl;
+	cout << " STA "<< this->STA << " SNR " << this->SNR << endl;
 
 
 }
@@ -801,7 +827,7 @@ void new_record::read_taup_path_info(string taup_path_dir)
 		//cout << "ERROR new_npts is > MAX, need to allocate a larger array " << endl;
 	//for(count = 0 ; count < new_npts ; count ++)
 	//{
-		//this->angle[count] = angle[0] + dt*count;
+		//this->angle[count] = angle[-1] + dt*count;
 	//}
 	//int flag = 1;	//inconsistantly sampled
 	//wiginterpd(angle, radius, line_max, this->angle, this->radius, new_npts, flag);
@@ -1037,7 +1063,7 @@ void new_record::get_ellip_corr()
 				}
 
 			}
-
+			myfile.close();
 
 		//cout <<  " "
 			//<< "sta " << this->STA

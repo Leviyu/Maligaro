@@ -1,9 +1,12 @@
 #include "hongyulibcpp.h"
 
+// if flag = 1, we use tstar 
+// if flag = 2, we use stretching
+
 int stretch_record_find_best_match_for_given_interval(double* record,
 		double* phase_win, int npts_phase, double coeff_min, double coeff_max, 
 		double coeff_delta, double* best_ccc, double* best_coeff,
-		int* best_time_shift, double* best_ES)
+		int* best_time_shift, double* best_ES, int flag)
 {
 	double coeff = 0;
 
@@ -51,8 +54,10 @@ int stretch_record_find_best_match_for_given_interval(double* record,
 //printf("--> tstar beg for %lf \n", coeff);
 		double tmp_ES[npts_phase];
 		//1. stretch ES
-		//stretch_ES_function(ES_win, npts_phase, coeff, tmp_ES);
-		tstar_ES_function(ES_win, npts_phase, coeff, tmp_ES);
+		if(flag == 1)
+			tstar_ES_function(ES_win, npts_phase, coeff, tmp_ES);
+		else if(flag == 2)
+			stretch_ES_function(ES_win, npts_phase, coeff, tmp_ES);
 		//output_array("stretched_gaussian",tmp_ES,npts_phase);
 		
 

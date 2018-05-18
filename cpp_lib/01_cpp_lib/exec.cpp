@@ -14,7 +14,14 @@ std::string exec(string command)
 	    char buffer[128];
 	    std::string result = "";
 	    std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
-	    if (!pipe) throw std::runtime_error("popen() failed!");
+
+		// if pipe does not exist
+		// throw, but here we dont want to throw
+	    //if (!pipe) throw std::runtime_error("popen() failed!");
+		//
+		if (!pipe) return "-1";
+
+
 	    while (!feof(pipe.get())) 
 		{
 	       if (fgets(buffer, 128, pipe.get()) != NULL)

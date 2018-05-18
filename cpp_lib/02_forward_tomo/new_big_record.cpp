@@ -39,9 +39,6 @@ void big_new_record::virtual_station_main()
 	this->read_eventStation();
 	this->catagorize_eventstation_to_VS();
 
-
-
-	//
 	this->count_record_existance_for_grid_pair();
 	cout << "--> Virtual Station main is finished here "<< endl;
 }
@@ -96,6 +93,12 @@ void big_new_record::output_VS_info_for_one_VS(int vs_index)
 	<< setw(10) << setprecision(2) << my_vs.quality_flag
 	<< setw(10) << setprecision(2) << my_vs.ave_SNR
 	<< setw(10) << setprecision(2) << my_vs.stack_SNR
+	<< setw(10) << setprecision(2) << my_vs.stack_SNR_peak
+	<< setw(10) << setprecision(2) << my_vs.misfit
+	<< setw(10) << setprecision(2) << my_vs.misfit_pre
+	<< setw(10) << setprecision(2) << my_vs.misfit_bak
+	<< setw(10) << setprecision(2) << my_vs.stretch_ccc
+	<< setw(10) << setprecision(2) << my_vs.stretch_coeff
 
 	<<endl;
 	return ;
@@ -145,6 +148,14 @@ void big_new_record::read_INFILE()
 		flag = "<PHASE_LONG_WIN_LEN>";
 		if(sub1.compare(flag) == 0)
 			this->long_len = atof(sub2.c_str());
+
+		flag = "<MASK_MIN>";
+		if(sub1.compare(flag) == 0)
+			this->MASK_MIN = atof(sub2.c_str());
+
+		flag = "<MASK_MAX>";
+		if(sub1.compare(flag) == 0)
+			this->MASK_MAX = atof(sub2.c_str());
 
 		flag = "<PHASE_LONG_WIN_BEG>";
 		if(sub1.compare(flag) == 0)
@@ -428,8 +439,8 @@ void big_new_record::count_record_existance_for_grid_pair()
 					if(exist_eventStation < this->eventStation_min_threshold)
 						continue;
 					
-					cout << "		existed eventinfo "<< exist_eventinfo
-						<<"		existed eventStation "<< exist_eventStation << endl;
+					cout << "--------------> Found one possible VS	existed eventinfo "<< exist_eventinfo
+						<<"	existed eventStation "<< exist_eventStation << endl;
 
 					make_virtual_station(ilat_eq,ilon_eq,ilat_sta,ilon_sta);
 
@@ -459,33 +470,24 @@ void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int i
 {
 
 	int ista = 0;
-	string EQ_NAME;
-	EQ_NAME = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NAME[ieq_index];
+	string EQ_NAME = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NAME[ieq_index];
 	string STA_NAME;
 	int sta_num = this->my_grid[ilat_sta][ilon_sta].CU_STA_NUM;
-	virtual_station sta_grid = this->my_grid[ilat_sta][ilon_sta];
-	virtual_station eq_grid = this->my_grid[ilat_eq][ilon_eq];
+	virtual_station& sta_grid = this->my_grid[ilat_sta][ilon_sta];
+	virtual_station& eq_grid = this->my_grid[ilat_eq][ilon_eq];
 
 	// initiate virtual staion
 	// if current vs does not have enough stations, then it is overwrite by the next 
+	
+	
 	int vs_index = this->my_vs_index;
-	this->my_vs[vs_index].initiate();
+	this->my_vs[vs_index].initiate(this);
 	this->my_vs[vs_index].my_big_record = this;
 	this->my_vs[vs_index].ilat_eq = ilat_eq;
 	this->my_vs[vs_index].ilon_eq = ilon_eq;
 	this->my_vs[vs_index].ilat_sta = ilat_sta;
 	this->my_vs[vs_index].ilon_sta = ilat_sta;
 	this->my_vs[vs_index].EQ = EQ_NAME;
-	this->my_vs[vs_index].eventStation_index = 0;
-	this->my_vs[vs_index].LONG_BEG = this->long_beg;
-	this->my_vs[vs_index].LONG_LEN = this->long_len;
-	this->my_vs[vs_index].long_npts = (int)(this->long_len/this->delta);
-	this->my_vs[vs_index].long_win.resize( this->my_vs[vs_index].long_npts);
-	this->my_vs[vs_index].phase_beg = this->phase_beg;
-	this->my_vs[vs_index].phase_len = this->phase_len;
-	this->my_vs[vs_index].noise_beg = this->noise_beg;
-	this->my_vs[vs_index].noise_len = this->noise_len;
-	this->my_vs[vs_index].delta = this->delta;
 	this->my_vs[vs_index].get_grid_dist(eq_grid,sta_grid);
 
 
@@ -495,16 +497,16 @@ void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int i
 	{
 		cout << " --> Terminate phase distance " << this->my_vs[vs_index].grid_dist<< "  is not within range "<<
 			this->phase_dist_min << " " << this->phase_dist_max << endl;
+		this->my_vs[this->my_vs_index].destruct();
 		return;
 	}
 
 	//cout << " long beg/len is " << this->long_beg << " "<< this->long_len << endl;
-
-
-	int max = 1000;
-	int stack_record_array[max];
+	//int max = 1000;
+	//int stack_record_array[max];
 	int istack = 0;
 
+	//
 	for(ista = 0; ista < sta_num; ista++)
 	{
 		STA_NAME = this->my_grid[ilat_sta][ilon_sta].CU_STA_NAME[ista];
@@ -526,37 +528,48 @@ void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int i
 	{
 		cout << " --> Terminate cause record sum "<< this->my_vs[vs_index].npts_record_sum << 
 			" is too small "<< this->eventStation_min_threshold << endl;
+		this->my_vs[this->my_vs_index].destruct();
 		return;
 	}
-
-
 
 
 	// 1.0 download sac file for EQ-STA-PHASE
 	int flag = this->individual_VS_processing();
 	if(flag == 1)
 		return ;
-
 	cout << "Current VS index " << this->my_vs_index << endl;
 	this->my_vs_index++;
 
 
+	// now it is time to free space for last assigned VS object
+	if( this->my_vs_index > 1)
+		this->my_vs[this->my_vs_index].destruct();
+
+
 }
+
+
+
 
 int big_new_record::individual_VS_processing()
 {
 	int vs_index = this->my_vs_index;
+	cout << "--> Working on " << vs_index << endl;
 	int count;
 	this->my_vs[vs_index].npts_record_sum = this->my_vs[vs_index].eventStation_index;
 
 	int tag_index = 0;
+	int station_index = 0;
 	for(count = 0; count < this->my_vs[vs_index].eventStation_index; count ++)
 	{
-		int station_index = this->my_vs[vs_index].eventStation_index_array[count];
-		// cout << " eventStation array num "<< stack_record_array[count] << endl;
-		
-		//cout << "my vs index is "<< vs_index << " eventStation index is  "<< station_index << " eventstation name is "<< this->my_record[station_index].STA << endl;
-		// cout << "record lat lon is "<< this->my_record[station_index].sta_lat<< endl;
+		station_index = this->my_vs[vs_index].eventStation_index_array[count];
+		cout << " eventStation index is  "<< station_index << endl;
+		//cout << this->my_record.size() << " " << station_index << endl;
+		if(  station_index <= 0 )
+		{
+			cout << " skipped eventStation index is  "<< station_index << endl;
+			continue;
+		}
 		this->my_record[station_index].download_sac_file();
 		this->my_record[station_index].PHASE = this->PHASE;
 		this->my_record[station_index].delta = 0.1;
@@ -582,8 +595,13 @@ int big_new_record::individual_VS_processing()
 
 	}
 
-
+	this->my_vs[vs_index].ivs = vs_index;
+	this->my_vs[vs_index].update_VS_info();
+	this->my_vs[vs_index].get_grid_dist_final();
 	this->my_vs[vs_index].stack_records_from_one_EQ();
+
+	this->my_vs[vs_index].mask_window_and_store_into_long_orig();
+
 	this->my_vs[vs_index].get_SNR_before_and_after_stack();
 	int flag = this->my_vs[vs_index].find_stack_ONSET_time();
 	if(flag == 1)
@@ -592,6 +610,14 @@ int big_new_record::individual_VS_processing()
 	this->output_VS_info_for_one_VS(vs_index);
 	this->plot_current_vs(vs_index);
 
+	// free my_record associated with current VS
+	for(count = 0; count < this->my_vs[vs_index].eventStation_index; count ++)
+	{
+		station_index = this->my_vs[vs_index].eventStation_index_array[count];
+		this->my_record[station_index].long_win.resize(1);
+	}
+
+	// clean memory
 
 	return 0;
 }
@@ -600,7 +626,7 @@ int big_new_record::individual_VS_processing()
 void big_new_record::plot_current_vs(int vs_index)
 {
 	cout << " --> plot for VS: "<< vs_index<< endl; 
-	string command = " csh c05.run_c04_in_background.sh "+ std::to_string(vs_index);
+	string command = "csh c05.run_c04_in_background.sh "+ std::to_string(vs_index);
 	exec(command);
 	return;
 }
@@ -722,7 +748,7 @@ int big_new_record::find_EQ_STA_PHASE_number_in_eventinfo(string EQ_NAME, string
 }
 int big_new_record::find_EQ_STA_PHASE_number_in_eventStation(string EQ_NAME, string STA)
 {
-	int return_num = -1;
+	int return_num = 0;
 	int count;
 	//cout << " EQ "<< EQ_NAME << "STA " << STA << endl;
 	for(count = 0; count < this->sta_num; count ++)
@@ -743,7 +769,6 @@ int big_new_record::find_EQ_STA_PHASE_number_in_eventStation(string EQ_NAME, str
 
 		return_num = count;
 		break;
-
 	}
 	return return_num;
 
@@ -891,7 +916,7 @@ void big_new_record::catagorize_records_into_VS_based_on_each_record( new_record
 	double sta_lon = 0;
 
 	// initiate record EQ_STA bin
-	int MAX = 10;
+	int MAX = 400;
 
 	for(ista = 0 ; ista < sta_num ; ista++)
 	{
@@ -1002,6 +1027,7 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 
 	// step 3.
 	// loop through EQLIST
+	cout << "--> Loop through EQ_LIST "<< endl;
 	for(count = 0; count < this->unique_EQ_num; count++)
 	{
 		// loop through grid lat and lon and check grid that is within grid_radius in latitude
@@ -1035,6 +1061,7 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 
 	// step 4.
 	// loop through STA_LIST
+	cout << "--> Loop through STA_LIST" << endl;
 	for(count = 0; count < this->unique_STA_num; count++)
 	{
 		// loop through grid lat and lon and check grid that is within grid_radius in latitude
@@ -1055,13 +1082,17 @@ void big_new_record::catagorize_existing_eventinfo_to_VS()
 					continue;
 
 				// add EQ info into current grid
+				//cout << " ilat ilon"<< ilat << " "<< ilon<< endl;
 				int current_index = this->my_grid[ilat][ilon].EX_STA_NUM ;
 				this->my_grid[ilat][ilon].EX_STA_LAT[current_index] = this->STA_LAT[count];
 				this->my_grid[ilat][ilon].EX_STA_LON[current_index] = this->STA_LON[count];
 				this->my_grid[ilat][ilon].EX_STA_NAME[current_index] = this->STA_LIST[count];
 				this->my_grid[ilat][ilon].EX_STA_NUM ++;
+				//cout << " EX_STA_NUM is "<<  this->my_grid[ilat][ilon].EX_STA_NUM << endl;
+
 			}
 	}
+
 
 	cout << " >> number of unique EQ is "<< this->unique_EQ_num << " unique STA: "<<
 		this->unique_STA_num<<endl;
@@ -1251,7 +1282,7 @@ void big_new_record::virtual_station_grid_initiate()
 			//my_grid[ilat][ilon].grid_radius = this->VS_RADIUS_DEGREE;
 			// initiate EXisting EQ STA 
 			my_grid[ilat][ilon].EX_EQ_NUM = 0;
-			int MMM = 200;
+			int MMM = 400;
 			my_grid[ilat][ilon].EX_EQ_NAME.resize(MMM);
 			my_grid[ilat][ilon].EX_EQ_LAT.resize(MMM); 
 			my_grid[ilat][ilon].EX_EQ_LON.resize(MMM); 
@@ -1276,7 +1307,7 @@ void big_new_record::virtual_station_grid_initiate()
 
 	// also initiate EQ_LIST
 	int max_EQ = 1500;
-	int max_STA = 12000;
+	int max_STA = 14000;
 	this->unique_EQ_num = 0;
 	this->EQ_LIST.resize(max_EQ); 
 	this->EQ_LAT.resize(max_EQ); 
@@ -1370,7 +1401,7 @@ void big_new_record::read_record_file(new_record* my_record)
 			else if( count == 16 )
 				my_record[line].phase_amplitude = atof(sub1.c_str());
 			else if( count == 17 )
-				my_record[line].CCC = atof(sub1.c_str());
+				my_record[line].ccc = atof(sub1.c_str());
 			else if( count == 18 )
 				my_record[line].SNR = atof(sub1.c_str());
 			else if( count == 19 )

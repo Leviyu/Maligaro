@@ -64,6 +64,7 @@ void get_record_gau_ave_std(new_RECORD* my_record, new_INPUT* my_input)
 int output_final_event_info(new_RECORD* my_record, new_INPUT* my_input)
 {
 	printf("-> output final eventinfo \n");
+	double define_final_weight(new_RECORD* my_record, new_INPUT* my_input);
 	int output_final_event_info_for_record(new_RECORD* my_record,  FILE* out, new_INPUT* my_input);
 	int ista;	
 	int phase_flag;
@@ -86,6 +87,7 @@ int output_final_event_info(new_RECORD* my_record, new_INPUT* my_input)
 	{
 		// output record info for each record
 		//printf("%d / %d  %s \n ",ista, my_input->sta_num , my_record[ista].name);
+		define_final_weight(&my_record[ista],my_input);
 		output_final_event_info_for_record(&my_record[ista], out, my_input);
 		//output_final_pick_onset_info_for_record(&my_record[ista],out2);
 	}
@@ -203,6 +205,8 @@ double define_final_weight(new_RECORD* my_record, new_INPUT* my_input)
 	wPolarity = polarity_weight(my_record->polarity);
 	wGAU = gau_weight(my_record->record_gaussian_factor, my_input->gau_ave, my_input->gau_std);
 
+	//printf("weight %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf \n", wSNR,wCCC,wMISFIT,wPRE,wPRE2,wPRE3,
+			//wPOST,wPOST2,wPOST3,wPolarity,wGAU);
 	my_record->final_weight = wSNR * wCCC * wMISFIT*wPRE*wPRE2*wPRE3*wPOST*wPolarity*wGAU;
 
 	return 0;
@@ -290,6 +294,7 @@ double polarity = my_record->polarity;
 	double SNR4 = my_record->SNR4;
 	int noise_too_short_flag = my_record->noise_too_short_flag;
 	//printf("ccc2 \n");
+	int traffic_in_noise_window_flag = my_record->traffic_in_noise_window_flag;
 
 
 
@@ -302,11 +307,11 @@ double polarity = my_record->polarity;
 		//dt_obs_prem = my_record->dt_picked_shift;
 
 
-	fprintf(out,"%6s %6s %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %13s %2d %2d %8.3lf %17.14lf %5.2lf %5.2lf %6.1lf %6s %5.2lf %5.2lf %5.2lf %5s %5.2lf %6d %5.2lf %5.2lf %8.3lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %6d %6d %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %3d\n",
+	fprintf(out,"%6s %6s %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %13s %2d %2d %8.3lf %17.14lf %5.2lf %5.2lf %6.1lf %6s %5.2lf %5.2lf %5.2lf %5s %5.2lf %6d %5.2lf %5.2lf %8.3lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %6d %6d %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %3d %3d\n",
 			sta, NET, DIST, AZ, BAZ, STA_lat, STA_lon, EQ_lat, EQ_lon, EQ_dep, EQ_mag, EQ_name, polar_flag, quality_flag, prem, amp, ccc ,SNR, dt_obs_prem, phase_name,
 			best_ccc, best_coefficient, misfit, COMP, time_phase_peak, npts_phase_peak, noise_beg, noise_len, phase_beg_time_relative_to_prem, record_weight,SNR2, misfit2,
 			ONSET, ENDSET, best_tstar, best_tstar_ccc, ccc3, misfit_pre, misfit_bak, record_gaussian_factor, emp_gaussian_factor, gaussian_misfit, polarity, polar_correct_flag, 
-			traffic_phase_nearby, misfit_pre2T, misfit_pre3T,misfit_bak2T, misfit_bak3T,SNR3,SNR4,noise_too_short_flag);
+			traffic_phase_nearby, misfit_pre2T, misfit_pre3T,misfit_bak2T, misfit_bak3T,SNR3,SNR4,noise_too_short_flag,traffic_in_noise_window_flag);
 	return 0;
 }
 

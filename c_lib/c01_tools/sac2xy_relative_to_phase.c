@@ -26,6 +26,7 @@ int sac2xy_relative_to_phase( double EQ_lat, double EQ_lon, double EQ_dep, doubl
 
 
 	double prem_time = taup_time(EQ_lat, EQ_lon,EQ_dep, STA_lat, STA_lon, phase);
+	//printf("prem is %lf \n", prem_time);
 	double abs_beg = beg_to_phase + prem_time;
 
 	sac2xy(sac_file, abs_beg, length, out_array);

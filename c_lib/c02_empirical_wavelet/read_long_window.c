@@ -188,16 +188,24 @@ int traffic_zero_out( new_RECORD* my_record, new_INPUT* my_input)
 
 
 	int count;
-
-
+	my_record->traffic_in_noise_window_flag = 0;
+	
 	for(count = 0; count < my_record->num_traffic ; count++)
 	{
+
+		// if traffic exist in [-100,-20] window, we make 
+		// traffic_in_noise_window_flag = 1
+		if( my_record->traffic_range_sec[count] > -100 and 
+				my_record->traffic_range_sec[count] < -20 )
+			my_record->traffic_in_noise_window_flag = 1;
+
+
 
 		// if is depth_phase and is close to main phase then 15 second
 		// we use 15sec cause we dont have any estimation of one Period here
 		// yet
 		if( strcmp( my_record->traffic_phase[count], my_record->depth_phase) == 0)
-			if( fabs( my_record->traffic_time[count]) < 15  )
+			if( fabs( my_record->traffic_time[count]) < 30  )
 				continue;
 
 		// if phase contrains SKS or SKKS, we skip

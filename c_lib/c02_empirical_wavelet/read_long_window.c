@@ -195,8 +195,8 @@ int traffic_zero_out( new_RECORD* my_record, new_INPUT* my_input)
 
 		// if traffic exist in [-100,-20] window, we make 
 		// traffic_in_noise_window_flag = 1
-		if( my_record->traffic_range_sec[count] > -100 and 
-				my_record->traffic_range_sec[count] < -20 )
+		if( my_record->traffic_time[count] > -100 &&
+				my_record->traffic_time[count] < -20 )
 			my_record->traffic_in_noise_window_flag = 1;
 
 

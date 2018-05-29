@@ -136,6 +136,7 @@ struct new_RECORD
 	double eq_mag;
 
 	int traffic_in_noise_window_flag;
+	double one_period;
 
 	double weight;			// weight of current record that goes into the E.W.
 	double final_weight;

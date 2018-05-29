@@ -38,7 +38,7 @@ int stretch_ES_and_CCC_tstar(new_RECORD* my_record, new_INPUT* my_input, double*
 			coeff_array[3] = 0.15;
 			coeff_array[4] = 0.05;
 			coeff_array[5] = 0.02;
-			coeff_array[6] = 0.1;
+			coeff_array[6] = 0.01;
 			//coeff_array[5] = 0.0;
 			max_num = 7;
 		}

@@ -33,6 +33,9 @@ int define_stretch_EW_ONSET(new_RECORD* my_record, new_INPUT* my_input)
 
 	int count;
 	int npts_gaussian_onset = 0;
+	int npts_gaussian_endset = 0;
+	int npts_onset = 0;
+	int npts_endset = 0;
 
 
 
@@ -142,18 +145,46 @@ int define_stretch_EW_ONSET(new_RECORD* my_record, new_INPUT* my_input)
 				break;
 			}
 		}
+		for(count = maxloc; count < npts_phase; count++)
+		{
+			if(my_record[ista].stretched_gaussian_win[count] < gaussian_threshold * amp)
+			{
+				npts_gaussian_endset = count;
+				break;
+			}
+		}
 		npts_ONSET = npts_gaussian_onset;
+		// get ONSET ENDSET with 0.1 amplitude
+		for(count = maxloc; count >=0; count--)
+		{
+			if(my_record[ista].stretched_gaussian_win[count] < 0.1 * amp)
+			{
+				npts_onset = count;
+				break;
+			}
+		}
+		for(count = maxloc; count < npts_phase; count++)
+		{
+			if(my_record[ista].stretched_gaussian_win[count] < 0.1 * amp)
+			{
+				npts_endset = count;
+				break;
+			}
+		}
 
 
 
 		// convert npts ONSET into dt
-		dt_ONSET = my_record[ista].phase_beg + npts_ONSET * my_input->delta ;
+		dt_ONSET = my_record[ista].phase_beg + npts_onset * my_input->delta ;
+		dt_ENDSET = my_record[ista].phase_beg + npts_endset * my_input->delta ;
 		npts_ENDSET = npts_peak + (npts_peak - npts_ONSET);
 		int npts_peak_ONSET = npts_peak - npts_ONSET;
-		dt_ENDSET = my_record[ista].phase_beg + ( npts_peak+ npts_peak_ONSET) * my_input->delta ;
+		//dt_ENDSET = my_record[ista].phase_beg + ( npts_peak+ npts_peak_ONSET) * my_input->delta ;
 		
 		// store ONSET into dt_obs_prem
-		my_record[ista].dt_obs_prem = dt_ONSET;
+		my_record[ista].dt_obs_prem = my_record[ista].phase_beg + npts_gaussian_onset * my_input->delta ;
+		my_record[ista].ONSET = dt_ONSET;
+		my_record[ista].ENDSET = dt_ENDSET;
 		my_record[ista].record_gaussian_factor = best_coeff;
 		my_record[ista].emp_gaussian_factor = my_input->emp_gaussian_factor;
 
@@ -167,6 +198,9 @@ int define_stretch_EW_ONSET(new_RECORD* my_record, new_INPUT* my_input)
 				time_delay = 0;
 			my_record[ista].dt_obs_prem += time_delay;
 		}
+
+
+
 		
 
 

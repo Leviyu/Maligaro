@@ -24,7 +24,7 @@ int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array
 	int npts_peak_min, npts_peak_max, npts_peak;
 	double peak_max, peak_min, value_peak;
 	int count, flag;
-	double cut_min = 0.1;
+	double cut_min = 0.2;
 	double cut_max = 1.0;
 	double array_tmp[*npts_in];
 	int kkk;
@@ -120,7 +120,6 @@ int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array
 			break;
 		}
 	}
-//printf("ONSET : %d \n", ONSET);
 	// look forward to find ENDSET
 	ENDSET = npts_peak;
 	for( count = npts_peak; count < *npts_in-2  ; count++  )
@@ -131,7 +130,41 @@ int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array
 			break;
 		}
 	}
-//printf("ENDSET : %d \n", ENDSET);
+
+	// sometimes the ONSET does not find the correct ONSET cause 
+	// the signal never to below threshold 0.1
+	// we make a hard rule:
+	// if  peak - ONSET  > ENDSET - peak + 5sec then
+	// ONSET = peak - (ENDSET - peak)
+	//printf(" ONSET ENDSET  %d %d \n", npts_peak - ONSET , (ENDSET - npts_peak ));
+	////printf(" first point %lf \n", array_in[ONSET]);	
+
+	if(  fabs(npts_peak - ONSET -  (ENDSET - npts_peak )) > 20  )
+	{
+		//ONSET = npts_peak - (ENDSET - npts_peak);
+		cut_min = 0.4;
+		ONSET = npts_peak;
+		for( count = npts_peak; count > 1; count-- )
+		{
+			//printf("coutn is %d array_tmp is %lf \n",count,array_tmp[count]);
+			if(fabs(array_tmp[count]) < cut_min )
+			{
+				ONSET = count;
+				break;
+			}
+		}
+		// look forward to find ENDSET
+		ENDSET = npts_peak;
+		for( count = npts_peak; count < *npts_in-2  ; count++  )
+		{
+			if(fabs(array_tmp[count]) < cut_min )
+			{
+				ENDSET = count;
+				break;
+			}
+		}
+
+	}
 
 //printf("npts_peak is %d ONSET is %d ENDSET is %d npts_in is %d \n\n",npts_peak , ONSET , ENDSET, *npts_in);
 
@@ -156,7 +189,7 @@ int construct_array_with_main_lobe(double* array_in, int* npts_in, double* array
 			array_out[count] = value_peak/fabs(value_peak) *( array_tmp[count] - cut_min)/(1-cut_min);
 		}
 	}
-//printf("ONSET AND ENDSET is %d %d\n", ONSET ,ENDSET);
+//#printf("ONSET AND ENDSET is %d %d\n", ONSET ,ENDSET);
 //output_array1("test1111",array_out,*npts_in);
 
 	//puts("---> construct array with main lobe done \n");

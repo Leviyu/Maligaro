@@ -191,6 +191,10 @@ int empirical_source_function(new_RECORD* my_record, new_INPUT* my_input)
 	output_long_phase_window(my_record, my_input);
 	output_ES_for_each_record(my_record, my_input);
 
+	// calculate true one period in displacement
+	calculate_true_one_period(my_record,my_input);	
+
+
 	// for records that have dt outside of allowable window, we redo 
 	// the whole process with the new masked window
 	// 1. redefine the beyond_window_flag

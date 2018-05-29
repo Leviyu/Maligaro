@@ -100,7 +100,7 @@ int output_final_event_info(new_RECORD* my_record, new_INPUT* my_input)
 double SNR_weight(double a)
 {
 	if( a < 1.5)
-		return 0;
+		return 0.3;
 	else if(a < 2.0)
 		return 0.5;
 	else if (a > 5.0)
@@ -130,11 +130,13 @@ double misfit_weight(double a)
 {
 	if(a < 0.05)
 		return 1.0;
-	else if (a < 0.1)
+	else if (a < 0.30)
 	{
 		double slope = (0.5 - 1.0) / (0.1 - 0.05);
 		return slope*(a - 0.05) + 1.0;
 	}
+	else
+		return 0.0;
 }
 
 double PRE_weight(double a)
@@ -142,12 +144,12 @@ double PRE_weight(double a)
 	double b = fabs(a);
 	if (b < 0.2)
 		return 1.0;
-	else if(b < 0.4) {
+	else if(b < 0.5) {
 		double slope = (0 - 1)/(0.4-0.2);
 		return (b - 0.2)*slope + 1.0;
 	}
 	else
-		return 0;
+		return 0.0;
 }
 double polarity_weight(double a)
 {
@@ -174,7 +176,7 @@ double post_weight(double a)
 		return 1+(a - 0.5)*slope;
 	}
 	else 
-		return 0.0;
+		return 0.2;
 }
 double gau_weight(double a, double gau_ave, double gau_std)
 {
@@ -208,6 +210,19 @@ double define_final_weight(new_RECORD* my_record, new_INPUT* my_input)
 	//printf("weight %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf \n", wSNR,wCCC,wMISFIT,wPRE,wPRE2,wPRE3,
 			//wPOST,wPOST2,wPOST3,wPolarity,wGAU);
 	my_record->final_weight = wSNR * wCCC * wMISFIT*wPRE*wPRE2*wPRE3*wPOST*wPolarity*wGAU;
+
+	if(my_record->final_weight < 0.05)
+		my_record->final_weight = 0.05;
+
+
+
+	if(wMISFIT == 0 || wPRE == 0)
+	{
+		if( strcmp(my_record->PHASE ,"ScS") == 0  && my_record->DIST > 70 && wPRE == 0)
+			return 0;
+		my_record->final_weight = 0;
+	}
+
 
 	return 0;
 }
@@ -274,6 +289,8 @@ double polarity = my_record->polarity;
 	double noise_len = my_record->noise_len;
 	double phase_beg_time_relative_to_prem = my_record->phase_beg;
 	double record_weight = my_record->final_weight;
+	if( record_weight == 0)
+		quality_flag = 0;
 	double misfit2 = my_record->misfit2;
 	double misfit_pre = my_record->misfit_pre;
 	double misfit_pre2T = my_record->misfit_pre2T;
@@ -295,6 +312,7 @@ double polarity = my_record->polarity;
 	int noise_too_short_flag = my_record->noise_too_short_flag;
 	//printf("ccc2 \n");
 	int traffic_in_noise_window_flag = my_record->traffic_in_noise_window_flag;
+	double one_period = my_record->one_period;
 
 
 
@@ -305,13 +323,20 @@ double polarity = my_record->polarity;
 	// hardwire dt to be dt_picked shift
 	//if(my_input->Reprocessing_Flag == 1) 
 		//dt_obs_prem = my_record->dt_picked_shift;
+		//
+	
 
+	if(my_input->Reprocessing_Flag == 1)
+		if( fabs(dt_obs_prem - 3.5 - my_record->dt_picked_shift) > 5)
+	{
+		quality_flag = 0;
+	}
 
-	fprintf(out,"%6s %6s %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %13s %2d %2d %8.3lf %17.14lf %5.2lf %5.2lf %6.1lf %6s %5.2lf %5.2lf %5.2lf %5s %5.2lf %6d %5.2lf %5.2lf %8.3lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %6d %6d %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %3d %3d\n",
+	fprintf(out,"%6s %6s %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %13s %2d %2d %8.3lf %17.14lf %5.2lf %5.2lf %6.1lf %6s %5.2lf %5.2lf %5.2lf %5s %5.2lf %6d %5.2lf %5.2lf %8.3lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %6d %6d %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %5.2lf %3d %3d %5.2lf\n",
 			sta, NET, DIST, AZ, BAZ, STA_lat, STA_lon, EQ_lat, EQ_lon, EQ_dep, EQ_mag, EQ_name, polar_flag, quality_flag, prem, amp, ccc ,SNR, dt_obs_prem, phase_name,
 			best_ccc, best_coefficient, misfit, COMP, time_phase_peak, npts_phase_peak, noise_beg, noise_len, phase_beg_time_relative_to_prem, record_weight,SNR2, misfit2,
 			ONSET, ENDSET, best_tstar, best_tstar_ccc, ccc3, misfit_pre, misfit_bak, record_gaussian_factor, emp_gaussian_factor, gaussian_misfit, polarity, polar_correct_flag, 
-			traffic_phase_nearby, misfit_pre2T, misfit_pre3T,misfit_bak2T, misfit_bak3T,SNR3,SNR4,noise_too_short_flag,traffic_in_noise_window_flag);
+			traffic_phase_nearby, misfit_pre2T, misfit_pre3T,misfit_bak2T, misfit_bak3T,SNR3,SNR4,noise_too_short_flag,traffic_in_noise_window_flag, one_period);
 	return 0;
 }
 

@@ -101,6 +101,8 @@ int read_input_info(new_INPUT* my_input)
 			sscanf(read_tmp,"%s %d " ,buff, &my_input->Fix_missing_sta_flag);
 		else if (strcmp(buff,"<Reprocessing_Flag>") == 0)
 			sscanf(read_tmp,"%s %d " ,buff, &my_input->Reprocessing_Flag);
+		else if (strcmp(buff,"<velocity_or_displacement>") == 0)
+			sscanf(read_tmp,"%s %s" ,buff, my_input->velocity_or_displacement);
 	}
 
 	fclose(in2);

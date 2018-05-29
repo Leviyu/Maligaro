@@ -33,10 +33,6 @@ class new_cell
 	double STD;							// standard deviation 
 	int idep, ilon, ilat;
 
-
-	// find boundary
-
-
 	// sumation of number of ray going through cell
 	int 	sum_num_in_cell;
 	double 	sum_dvs_in_cell;

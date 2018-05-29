@@ -11,7 +11,7 @@
 #include<math.h>
 //#include "sacio.h"
 extern "C" {
-#include "/opt/sac/include/sacio.h"
+#include "/usr/local/sac/include/sacio.h"
 //##include "/Users/Leviyu/bin/sac/include/sacio.h"
 }
 

@@ -7,7 +7,7 @@ void virtual_station::initiate(big_new_record* my_big_record)
 	//cout << " --> VS is destructed"  << endl;
 
 	// specify the storage array for eventinfo and eventStation
-	int station_max = 2000;
+	int station_max = 1000;
 	this->eventinfo_index = 0;
 	this->eventinfo_index_array.resize(station_max);
 	this->eventStation_index = 0;
@@ -15,9 +15,8 @@ void virtual_station::initiate(big_new_record* my_big_record)
 
 	//cout << " new virtual_station is declared! " << endl;
 	// distribute space for record tag arrat
-	int MAX = 5000;
 	
-	int record_max = 2000;
+	int record_max = 1000;
 	this->record_tag.resize(record_max);
 	this->npts_record_sum = 0;
 	//this->long_win = new double[MAX];
@@ -316,9 +315,10 @@ void virtual_station::get_traffic_time()
 	ofstream myfile;
 	string traffic_name = "traffic."+std::to_string(this->ivs);
 	myfile.open(traffic_name);
+	cout << " lets get the fucking traffic travel time " << endl;
 	for(auto i:this->traffic_phase_list)
 	{
-		//cout <<" ==> Working on "<<  i << endl;
+		cout <<" ==> Working on "<<  i << endl;
 		string command = "get_taup_time_2 " + this->my_big_record->PHASE + " "
 			+ std::to_string(this->eq_lat) + " "
 			+ std::to_string(this->eq_lon) + " " 
@@ -326,8 +326,7 @@ void virtual_station::get_traffic_time()
 			+ std::to_string(this->sta_lat) + " "
 			+ std::to_string(this->sta_lon) + " "
 			+ i;
-		//cout << "command is "<< endl;
-		//cout << command << endl;
+		cout << "command is "<< command << endl;
 
 		double prem_traffic = atof(exec(command).c_str());
 		this->traffic_phase_time.push_back(prem_traffic);
@@ -378,7 +377,7 @@ void virtual_station::get_traffic_time()
 		}
 
 	}
-	//cout << "traffic time size "<< this->traffic_phase_time.size() << endl;
+	cout << "traffic time size "<< this->traffic_phase_time.size() << endl;
 
 	
 
@@ -497,7 +496,10 @@ int virtual_station::find_stack_ONSET_time()
 
 
 	if(phase_win_max == 0)
+	{
+		cout << " ERROR phase_win_max is 0 "<< endl;
 		return 1;
+	}
 
 	// use phase_win_max to normalize long_win and long_win_orig
 	int long_npts = (int)(this->LONG_LEN / this->delta);
@@ -560,7 +562,6 @@ int virtual_station::find_stack_ONSET_time()
 	//for(count = 0 ; count < LINE; count++)
 		//xx[count] = phase_start_time+  count  *this->delta;
 	//output_array2(phase_win_file,xx,&this->phase_win[0],LINE,0 );
-
 
 
 	// 2. t* S_ES to fit virtual stack
@@ -640,6 +641,7 @@ int virtual_station::find_stack_ONSET_time()
 		this->stretch_ccc = 0;
 		this->stretch_coeff = 0;
 	}
+	//cout << " --> best coff "<< this->stretch_coeff << " ccc "<< this->stretch_ccc << endl;
 
 	
 	// outout t* E_ES
@@ -1002,17 +1004,17 @@ void virtual_station::make_quality_decision()
 		this->quality_flag = 0;
 
 	// if averageSNR < 1 bad
-	if( this->ave_SNR < 1 )
-		this->quality_flag = 0;
+	//if( this->ave_SNR < 1 )
+		//this->quality_flag = 0;
 
 
 	// if misfit pre too big, quality -1
-	if( this->misfit_pre > 0.2) 
+	if( this->misfit_pre > 0.3)
 		this->quality_flag = -1;
 
 	// if tstar ccc too small, -1
-	if( this->tstar_ccc < 0.92)
-		this->quality_flag = -1;
+	//if( this->tstar_ccc < 0.92)
+		//this->quality_flag = -1;
 
 
 	// check for possible traffic, 
@@ -1027,9 +1029,19 @@ void virtual_station::make_quality_decision()
 		phase_name.compare("sSKKS") == 0)
 			continue;
 
+		string depth_phase;
+		// if is depth phase, continue
+		if( this->my_big_record->PHASE.find("S") != std::string::npos)
+			depth_phase = "s"+this->my_big_record->PHASE;
+		else if( this->my_big_record->PHASE.find("P") != std::string::npos)
+			depth_phase = "p"+this->my_big_record->PHASE;
+		if( depth_phase.compare(phase_name) == 0)
+			continue;
+
+	
 		
 		double prem_traffic = this->traffic_phase_time[i];
-		if( fabs(prem_traffic - this->virtual_stack_ONSET) < 10 )
+		if( fabs(prem_traffic - this->virtual_stack_ONSET) < 15 )
 			this->quality_flag = -1;
 	}
 

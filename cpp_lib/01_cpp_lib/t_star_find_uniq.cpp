@@ -26,7 +26,7 @@
 
 int t_star_find_uniq(double t_star , double* tstar_array, int npts, double delta)
 {
-	char lib_dir[400] = "/mnt/data2/hongyu/EQTime/tstar_lib";
+	char lib_dir[400] = "/home/hongyu_ubuntu/EQTime/tstar_lib";
 
 	char command[1000];
 	sprintf(command, "cd %s; csh make_tstar.sh  %d %lf %.2lf", lib_dir, npts, delta, t_star);

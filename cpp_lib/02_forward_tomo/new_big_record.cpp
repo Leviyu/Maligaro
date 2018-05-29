@@ -70,7 +70,8 @@ void big_new_record::output_VS_info_for_one_VS(int vs_index)
 		string long_file = "long_win."+my_record[sta_index].EQ+
 		"."+my_record[sta_index].STA+"."+this->PHASE;
 		double record_dist = my_record[sta_index].DIST;
-		out<< long_file<<" "<< record_dist<<endl;
+		double SNR = my_record[sta_index].SNR;
+		out<< long_file<<" "<< record_dist<< " "<< SNR <<endl;
 	}
 	out.close();
 
@@ -435,6 +436,8 @@ void big_new_record::count_record_existance_for_grid_pair()
 
 					int exist_eventStation = 0;
 					count_eventStation_existance_for_sing_grid_pair(ilat_eq,ilon_eq,ilat_sta,ilon_sta,&exist_eventStation);
+					//if( exist_eventStation < 10 || exist_eventStation > 25 ) 
+						//continue;
 					
 					if(exist_eventStation < this->eventStation_min_threshold)
 						continue;
@@ -495,24 +498,19 @@ void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int i
 	if( this->my_vs[vs_index].grid_dist < this->phase_dist_min ||
 			this->my_vs[vs_index].grid_dist > this->phase_dist_max )
 	{
-		cout << " --> Terminate phase distance " << this->my_vs[vs_index].grid_dist<< "  is not within range "<<
-			this->phase_dist_min << " " << this->phase_dist_max << endl;
-		this->my_vs[this->my_vs_index].destruct();
+		cout << " --> Terminate phase distance " << this->my_vs[vs_index].grid_dist<< 
+			" is not within range "<<this->phase_dist_min << " " << this->phase_dist_max << endl;
+		this->my_vs[vs_index].destruct();
 		return;
 	}
 
-	//cout << " long beg/len is " << this->long_beg << " "<< this->long_len << endl;
-	//int max = 1000;
-	//int stack_record_array[max];
 	int istack = 0;
-
-	//
 	for(ista = 0; ista < sta_num; ista++)
 	{
 		STA_NAME = this->my_grid[ilat_sta][ilon_sta].CU_STA_NAME[ista];
 		int ista_eventStation = this->find_EQ_STA_PHASE_number_in_eventStation(EQ_NAME,STA_NAME);
 		//cout << " --> Work on "<< ista << " / " << sta_num << " eventStation index is "<< ista_eventStation << endl;
-		if(ista_eventStation < 0) 
+		if(ista_eventStation <= 0) 
 			continue;
 		this->my_vs[vs_index].record_tag[istack] = ista_eventStation;
 		istack++;
@@ -528,15 +526,15 @@ void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int i
 	{
 		cout << " --> Terminate cause record sum "<< this->my_vs[vs_index].npts_record_sum << 
 			" is too small "<< this->eventStation_min_threshold << endl;
-		this->my_vs[this->my_vs_index].destruct();
+		this->my_vs[vs_index].destruct();
 		return;
 	}
 
-
-	// 1.0 download sac file for EQ-STA-PHASE
-	int flag = this->individual_VS_processing();
-	if(flag == 1)
-		return ;
+	if(vs_index > 150 )
+	{
+		int flag = this->individual_VS_processing();
+		if(flag == 1) return ;
+	}
 	cout << "Current VS index " << this->my_vs_index << endl;
 	this->my_vs_index++;
 
@@ -567,7 +565,7 @@ int big_new_record::individual_VS_processing()
 		//cout << this->my_record.size() << " " << station_index << endl;
 		if(  station_index <= 0 )
 		{
-			cout << " skipped eventStation index is  "<< station_index << endl;
+			//cout << " skipped eventStation index is  "<< station_index << endl;
 			continue;
 		}
 		this->my_record[station_index].download_sac_file();
@@ -615,6 +613,7 @@ int big_new_record::individual_VS_processing()
 	{
 		station_index = this->my_vs[vs_index].eventStation_index_array[count];
 		this->my_record[station_index].long_win.resize(1);
+		this->my_record[station_index].long_win_orig.resize(1);
 	}
 
 	// clean memory
@@ -916,7 +915,7 @@ void big_new_record::catagorize_records_into_VS_based_on_each_record( new_record
 	double sta_lon = 0;
 
 	// initiate record EQ_STA bin
-	int MAX = 400;
+	int MAX = 40;
 
 	for(ista = 0 ; ista < sta_num ; ista++)
 	{
@@ -1261,6 +1260,14 @@ void big_new_record::virtual_station_grid_initiate()
 
 
 	//cout << "grid lat num is " << this->grid_lat_num << endl;
+	
+
+	// write to file of grid setup
+	ofstream myfile;
+	string filename = "out.grid_setup";
+	myfile.open(filename.c_str());
+	
+
 
 	// calculate longitude grid num for each latitude
 	int ilat,ilon;
@@ -1270,19 +1277,24 @@ void big_new_record::virtual_station_grid_initiate()
 	{
 		current_lat = -89 + ilat * this->VS_LATITUDE_INC;
 		this->grid_lon_num[ilat] = floor( 2*3.1415926*6371*cos( current_lat * 3.1415926/180) / lat_inc_in_km );
+		double new_lon_inc = 2*3.1415926*6371*cos( current_lat * 3.1415926/180) / this->grid_lon_num[ilat];
 		//cout << " current lat " << ilat << " lon num" << this->grid_lon_num[ilat] << endl;
 		this->my_grid[ilat].resize(this->grid_lon_num[ilat]);
 		for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
 		{
-			double lon_inc_in_degree = 360/this->grid_lon_num[ilat];
+			double lon_inc_in_degree = 360.0/this->grid_lon_num[ilat];
+			//cout << " lon_inc_in_degree is "<<  lon_inc_in_degree << endl;
 			double current_lon = ilon * lon_inc_in_degree - 180;
+			//double current_lon = ilon * new_lon_inc- 180;
 			//cout << " lat lon "<< current_lat << " "<< current_lon<< endl;
 			my_grid[ilat][ilon].grid_lat = current_lat;
 			my_grid[ilat][ilon].grid_lon = current_lon;
+			myfile<< current_lat << " " << current_lon << " 90 "<< this->VS_EQ_RADIUS_DEGREE * 111*2 << " " <<this->VS_EQ_RADIUS_DEGREE * 111 *2<< endl;
+
 			//my_grid[ilat][ilon].grid_radius = this->VS_RADIUS_DEGREE;
 			// initiate EXisting EQ STA 
 			my_grid[ilat][ilon].EX_EQ_NUM = 0;
-			int MMM = 400;
+			int MMM = 2000;
 			my_grid[ilat][ilon].EX_EQ_NAME.resize(MMM);
 			my_grid[ilat][ilon].EX_EQ_LAT.resize(MMM); 
 			my_grid[ilat][ilon].EX_EQ_LON.resize(MMM); 
@@ -1303,6 +1315,8 @@ void big_new_record::virtual_station_grid_initiate()
 		}
 
 	}
+
+	myfile.close();
 
 
 	// also initiate EQ_LIST

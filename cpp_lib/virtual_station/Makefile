@@ -13,7 +13,7 @@ TOMO_OBJ = $(TOMO_CPP:.cpp=.o)
 #ESF_CPP = $(wildcard ../../c_lib/c02_empirical_wavelet/*.c)
 #ESF_OBJ = $(ESF_CPP:.c=.o)
 
-SACHOME = /opt/sac
+SACHOME = /usr/local/sac
 #SOURCE = ./empirical_wavelet.c
 SOURCE = ./main.cpp
 OBJ = $(SOURCE:.cpp=.o)

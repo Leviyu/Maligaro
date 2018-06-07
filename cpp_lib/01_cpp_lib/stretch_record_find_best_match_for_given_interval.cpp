@@ -8,6 +8,7 @@ int stretch_record_find_best_match_for_given_interval(double* record,
 		double coeff_delta, double* best_ccc, double* best_coeff,
 		int* best_time_shift, double* best_ES, int flag)
 {
+//printf(" ---> stretch_record_find_best_match_for_given_interval \n");
 	double coeff = 0;
 
 	int count;
@@ -67,8 +68,11 @@ int stretch_record_find_best_match_for_given_interval(double* record,
 
 		// only using the 10% to 100% part of both record and phase to CC
 
+//printf("here1");
 			construct_array_with_main_lobe(tmp_ES, &npts_phase,ES_tmp);
+//printf("here2");
 			construct_array_with_main_lobe(phase_win, &npts_phase,record_tmp);
+//printf("here3");
 
 //printf("--> tstar end \n\n");
 		//2. ccc stretched ES with record

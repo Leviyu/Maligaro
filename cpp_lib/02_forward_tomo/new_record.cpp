@@ -68,6 +68,7 @@ void new_record::get_crustal_correction()
 
 void new_record::download_sac_file()
 {
+	//cout << " --> download_sac_file "<< endl;
 	string EQ 		= this->EQ;
 	string PHASE 	= this->PHASE;
 	string COMP 	= this->COMP;
@@ -75,8 +76,10 @@ void new_record::download_sac_file()
 	string NET 		= this->NET;
 	string sac_file1 = EQ + "."+NET+"."+STA+".BH"+COMP+".sac";
 	string sac_file2 = EQ + "."+NET+"."+STA+".HH"+COMP+".sac";
-	string sod_sac1 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+EQ+"/"+sac_file1;
-	string sod_sac2 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+EQ+"/"+sac_file2;
+	string sod_sac1 = "/mnt/soduser/"+EQ+"/"+sac_file1;
+	string sod_sac2 = "/mnt/soduser/"+EQ+"/"+sac_file2;
+	//string sod_sac1 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+EQ+"/"+sac_file1;
+	//string sod_sac2 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+EQ+"/"+sac_file2;
 	string sac_file = "";
 	// cout << sac_file1 << endl;
 
@@ -118,6 +121,7 @@ void new_record::read_sac_file()
 {
 	cout << "--> Read sac file"<< endl;
 	int count;
+	string long_win_name;
 	// allocation long win memory
 	//this->long_win = new double[MAX];
 	this->long_win.resize(MAX);
@@ -126,7 +130,7 @@ void new_record::read_sac_file()
 	// 1. get PREM time for current record
 	double PREM;
 	//PREM = taup_time(this->eq_lat, this->eq_lon, this->eq_dep, this->sta_lat , this->sta_lon, this->PHASE);
-	string taup_command = "get_taupTime "+ this->EQ + " "+ this->STA + " "+ this->PHASE + " > tmp.taup";
+	string taup_command = "get_taup_time "+ this->EQ + " "+ this->STA + " "+ this->PHASE + " > tmp.taup";
 	exec(taup_command);
 	ifstream mytaup;
 	mytaup.open("tmp.taup");
@@ -149,7 +153,7 @@ void new_record::read_sac_file()
 	double LON_BEG = this->long_beg;
 	double LON_LEN = this->long_len;
 	double delta =  this->delta;
-	int NUM = 1000000;
+	int NUM = 100000;
 	int npts = (int) (LON_LEN / delta);
 	//double X[npts];
 	vector<double> X(npts,0);
@@ -164,10 +168,26 @@ void new_record::read_sac_file()
 	string sac_file1 = EQ + "."+NET+"."+STA+".BHT.sac";
 	string sac_file2 = EQ + "."+NET+"."+STA+".HHT.sac";
 
+
+	// get polarity 
+	this->get_polar_flag();
+
+	double abs_beg;
+	double length;
+	//cout << " PREM is "<< PREM << " long beg is "<< this->long_beg<< endl;
+	abs_beg = PREM + this->long_beg;
+	length = this->long_len;
+
 	if( is_file_exist(sac_file1) )
+	{
 		this->sac_file = sac_file1;
+		sac2xy_with_delta(this->sac_file,abs_beg, length, &this->long_win[0], this->delta);
+	}
 	else if( is_file_exist(sac_file2) )
+	{
 		this->sac_file = sac_file2;
+		sac2xy_with_delta(this->sac_file,abs_beg, length, &this->long_win[0], this->delta);
+	}
 	else
 	{
 		// if both not exist, we hardwire sac_file to be 0
@@ -176,45 +196,28 @@ void new_record::read_sac_file()
 	}
 
 
-	double abs_beg;
-	double length;
-	//cout << " PREM is "<< PREM << " long beg is "<< this->long_beg<< endl;
-	abs_beg = PREM + this->long_beg;
-	length = this->long_len;
+	cout << "sac file is "<< this->sac_file 
+		<< " absolute time "<< abs_beg 
+		<< " length "<< length 
+		<< "delta " << this->delta
+		<< endl;
 
-	//cout << "sac file is "<< this->sac_file 
-		//<< " absolute time "<< abs_beg 
-		//<< " length "<< length 
-		//<< "delta " << this->delta
-		//<< endl;
-
-	sac2xy_with_delta(this->sac_file,abs_beg, length, &this->long_win[0], this->delta);
 
 	//this->convert_long_win_to_velocity();
 
 	// write xy window
 	for(count = 0; count < npts; count++)
-	{
 		X[count] = LON_BEG + count * delta;
-	}
 	//normalize this longwin
 	normalize_array(&this->long_win[0], npts);
 
-
 	// for wired condition, we mask out the record with 0.1 array
-	//
 	if( this->long_win[0] != this->long_win[0] )
 		for(count = 0; count < npts; count++)
 			this->long_win[count] = 0.1;
 
 
 
-	string long_win_name = "long_win."+this->EQ+"."+this->STA+"."+this->PHASE;
-//cout << "output "<< long_win_name << endl;
-
-	this->get_polar_flag();
-
-	//double long_win_flipped[npts];
 	vector<double> long_win_flipped(npts,0);
 	for(count = 0; count < npts; count++)
 	{
@@ -222,11 +225,11 @@ void new_record::read_sac_file()
 			long_win_flipped[count] = this->long_win[count]* 1;
 		else
 			long_win_flipped[count] = this->long_win[count]* this->polarity_flag;
-
 	}
 
+	long_win_name = "long_win."+this->EQ+"."+this->STA+"."+this->PHASE;
 	output_array2(long_win_name , &X[0],&long_win_flipped[0] , npts, 0);
-
+	cout << " read sac file done" << endl;
 
 }
 
@@ -251,7 +254,7 @@ void new_record::get_polar_flag()
 	string PHASE = this->PHASE;
 	string COMP = "T";
 
-	string command = "csh make_polar "+ EQ + " "+ STA + " "+ PHASE + " "+ COMP + " > tmp.polar";
+	string command = "make_polar "+ EQ + " "+ STA + " "+ PHASE + " "+ COMP + " > tmp.polar";
 	exec(command);
 
 	double polar = 0;
@@ -269,6 +272,7 @@ void new_record::get_polar_flag()
 		this->polarity_flag = -1;
 
 
+	//cout << " polar is "<< this->polarity << endl;
 }
 
 

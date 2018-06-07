@@ -40,8 +40,8 @@ void reprocessing_get_prem_shift_time(new_RECORD* my_record, new_INPUT* my_input
 			{
 				sscanf(read_tmp,"%s %lf %d %lf " ,buff, &my_record[ista].dt_picked_shift,
 						&my_record[ista].polar_flag, &my_record[ista].polarity);
-				printf("reprocessing sta %s is shifted %lf \n", my_record[ista].name,
-						my_record[ista].dt_picked_shift);
+				//printf("reprocessing sta %s is shifted %lf \n", my_record[ista].name,
+						//my_record[ista].dt_picked_shift);
 				break;
 			}
 		}

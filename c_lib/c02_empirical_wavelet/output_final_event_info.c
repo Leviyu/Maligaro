@@ -327,7 +327,7 @@ double polarity = my_record->polarity;
 	
 
 	if(my_input->Reprocessing_Flag == 1)
-		if( fabs(dt_obs_prem - 3.5 - my_record->dt_picked_shift) > 5)
+		if( fabs(dt_obs_prem - 3.5 - my_record->dt_picked_shift) > 8)
 	{
 		quality_flag = 0;
 	}

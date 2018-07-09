@@ -26,13 +26,14 @@
 int sac2xy_with_delta(string sac_file2, double begin_time, double length, double* out_array, double DELTA)
 {
 	//printf("process sac2xy_with_delta \n");
-	int NUM = 1000000;
-	float* yarray;
-	yarray = (float*)malloc(sizeof(float)*NUM);
-	int len;
+	int NUM = 300000;
+	float yarray[NUM];
+	//vector<float> yarray(NUM,0);
+	int len = NUM;
 	float beg,del;
-	int nerr;
-	int max = 1000000;
+	del = 0.1;
+	int nerr = 0;
+	int max = 300000;
 
 	int i;
 	char* sac_file;
@@ -71,7 +72,6 @@ int sac2xy_with_delta(string sac_file2, double begin_time, double length, double
 		printf(" npts_long_end %d len %d npts_long_beg %d \n", npts_long_end, len, npts_long_beg);
 		return 1;
 	}
-
 
 
 
@@ -118,15 +118,8 @@ int sac2xy_with_delta(string sac_file2, double begin_time, double length, double
 		new_x[icount] = 0+ icount * DELTA;
 
 
-
-//output_array2("XYlololololo",XTMP, YTMP, npts_sac,0);
-//printf("use wiginterpd  npts sac %d npts out %d \n", npts_sac ,npts_out);
 	// using wiginterpd to interpolate
 	wiginterpd(XTMP,YTMP,npts_sac,new_x,out_array,npts_out,0);
-//printf("use wiginterpd DONE\n");
-
-
-//output_array2("lololololo",new_x, out_array, npts_out,1);
 
 	return 0;
 }

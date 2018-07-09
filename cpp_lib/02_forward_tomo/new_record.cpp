@@ -91,10 +91,11 @@ void new_record::download_sac_file()
 		if(is_file_exist(sod_sac1))
 		{
 			//string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
-			string command = "get_EQ_sac "+ EQ+"/"+sac_file1;
-			exec(command);
+			//string command = "get_EQ_sac "+ EQ+"/"+sac_file1;
+			//exec(command);
 			sac_file = sac_file1;
-			string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file1 + " " + PHASE;
+			string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file1 + " " + PHASE 
+				+" "+ sod_sac1 ;
 			exec(filter_command);
 		}
 	//}
@@ -103,10 +104,11 @@ void new_record::download_sac_file()
 		if(is_file_exist(sod_sac2))
 		{
 			//string command = "cp ~/Downloads/"+ sac_file1+ " .  >  /dev/null";
-			string command = "get_EQ_sac "+ EQ +"/"+sac_file2;
-			exec(command);
+			//string command = "get_EQ_sac "+ EQ +"/"+sac_file2;
+			//exec(command);
 			sac_file = sac_file2;
-			string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file2 + " "+ PHASE ;
+			string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file2 + " "+ PHASE 
+				+ " "+ sod_sac2;
 			exec(filter_command);
 		}
 	//}
@@ -119,7 +121,7 @@ void new_record::download_sac_file()
 
 void new_record::read_sac_file()
 {
-	cout << "--> Read sac file"<< endl;
+	//cout << "--> Read sac file"<< endl;
 	int count;
 	string long_win_name;
 	// allocation long win memory
@@ -130,12 +132,13 @@ void new_record::read_sac_file()
 	// 1. get PREM time for current record
 	double PREM;
 	//PREM = taup_time(this->eq_lat, this->eq_lon, this->eq_dep, this->sta_lat , this->sta_lon, this->PHASE);
-	string taup_command = "get_taup_time "+ this->EQ + " "+ this->STA + " "+ this->PHASE + " > tmp.taup";
-	exec(taup_command);
-	ifstream mytaup;
-	mytaup.open("tmp.taup");
-	mytaup >> PREM;
-	mytaup.close();
+	string taup_command = "get_taup_time "+ this->EQ + " "+ this->STA + " "+ this->PHASE ;
+	//exec(taup_command);
+	PREM = atof(exec(taup_command).c_str());
+	//ifstream mytaup;
+	//mytaup.open("tmp.taup");
+	//mytaup >> PREM;
+	//mytaup.close();
 
 	
 
@@ -171,6 +174,8 @@ void new_record::read_sac_file()
 
 	// get polarity 
 	this->get_polar_flag();
+	//cout << " polarity is " << this->polarity << endl;
+
 
 	double abs_beg;
 	double length;
@@ -192,15 +197,15 @@ void new_record::read_sac_file()
 	{
 		// if both not exist, we hardwire sac_file to be 0
 		for(count = 0; count < npts; count++)
-			this->long_win[count] = 0.1;
+			this->long_win[count] = 0.00000001;
 	}
 
 
-	cout << "sac file is "<< this->sac_file 
-		<< " absolute time "<< abs_beg 
-		<< " length "<< length 
-		<< "delta " << this->delta
-		<< endl;
+	//cout << "sac file is "<< this->sac_file 
+		//<< " absolute time "<< abs_beg 
+		//<< " length "<< length 
+		//<< "delta " << this->delta
+		//<< endl;
 
 
 	//this->convert_long_win_to_velocity();
@@ -214,7 +219,7 @@ void new_record::read_sac_file()
 	// for wired condition, we mask out the record with 0.1 array
 	if( this->long_win[0] != this->long_win[0] )
 		for(count = 0; count < npts; count++)
-			this->long_win[count] = 0.1;
+			this->long_win[count] = 0.00000001;
 
 
 
@@ -227,9 +232,15 @@ void new_record::read_sac_file()
 			long_win_flipped[count] = this->long_win[count]* this->polarity_flag;
 	}
 
+
+	// normalize long_win
+	// int normalize_array_with_flag(double* array, int len, int flag)
+	normalize_array_with_flag(&this->long_win[0], npts,1);
+
+
 	long_win_name = "long_win."+this->EQ+"."+this->STA+"."+this->PHASE;
 	output_array2(long_win_name , &X[0],&long_win_flipped[0] , npts, 0);
-	cout << " read sac file done" << endl;
+	//cout << " read sac file done" << endl;
 
 }
 
@@ -248,20 +259,25 @@ void new_record::convert_long_win_to_velocity()
 
 void new_record::get_polar_flag()
 {
+	// if this record has been calculated before we skip
+	if( this->polarity_flag == 1 || this->polarity_flag == -1)
+		return;
 	
 	string EQ = this->EQ;
 	string STA = this->STA;
 	string PHASE = this->PHASE;
 	string COMP = "T";
 
-	string command = "make_polar "+ EQ + " "+ STA + " "+ PHASE + " "+ COMP + " > tmp.polar";
-	exec(command);
 
+	string command = "make_polar "+ EQ + " "+ STA + " "+ PHASE + " "+ COMP ;
 	double polar = 0;
-	ifstream myfile;
-	myfile.open("./tmp.polar");
-	myfile >> polar ;
-	myfile.close();
+	polar = atof(exec(command).c_str());
+	//exec(command);
+
+	//ifstream myfile;
+	//myfile.open("./tmp.polar");
+	//myfile >> polar ;
+	//myfile.close();
 
 	//cout << "current station flag is "<< polar << endl;
 	this->polarity = polar;
@@ -279,7 +295,7 @@ void new_record::get_polar_flag()
 
 void new_record::calculate_SNR()
 {
-	cout << "--> Calculate SNR "<< endl;
+	//cout << "--> Calculate SNR "<< endl;
 	// this function calculate the SNR of current record for current PHASE
 	
 
@@ -335,7 +351,7 @@ void new_record::calculate_SNR()
 	if(this->SNR != this->SNR )
 		this->SNR = 0.5;
 
-	cout << " STA "<< this->STA << " SNR " << this->SNR << endl;
+	//cout << " STA "<< this->STA << " SNR " << this->SNR << endl;
 
 
 }

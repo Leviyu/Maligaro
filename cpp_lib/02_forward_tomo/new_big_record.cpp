@@ -59,11 +59,13 @@ void big_new_record::output_VS_info_for_one_VS(int vs_index)
 	
 	int record_num = my_vs.eventStation_index;
 	string EQ_NAME = my_vs.EQ;
+	int record_tag_index = my_vs.record_tag_index;
 
 	// output eventStation list for current VS
 	ofstream out;
 	string eventout = "out.VS_eventStation_list."+this->PHASE+"."+to_string(ivs);
 	out.open(eventout.c_str());
+	/*
 	for(count = 0; count < my_vs.eventStation_index;count++)
 	{
 		int sta_index = my_vs.eventStation_index_array[count];
@@ -73,7 +75,23 @@ void big_new_record::output_VS_info_for_one_VS(int vs_index)
 		double SNR = my_record[sta_index].SNR;
 		out<< long_file<<" "<< record_dist<< " "<< SNR <<endl;
 	}
+	*/
+	for(count = 0; count < my_vs.record_tag_index;count++)
+	{
+		int sta_index = my_vs.record_tag[count];
+		string long_file = "long_win."+my_record[sta_index].EQ+
+		"."+my_record[sta_index].STA+"."+this->PHASE;
+		double record_dist = my_record[sta_index].DIST;
+		double SNR = my_record[sta_index].SNR;
+		out<< long_file<<" "<< record_dist<< " "<< SNR <<endl;
+	}
 	out.close();
+
+	if( my_vs.ave_SNR == 1.0)
+		return;
+
+	if( record_tag_index < this->eventStation_min_threshold)
+		return;
 
 	myfile<< fixed
 	<< setw(10) << setprecision(2) << ivs
@@ -84,7 +102,7 @@ void big_new_record::output_VS_info_for_one_VS(int vs_index)
 	<< setw(10) << setprecision(2) << my_vs.sta_lat
 	<< setw(10) << setprecision(2) << my_vs.sta_lon
 	<< setw(10) << setprecision(2) << sta_radius
-	<< setw(10) << setprecision(2) << record_num
+	<< setw(10) << setprecision(2) << record_tag_index
 	<< setw(10) << setprecision(2) << my_vs.grid_dist
 	<< setw(10) << setprecision(2) << my_vs.virtual_stack_ONSET
 	<< setw(10) << setprecision(2) << my_vs.tstar_ccc
@@ -404,6 +422,7 @@ void big_new_record::count_record_existance_for_grid_pair()
 
 	for(ilat_eq = 0; ilat_eq<this->grid_lat_num; ilat_eq++)
 	{
+
 		for(ilon_eq = 0; ilon_eq< this->grid_lon_num[ilat_eq]; ilon_eq++)
 		{
 
@@ -444,6 +463,7 @@ void big_new_record::count_record_existance_for_grid_pair()
 					
 					cout << "--------------> Found one possible VS	existed eventinfo "<< exist_eventinfo
 						<<"	existed eventStation "<< exist_eventStation << endl;
+					cout << " index eq ilat ilon "<< ilat_eq << " " << ilon_eq << "index station "<< ilat_sta << " "<< ilon_sta << endl;
 
 					make_virtual_station(ilat_eq,ilon_eq,ilat_sta,ilon_sta);
 
@@ -466,7 +486,10 @@ void big_new_record::make_virtual_station(int ilat_eq, int ilon_eq, int ilat_sta
 	string STA_NAME;
 	int eq_num = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NUM;
 	for(ieq = 0; ieq < eq_num ; ieq++)
+	{
+		cout << "    --> on eq "<< ieq << "/"<< eq_num << endl;
 		make_virtual_station_for_EQ(ilat_eq,ilon_eq,ilat_sta,ilon_sta,ieq);
+	}
 }
 
 void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, int ieq_index)
@@ -478,10 +501,6 @@ void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int i
 	int sta_num = this->my_grid[ilat_sta][ilon_sta].CU_STA_NUM;
 	virtual_station& sta_grid = this->my_grid[ilat_sta][ilon_sta];
 	virtual_station& eq_grid = this->my_grid[ilat_eq][ilon_eq];
-
-	// initiate virtual staion
-	// if current vs does not have enough stations, then it is overwrite by the next 
-	
 	
 	int vs_index = this->my_vs_index;
 	this->my_vs[vs_index].initiate(this);
@@ -530,11 +549,8 @@ void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int i
 		return;
 	}
 
-	if(vs_index > 150 )
-	{
-		int flag = this->individual_VS_processing();
-		if(flag == 1) return ;
-	}
+	int flag = this->individual_VS_processing();
+	if(flag == 1) return ;
 	cout << "Current VS index " << this->my_vs_index << endl;
 	this->my_vs_index++;
 
@@ -542,8 +558,6 @@ void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int i
 	// now it is time to free space for last assigned VS object
 	if( this->my_vs_index > 1)
 		this->my_vs[this->my_vs_index].destruct();
-
-
 }
 
 
@@ -556,12 +570,14 @@ int big_new_record::individual_VS_processing()
 	int count;
 	this->my_vs[vs_index].npts_record_sum = this->my_vs[vs_index].eventStation_index;
 
+	this->my_vs[vs_index].record_tag_index = 0;
 	int tag_index = 0;
 	int station_index = 0;
 	for(count = 0; count < this->my_vs[vs_index].eventStation_index; count ++)
 	{
 		station_index = this->my_vs[vs_index].eventStation_index_array[count];
-		cout << " eventStation index is  "<< station_index << endl;
+		cout << " eventStation index is  "<< station_index << " STA "<< 
+			this->my_record[station_index].STA <<  endl;
 		//cout << this->my_record.size() << " " << station_index << endl;
 		if(  station_index <= 0 )
 		{
@@ -587,14 +603,17 @@ int big_new_record::individual_VS_processing()
 
 		// 1.3 calculate SNR before stack
 		this->my_record[station_index].calculate_SNR();
-
+		if( this->my_record[station_index].SNR == 1)
+			continue;
+		tag_index = this->my_vs[vs_index].record_tag_index;
 		this->my_vs[vs_index].record_tag[tag_index] = station_index;
-		tag_index ++;
+		this->my_vs[vs_index].record_tag_index += 1;
 
 	}
 
 	this->my_vs[vs_index].ivs = vs_index;
 	this->my_vs[vs_index].update_VS_info();
+	this->my_vs[vs_index].relocate_grid_center();
 	this->my_vs[vs_index].get_grid_dist_final();
 	this->my_vs[vs_index].stack_records_from_one_EQ();
 
@@ -1174,6 +1193,8 @@ void big_new_record::catagorize_eventstation_to_VS()
 		int ilat = 0;
 		int ilon = 0;
 		for(ilat = 0; ilat < this->grid_lat_num ; ilat++)
+		{
+			int break_flag = 0;
 			for(ilon = 0; ilon < this->grid_lon_num[ilat] ; ilon++)
 			{
 				double grid_lat = this->my_grid[ilat][ilon].grid_lat;
@@ -1191,7 +1212,12 @@ void big_new_record::catagorize_eventstation_to_VS()
 				this->my_grid[ilat][ilon].CU_EQ_LON[current_index] = EQ_LON[count];
 				this->my_grid[ilat][ilon].CU_EQ_NAME[current_index] = EQ_LIST[count];
 				this->my_grid[ilat][ilon].CU_EQ_NUM ++;
+				break_flag = 1;
+				break;
 			}
+			if(break_flag == 1)
+				break;
+		}
 
 	}
 

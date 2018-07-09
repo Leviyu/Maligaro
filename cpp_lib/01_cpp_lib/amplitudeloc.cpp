@@ -23,8 +23,8 @@ int amplitudeloc(double* array, int len, int* max_amp_loc, double* amplitude, in
 	double AMP_nega = 0;
 	double AMP_posi = 0;
 	int icount;
-	int max_loc;
-	int min_loc;
+	int max_loc = 0;
+	int min_loc = 0;
 
 	for(icount = 0; icount < len ; icount ++)
 	{

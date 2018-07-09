@@ -349,6 +349,9 @@ class big_new_record
 		double VS_EXISTING_RECORD_NUM_THRESHOLD;
 		string S_ES_DIR;
 
+
+		int working_lat;
+
 		int eventinfo_max_threshold;
 		int eventStation_min_threshold;
 		string EXISTING_EVENTINFO;
@@ -456,6 +459,7 @@ class virtual_station : public new_record
 		string exist;
 
 
+
 		// vector<string> EQ_NAME_array;
 		int EQ_index;
 		vector<int> eventinfo_index_array;
@@ -488,6 +492,7 @@ class virtual_station : public new_record
 		// for records within grid range, store record tag info
 		int npts_record_sum;
 		vector<int> record_tag;				// store the record line number in eventinfo to make sure that we can find each record
+		int record_tag_index;
 
 		// for given EQ, when we do stacking, we need az baz slowness info
 		double grid_dist;					// distance from EQ to grid center

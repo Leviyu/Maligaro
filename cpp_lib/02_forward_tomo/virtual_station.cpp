@@ -71,13 +71,9 @@ void virtual_station::initiate_grid()
 
 	// grid radius in km
 	this->grid_radius = this->VS_LATITUDE_INC * 110;
-
-
 	for(ilat = -89; ilat < 89; ilat+= this->VS_LATITUDE_INC)
 	{
 		current_lat = ilat;
-
-
 	}
 }
 
@@ -102,8 +98,8 @@ void virtual_station::get_grid_dist(const virtual_station& EQ_grid, const virtua
 	grid_dist = grid_dist/111;
 	this->grid_dist = grid_dist;
 
-	//cout << " --> get grid distance " << eq_lat << " "<< eq_lon << " "<<sta_lat << " "
-		//<< sta_lon << " distance is " << this->grid_dist << endl;
+	cout << " --> get grid distance " << eq_lat << " "<< eq_lon << " "<<sta_lat << " "
+		<< sta_lon << " distance is " << this->grid_dist << endl;
 }
 void virtual_station::get_grid_dist_final()
 {
@@ -131,6 +127,7 @@ void virtual_station::get_traffic_time()
 
 	//vector<string> this->traffic_phase_list;
 	//this->traffic_phase_list.resize(20);
+	this->traffic_phase_list.clear();
 
 	if( this->PHASE.compare("S") == 0)
 	{
@@ -316,16 +313,32 @@ void virtual_station::get_traffic_time()
 	string traffic_name = "traffic."+std::to_string(this->ivs);
 	myfile.open(traffic_name);
 	cout << " lets get the fucking traffic travel time " << endl;
-	for(auto i:this->traffic_phase_list)
-	{
-		cout <<" ==> Working on "<<  i << endl;
-		string command = "get_taup_time_2 " + this->my_big_record->PHASE + " "
+
+	// first make taup time for all phases for this ivs
+	string command;
+	command = "make_taup_time_ivs " + this->my_big_record->PHASE + " "
 			+ std::to_string(this->eq_lat) + " "
 			+ std::to_string(this->eq_lon) + " " 
 			+ std::to_string(this->eq_dep) + " "
 			+ std::to_string(this->sta_lat) + " "
-			+ std::to_string(this->sta_lon) + " "
-			+ i;
+			+ std::to_string(this->sta_lon) + " " 
+			+ std::to_string(this->ivs);
+	exec(command);
+
+	
+
+
+	for(auto i:this->traffic_phase_list)
+	{
+		cout <<" ==> Working on "<<  i << endl;
+		command = "get_taup_time_ivs " + std::to_string(this->ivs) + " "+ i;
+		//command = "get_taup_time_2 " + this->my_big_record->PHASE + " "
+			//+ std::to_string(this->eq_lat) + " "
+			//+ std::to_string(this->eq_lon) + " " 
+			//+ std::to_string(this->eq_dep) + " "
+			//+ std::to_string(this->sta_lat) + " "
+			//+ std::to_string(this->sta_lon) + " "
+			//+ i;
 		cout << "command is "<< command << endl;
 
 		double prem_traffic = atof(exec(command).c_str());
@@ -489,7 +502,7 @@ int virtual_station::find_stack_ONSET_time()
 			this->phase_win[count] = 0;
 		else
 			this->phase_win[count] = this->long_win[npts_tmp];
-		if(this->phase_win[count] > phase_win_max)
+		if(this->phase_win[count] > phase_win_max && count > 50 && count < LINE - 50)
 			phase_win_max = this->phase_win[count];
 	}
 
@@ -1015,6 +1028,10 @@ void virtual_station::make_quality_decision()
 	// if tstar ccc too small, -1
 	//if( this->tstar_ccc < 0.92)
 		//this->quality_flag = -1;
+	if( this->stack_SNR_peak < 2 )
+		this->quality_flag = -1;
+	if( this->ave_SNR < 2)
+		this->quality_flag = -1;
 
 
 	// check for possible traffic, 
@@ -1133,7 +1150,7 @@ void virtual_station::stack_records_from_one_EQ()
 		sta_lon = this->my_big_record->my_record[tag].sta_lon;
 		sta_lat = this->my_big_record->my_record[tag].sta_lat;
 		// cout << "sta lon lat "<< sta_lon << endl;
-		dist = dist_A_B( this->grid_lat, this->grid_lon,  sta_lat , sta_lon );
+		dist = dist_A_B( this->sta_lat, this->sta_lon,  sta_lat , sta_lon );
 		dist = dist / 111;
 
 		// decide what gaussian STD to use,
@@ -1151,6 +1168,8 @@ void virtual_station::stack_records_from_one_EQ()
 		// checkout the link below for detailed info
 		// https://github.com/Leviyu/project_documentation/blob/master/01_gaussian/gaussian_shape.ipynb
 		weight = gaussian_func(1, 0, gau_factor , 0, dist);
+//cout << " stack station name "<< this->my_big_record->my_record[tag].STA << " stack weight is "<<
+	//weight<< " distance is "<< dist <<" gau factor is "<< gau_factor  <<  endl;
 		if (weight == 0)
 			continue;
 		int current_record_polar = this->my_big_record->my_record[tag].polarity_flag;
@@ -1384,8 +1403,10 @@ void virtual_station::relocate_grid_center()
 		}
 
 
-		this->grid_lat = new_lat;
-		this->grid_lon = new_lon;
+		//this->grid_lat = new_lat;
+		//this->grid_lon = new_lon;
+		this->sta_lat = new_lat;
+		this->sta_lon = new_lon;
 
 	}
 

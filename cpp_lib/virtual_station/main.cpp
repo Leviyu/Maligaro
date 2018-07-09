@@ -6,7 +6,7 @@ int main()
 {
 	string PHASE;
 	cin >> PHASE ;
-	cout << "============= BEGIN" << endl;
+	cout << " ================ BEG of code " << endl;
 	string infile="INFILE";
 
 	big_new_record my_big_record;

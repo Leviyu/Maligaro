@@ -24,8 +24,10 @@ std::string exec(string command)
 
 	    while (!feof(pipe.get())) 
 		{
-	       if (fgets(buffer, 128, pipe.get()) != NULL)
+	       if (fgets(buffer, 256, pipe.get()) != NULL)
 	            result += buffer;
 	    }
 	 return result;
+
+
 }

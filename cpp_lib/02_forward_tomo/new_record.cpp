@@ -74,8 +74,8 @@ void new_record::download_sac_file()
 	string COMP 	= this->COMP;
 	string STA 		= this->STA;
 	string NET 		= this->NET;
-	string sac_file1 = EQ + "."+NET+"."+STA+".BH"+COMP+".sac";
-	string sac_file2 = EQ + "."+NET+"."+STA+".HH"+COMP+".sac";
+	string sac_file1 = EQ+"."+NET+"."+STA+".BH"+COMP+".sac";
+	string sac_file2 = EQ+"."+NET+"."+STA+".HH"+COMP+".sac";
 	string sod_sac1 = "/mnt/soduser/"+EQ+"/"+sac_file1;
 	string sod_sac2 = "/mnt/soduser/"+EQ+"/"+sac_file2;
 	//string sod_sac1 = "/mnt/soddisk/soduser/Merge.Mw6.50km/"+EQ+"/"+sac_file1;
@@ -94,6 +94,7 @@ void new_record::download_sac_file()
 			//string command = "get_EQ_sac "+ EQ+"/"+sac_file1;
 			//exec(command);
 			sac_file = sac_file1;
+
 			string filter_command = "csh c06.record_filter_and_resample.sh "+ sac_file1 + " " + PHASE 
 				+" "+ sod_sac1 ;
 			exec(filter_command);
@@ -112,7 +113,6 @@ void new_record::download_sac_file()
 			exec(filter_command);
 		}
 	//}
-
 }
 
 
@@ -133,12 +133,7 @@ void new_record::read_sac_file()
 	double PREM;
 	//PREM = taup_time(this->eq_lat, this->eq_lon, this->eq_dep, this->sta_lat , this->sta_lon, this->PHASE);
 	string taup_command = "get_taup_time "+ this->EQ + " "+ this->STA + " "+ this->PHASE ;
-	//exec(taup_command);
 	PREM = atof(exec(taup_command).c_str());
-	//ifstream mytaup;
-	//mytaup.open("tmp.taup");
-	//mytaup >> PREM;
-	//mytaup.close();
 
 	
 
@@ -168,9 +163,8 @@ void new_record::read_sac_file()
 	string COMP 	= this->COMP;
 	string STA 		= this->STA;
 	string NET 		= this->NET;
-	string sac_file1 = EQ + "."+NET+"."+STA+".BHT.sac";
-	string sac_file2 = EQ + "."+NET+"."+STA+".HHT.sac";
-
+	string sac_file1 = EQ+"."+NET+"."+STA+".BHT.sac";
+	string sac_file2 = EQ+"."+NET+"."+STA+".HHT.sac";
 
 	// get polarity 
 	this->get_polar_flag();
@@ -201,7 +195,7 @@ void new_record::read_sac_file()
 	}
 
 
-	//cout << "sac file is "<< this->sac_file 
+	//cout << "sac file is "<< this->sac_file << endl;
 		//<< " absolute time "<< abs_beg 
 		//<< " length "<< length 
 		//<< "delta " << this->delta
@@ -217,9 +211,9 @@ void new_record::read_sac_file()
 	normalize_array(&this->long_win[0], npts);
 
 	// for wired condition, we mask out the record with 0.1 array
-	if( this->long_win[0] != this->long_win[0] )
-		for(count = 0; count < npts; count++)
-			this->long_win[count] = 0.00000001;
+	//if( this->long_win[0] != this->long_win[0] )
+		//for(count = 0; count < npts; count++)
+			//this->long_win[count] = 0.00000001;
 
 
 
@@ -351,6 +345,8 @@ void new_record::calculate_SNR()
 	if(this->SNR != this->SNR )
 		this->SNR = 0.5;
 
+	//cout << " signal "<< phase_signal << " "<< npts_phase_len <<endl;
+	//cout << " noise "<< noise_signal<< " "<< npts_noise_len <<endl;
 	//cout << " STA "<< this->STA << " SNR " << this->SNR << endl;
 
 

@@ -17,8 +17,8 @@ extern "C" {
 
 using namespace std;
 
-
-
+//template<class Iter, class new_record>
+//Iter binary_find(Iter begin, Iter end, Iter val);
 
 int normalize_array_with_flag(double* array, int len, int flag);
 

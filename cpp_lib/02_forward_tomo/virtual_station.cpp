@@ -330,7 +330,6 @@ void virtual_station::get_traffic_time()
 
 	for(auto i:this->traffic_phase_list)
 	{
-		cout <<" ==> Working on "<<  i << endl;
 		command = "get_taup_time_ivs " + std::to_string(this->ivs) + " "+ i;
 		//command = "get_taup_time_2 " + this->my_big_record->PHASE + " "
 			//+ std::to_string(this->eq_lat) + " "
@@ -339,9 +338,10 @@ void virtual_station::get_traffic_time()
 			//+ std::to_string(this->sta_lat) + " "
 			//+ std::to_string(this->sta_lon) + " "
 			//+ i;
-		cout << "command is "<< command << endl;
+		//cout << "command is "<< command << endl;
 
 		double prem_traffic = atof(exec(command).c_str());
+		cout <<" ==> Working on "<<  i << " time: "<< prem_traffic<< endl;
 		this->traffic_phase_time.push_back(prem_traffic);
 
 
@@ -778,6 +778,7 @@ void virtual_station::update_SNR()
 	int signal_end = (int) ((this->ENDSET - this->LONG_BEG) / this->delta);
 	int i;
 	int signal_count = 0;
+	//cout << " signal beg end " << signal_beg << " "<< signal_end << endl;
 	for(i = signal_beg; i < signal_end ; i++)
 	{
 		signal += fabs(this->long_win_orig[i]);
@@ -797,6 +798,7 @@ void virtual_station::update_SNR()
 	int noise_count = 0;
 	int noise_beg = (int) ( ( this->noise_beg - this->LONG_BEG) / this->delta);
 	int noise_end = (int) ( ( this->noise_beg + this->noise_len - this->LONG_BEG) / this->delta);
+	//cout << " Noise beg end " << noise_beg << " "<< noise_end << endl;
 	for(i = noise_beg ; i < noise_end ; i++)
 	{
 		double time = this->LONG_BEG + i * this->delta;
@@ -806,6 +808,12 @@ void virtual_station::update_SNR()
 		for( j = 0; j < (int) (this->traffic_phase_time.size()) ; j++)
 		{
 			double dt = time - this->traffic_phase_time.at(j);
+
+			//cout << " traffic time is "<< dt << endl;
+			//cout << " MASK MIN " << this->MASK_MIN << endl;
+			//cout << " MASK MAX " << this->MASK_MAX + this->one_period << endl;
+
+
 			if( dt > this->MASK_MIN and dt < this->MASK_MAX + this->one_period )
 			{
 				too_close = 1;
@@ -813,7 +821,7 @@ void virtual_station::update_SNR()
 			}
 		}
 		if( too_close == 1)
-			break;
+			continue;
 
 		noise += fabs(this->long_win_orig[i]);
 		noise_count ++;
@@ -824,6 +832,11 @@ void virtual_station::update_SNR()
 		noise = 0;
 	else
 		noise = noise / noise_count;
+
+
+	//cout << "noise/sig count is "<< noise_count<< " "<< signal_count<< endl;
+	//cout << " signal "<< signal<< endl;
+	//cout << " noise "<< noise<< endl;
 
 	this->stack_SNR = signal / noise;
 	if( noise_peak == 0)
@@ -1144,7 +1157,7 @@ void virtual_station::stack_records_from_one_EQ()
 		tag = this->record_tag[ista];
 		if(tag == 0) 
 			continue;
-		cout << "working on ista "<< ista << " eventStation index is "<< tag<< endl;
+		//cout << "working on ista "<< ista << " eventStation index is "<< tag<< endl;
 		//cout << "tag "<< tag << endl;
 		//cout << " stacking for vs " << this->my_big_record->my_vs_index << " station index "<< tag << endl; 
 		sta_lon = this->my_big_record->my_record[tag].sta_lon;
@@ -1212,7 +1225,7 @@ void virtual_station::mask_window_and_store_into_long_orig()
 	int MAX = 2000;
 
 	int npts_long = (int)( this->LONG_LEN / this->delta);
-	cout << "my delta is "<< this->delta<< " npts long is "<< npts_long << endl;
+	//cout << "my delta is "<< this->delta<< " npts long is "<< npts_long << endl;
 	this->long_win_orig.resize(MAX);
 	//return ;
 
@@ -1481,7 +1494,7 @@ void virtual_station::get_SNR_before_and_after_stack()
 	npts_noise_len = (int) (this->noise_len  / this->delta);
 	npts_phase_len = (int) (this->phase_len  / this->delta);
 
-	cout << " npts_noise_beg is "<< npts_noise_beg << " npts_noise_len is "<< npts_noise_len << endl;
+	//cout << " npts_noise_beg is "<< npts_noise_beg << " npts_noise_len is "<< npts_noise_len << endl;
 	for(count = 0; count < npts_noise_len ; count++)
 	{
 		noise_signal += fabs (  this->long_win_orig[npts_noise_beg + count] );

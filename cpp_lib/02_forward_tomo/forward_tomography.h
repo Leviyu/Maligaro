@@ -332,6 +332,18 @@ class new_record
 		vector<int> STA_BIN_LAT;
 		vector<int> STA_BIN_LON;
 
+		bool operator<(const new_record &rhs){
+			if (this->EQ!=rhs.EQ) return this->EQ<rhs.EQ;
+			else return this->STA<rhs.STA;
+		}
+		bool operator!=(const new_record &rhs){
+			if(this->EQ == rhs.EQ && this->PHASE == rhs.PHASE &&
+					this->STA == rhs.STA) 
+				return false;
+			else
+				return true;
+		}
+
 		new_record();
 		~new_record();
 };
@@ -446,6 +458,12 @@ class big_new_record
 		void make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta, int ieq_index);
 		int individual_VS_processing();
 		void plot_current_vs(int vs_index);
+		void sort_my_record();
+		template<class AAA>
+		AAA binary_find(AAA begin, AAA end, new_record val);
+		template<class AAA>
+		int binary_find2(AAA begin, AAA end, new_record val);
+
 };
 class virtual_station : public new_record
 {

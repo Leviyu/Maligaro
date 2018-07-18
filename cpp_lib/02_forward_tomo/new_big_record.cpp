@@ -1,5 +1,6 @@
 #include "forward_tomography.h"
 #include <map>
+#include <algorithm>
 big_new_record::big_new_record()
 {
 }
@@ -39,8 +40,27 @@ void big_new_record::virtual_station_main()
 	this->read_eventStation();
 	this->catagorize_eventstation_to_VS();
 
+	this->sort_my_record();
+
+
+
 	this->count_record_existance_for_grid_pair();
 	cout << "--> Virtual Station main is finished here "<< endl;
+}
+
+
+bool cmp(const new_record& i, const new_record& j){
+	if(i.EQ != j.EQ) return i.EQ < j.EQ;
+	else if ( i.PHASE != j.PHASE ) return i.PHASE < j.PHASE ;
+	else if ( i.STA != j.STA ) return i.STA < j.STA;
+
+	return true;
+}
+
+void big_new_record::sort_my_record()
+{
+std::sort(this->my_record.begin(),this->my_record.end());
+std::sort(this->existing_record.begin(), this->existing_record.end(),cmp);
 }
 
 void big_new_record::output_VS_info_for_one_VS(int vs_index)
@@ -87,11 +107,14 @@ void big_new_record::output_VS_info_for_one_VS(int vs_index)
 	}
 	out.close();
 
-	if( my_vs.ave_SNR == 1.0)
-		return;
+	//if( my_vs.ave_SNR == 1.0)
+		//return;
 
 	if( record_tag_index < this->eventStation_min_threshold)
+	{
+		//cout << " ivs "<< ivs << " is skipped cause record too small "<< record_tag_index << endl;
 		return;
+	}
 
 	myfile<< fixed
 	<< setw(10) << setprecision(2) << ivs
@@ -426,17 +449,21 @@ void big_new_record::count_record_existance_for_grid_pair()
 		for(ilon_eq = 0; ilon_eq< this->grid_lon_num[ilat_eq]; ilon_eq++)
 		{
 
+			int cu_eq_num = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NUM;
+			//cout << " --> Work on EQ Grid: "<< ilat_eq << " "<< ilon_eq<<endl;
+			if(cu_eq_num  == 0) 
+				continue;
+
 			for(ilat_sta = 0; ilat_sta<this->grid_lat_num; ilat_sta++)
 			{
 				for(ilon_sta = 0; ilon_sta< this->grid_lon_num[ilat_sta]; ilon_sta++)
 				{
 					//cout << "EQ_GRID_LAT_LON/STA_GRID_LAT_LON: "<< ilat_eq << " "<< ilon_eq<<" "<< ilat_sta << " "<<ilon_sta<<  endl;
 
-					int cu_eq_num = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NUM;
 					int cu_sta_num = this->my_grid[ilat_sta][ilon_sta].CU_STA_NUM;
 					//int ex_eq_num = this->my_grid[ilat_eq][ilon_eq].EX_EQ_NUM;
 					//int ex_sta_num = this->my_grid[ilat_sta][ilon_sta].EX_STA_NUM;
-					if(cu_eq_num == 0 || cu_sta_num == 0)
+					if( cu_sta_num < 3)
 						continue;
 
 					// cout << "EX eq sta num" << ex_eq_num << " " << ex_sta_num << endl;
@@ -444,7 +471,13 @@ void big_new_record::count_record_existance_for_grid_pair()
 
 					// IF eventinfo num > eventinfo_max_threshold, skip
 					int exist_eventinfo = 0;
-					count_eventinfo_existance_for_sing_grid_pair(ilat_eq,ilon_eq,ilat_sta,ilon_sta,&exist_eventinfo);
+					if( this->PHASE.compare("S") == 0 
+							|| this->PHASE.compare("SS") == 0
+							|| this->PHASE.compare("SSS") == 0
+							|| this->PHASE.compare("Sdiff") == 0
+							|| this->PHASE.compare("ScS") == 0
+							|| this->PHASE.compare("ScSScS") == 0)
+					this->count_eventinfo_existance_for_sing_grid_pair(ilat_eq,ilon_eq,ilat_sta,ilon_sta,&exist_eventinfo);
 					// this->my_grid[i]
 					// cout << "existed eventinfo "<< exist_eventinfo << endl;
 					// cout << " eventinfo threshold "<< this->eventinfo_max_threshold<< endl;
@@ -454,7 +487,7 @@ void big_new_record::count_record_existance_for_grid_pair()
 					// IF eventStation < eventStation_min_threshold, skip
 
 					int exist_eventStation = 0;
-					count_eventStation_existance_for_sing_grid_pair(ilat_eq,ilon_eq,ilat_sta,ilon_sta,&exist_eventStation);
+					this->count_eventStation_existance_for_sing_grid_pair(ilat_eq,ilon_eq,ilat_sta,ilon_sta,&exist_eventStation);
 					//if( exist_eventStation < 10 || exist_eventStation > 25 ) 
 						//continue;
 					
@@ -566,40 +599,36 @@ void big_new_record::make_virtual_station_for_EQ(int ilat_eq, int ilon_eq, int i
 int big_new_record::individual_VS_processing()
 {
 	int vs_index = this->my_vs_index;
-	cout << "--> Working on " << vs_index << endl;
 	int count;
 	this->my_vs[vs_index].npts_record_sum = this->my_vs[vs_index].eventStation_index;
 
 	this->my_vs[vs_index].record_tag_index = 0;
 	int tag_index = 0;
 	int station_index = 0;
+	cout << "--> Working on ivs " << vs_index << " total index num: " 
+		<< this->my_vs[vs_index].eventStation_index << endl;
 	for(count = 0; count < this->my_vs[vs_index].eventStation_index; count ++)
 	{
 		station_index = this->my_vs[vs_index].eventStation_index_array[count];
-		cout << " eventStation index is  "<< station_index << " STA "<< 
-			this->my_record[station_index].STA <<  endl;
+		//cout << " eventStation index is  "<< station_index << " STA "<< 
+			//this->my_record[station_index].STA <<  endl;
 		//cout << this->my_record.size() << " " << station_index << endl;
 		if(  station_index <= 0 )
 		{
 			//cout << " skipped eventStation index is  "<< station_index << endl;
 			continue;
 		}
-		this->my_record[station_index].download_sac_file();
 		this->my_record[station_index].PHASE = this->PHASE;
 		this->my_record[station_index].delta = 0.1;
 		this->my_record[station_index].noise_beg = this->noise_beg;
 		this->my_record[station_index].noise_len = this->noise_len;
-		
 		this->my_record[station_index].phase_len = this->phase_len;
 		this->my_record[station_index].phase_beg = this->phase_beg;
 		this->my_record[station_index].long_len = this->long_len;
 		this->my_record[station_index].long_beg = this->long_beg;
-
-		// 1.1 make and read in polarity file
-
+		this->my_record[station_index].download_sac_file();
 		// 1.2 read in sac file
 		this->my_record[station_index].read_sac_file();
-		
 
 		// 1.3 calculate SNR before stack
 		this->my_record[station_index].calculate_SNR();
@@ -691,7 +720,7 @@ void big_new_record::count_eventStation_existance_for_sing_grid_pair(int ilat_eq
 	int ex_eq_num = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NUM;
 	int ex_sta_num = this->my_grid[ilat_sta][ilon_sta].CU_STA_NUM;
 	// if eq_num is zero or sta num is 0, then skip
-	if( ex_eq_num == 0 || ex_sta_num == 0)
+	if( ex_eq_num == 0 || ex_sta_num < 3 )
 	{
 		*exist_eventStation = 0;
 	}
@@ -703,7 +732,7 @@ void big_new_record::count_eventStation_existance_for_sing_grid_pair(int ilat_eq
 				// calculate distance between EQ and STA
 				string EQ_NAME = this->my_grid[ilat_eq][ilon_eq].CU_EQ_NAME[ieq];
 				string STA_NAME = this->my_grid[ilat_sta][ilon_sta].CU_STA_NAME[ista];
-				int num = find_EQ_STA_PHASE_number_in_eventStation(EQ_NAME,STA_NAME);
+				int num = this->find_EQ_STA_PHASE_number_in_eventStation(EQ_NAME,STA_NAME);
 				// int array_index = this->my_vs[this->my_vs_index].EQ_index;
 				// this->my_vs[this->my_vs_index].EQ_NAME_array[array_index] = EQ_NAME;
 				// array_index = this->my_vs[this->my_vs_index].eventStation_index;
@@ -739,14 +768,13 @@ void big_new_record::count_eventinfo_existance_for_sing_grid_pair(int ilat_eq, i
 					*exist_eventinfo += 1 ;
 			}
 
-		
-
 	}
 	//cout << "eventinfo num is "<< *exist_eventinfo<< endl;
 }
 
 int big_new_record::find_EQ_STA_PHASE_number_in_eventinfo(string EQ_NAME, string STA, string PHASE)
 {
+	/*
 	int return_num = 0;
 	int count;
 	for(count = 0; count < this->existing_sta_num; count ++)
@@ -755,43 +783,117 @@ int big_new_record::find_EQ_STA_PHASE_number_in_eventinfo(string EQ_NAME, string
 			continue;
 		if(STA.compare(this->existing_record[count].STA) != 0)
 			continue;
+		//cout << " find " << EQ_NAME << " "<< this->existing_record[count].EQ<< " index "<< 
+			//count << endl;
+		//cout << " find " << STA << " "<< this->existing_record[count].STA<< " index "<< 
+			//count << endl;
 		if(PHASE.compare(this->existing_record[count].PHASE) != 0)
 			continue;
 		return_num = count;
 		break;
 
 	}
-	return return_num;
+	//cout << " eventinfo return num is "<< return_num<<endl;
+	//return return_num;
+	*/
+
+	vector<new_record> tag;
+	tag.resize(1);
+	tag[0].EQ = EQ_NAME;
+	tag[0].STA = STA;
+	tag[0].PHASE = PHASE;
+	int binary_loc = 0;
+	binary_loc = this->binary_find2(this->existing_record.begin(), this->existing_record.end(),tag[0]);
+	//binary_loc = this->binary_find2(this->existing_record.begin(), this->existing_record.end(),tag[0])- this->existing_record.begin();
+
+	//cout << EQ_NAME << " "<< STA << " "<< PHASE << endl;
+	//cout << " find eventinfo my code index: "<< return_num << " binary index: "<< binary_loc<<endl;
+	//cout << " found info " << this->existing_record[binary_loc].EQ 
+		//<< " " << this->existing_record[binary_loc].STA
+		//<< " " << this->existing_record[binary_loc].PHASE << endl;
+
+	return binary_loc;
 
 }
 int big_new_record::find_EQ_STA_PHASE_number_in_eventStation(string EQ_NAME, string STA)
 {
+	/*
 	int return_num = 0;
 	int count;
 	//cout << " EQ "<< EQ_NAME << "STA " << STA << endl;
 	for(count = 0; count < this->sta_num; count ++)
 	{
-	
 
 		if(EQ_NAME.compare(this->my_record[count].EQ) != 0)
 			continue;
-
 		//cout << " ----> Searching "<< count << " / " << this->sta_num << endl;
 		if(STA.compare(this->my_record[count].STA) != 0)
 			continue;
 		 //cout << this->my_record[count].EQ << " sta "<< this->my_record[count].STA << endl;
-		double dist = this->my_record[count].DIST;
-		//cout << " dist is " << dist  << " distminmax " << this->phase_dist_min << " " << this->phase_dist_max << endl;
-		if ( dist < this->phase_dist_min || dist > this->phase_dist_max)
-			continue;
-
 		return_num = count;
 		break;
 	}
-	return return_num;
+	//
+	//cout << " my code return value is "<< return_num<< endl;
+	*/
+	// try binary search
+	//new_record tag = new_record();
+	vector<new_record> tag;
+	tag.resize(1);
+	tag[0].EQ = EQ_NAME;
+	tag[0].STA = STA;
+
+	//this->binary_find(this->my_record.begin(), this->my_record.end(),tag[0]);
+	int binary_loc = 0;
+	binary_loc =  this->binary_find(this->my_record.begin(), this->my_record.end(),tag[0]) - this->my_record.begin();
+	//cout << " binary index is "<< binary_loc<< endl;
+
+	//cout << " EQ STA "<< tag[0].EQ << tag[0].STA << endl;
+	//cout << " my code index: "<< return_num <<  " binary index "<< binary_loc<< endl;
+	//cout << " my code index: "<< return_num <<  " binary index "<< binary_loc<< endl;
+	//cout << " found info "<< this->my_record[binary_loc].EQ
+		//<< " "<< this->my_record[binary_loc].STA << endl;
+
+	return binary_loc;
+	//return return_num;
+
 
 }
 
+template<class AAA>
+AAA big_new_record::binary_find(AAA begin, AAA end, new_record val)
+{
+    // Finds the lower bound in at most log(last - first) + 1 comparisons
+    AAA i = std::lower_bound(begin, end, val);
+
+    if (i == end || (*i) < val) {
+		//cout << "Not Found" << endl;
+        return end; // found
+	}
+    else {
+
+		//cout << "Found" << endl;
+        return i; // not found
+	}
+	
+}
+template<class AAA>
+int big_new_record::binary_find2(AAA begin, AAA end, new_record val)
+{
+    // Finds the lower bound in at most log(last - first) + 1 comparisons
+    AAA i = std::lower_bound(begin, end, val);
+
+    if (i == end || (*i)!=val) {
+		//cout << "Not Found" << endl;
+        return 0; // found
+	}
+    else {
+
+		//cout << "Found" << endl;
+        return i - begin; // not found
+	}
+	
+}
 
 int big_new_record::find_EQ_STA_bin_record_existance_num(new_record* my_record, int sta_num, int ilat_eq, int ilon_eq, int ilat_sta, int ilon_sta)
 {
@@ -1584,6 +1686,7 @@ void big_new_record::read_eventStation()
 			else if( count == 19 )
 				this->my_record[line].EQ = sub1;
 		}
+		this->my_record[line].PHASE = this->PHASE;
 
 	}
 	myfile.close();

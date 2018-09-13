@@ -3,7 +3,9 @@
 
 ---
 
-Maligaro is my own code repository, mostly wrote for my research work through my Ph.D.. Most of the code in this repository are related to time-series signal processing, with many specific algorithms that I have designed and optimized during the years. 
+*Maligaro* is my own code repository, mostly wrote for my research work through my Ph.D.. Most of the code in this repository are related to time-series signal processing, with many specific algorithms that I have designed and optimized during the years. 
+
+In case you wander who Maligaro is, here is a link that check out:([Maligaro, The Inquisitor](https://pathofexile.gamepedia.com/Maligaro,_The_Inquisitor))
 
 It is maintained by C and C++, at the end of my second year, I transferred my language preference from C to C++ cause of the convenience of Class. 
 
@@ -15,5 +17,3 @@ This repository also contains the core code for the three projects in my thesis:
 The three projects share many basic data structures and methods but each of the them have their separate directory, where Make file can be found. 
 
 This repository has recorded my pain and sorrow, my excitement and passion, my long-nights and earlier mornings, every time I open it, I can hear the cracking sound of my bones, that’s me learning and growing every single day.
-
-![alt text](https://github.com/Leviyu/Maligaro/blob/master/img/Happy-Coding.png)

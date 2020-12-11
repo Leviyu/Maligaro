@@ -14,4 +14,4 @@ This repository also contains the core code for the three projects in my thesis:
 
 The three projects share many basic data structures and methods but each of the them have their separate directory, where Make file can be found. 
 
-This repository has recorded my pain and sorrow, my excitement and passion, my long-nights and earlier mornings, every time I open it, I can hear the cracking sound of my bones, that’s me learning and growing every single day.
+This repository has recorded my pain and sorrow, my excitement and passion, my long-nights and earlier mornings, every time I open it, I know it is going to be an eventful day.

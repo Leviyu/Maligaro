@@ -1,8 +1,6 @@
 # Maligaro
 
 
----
-
 *Maligaro* is my own code repository, mostly wrote for my research work through my Ph.D.. Most of the code in this repository are related to time-series signal processing, with many specific algorithms that I have designed and optimized during the years. 
 
 It is maintained by C and C++, at the end of my second year, I transferred my language preference from C to C++ cause of the convenience of Class. 
